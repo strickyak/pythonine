@@ -25,6 +25,7 @@ db: _build
 
 format:
 	clang-format --style=Google -i *.h *.c
+	yapf -i *.py
 
 clean:
 	rm -f a.out *.bin *.pyc *.bc _*

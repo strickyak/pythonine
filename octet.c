@@ -133,8 +133,6 @@ void ocheckguards(word p) {
   assert(cap);
   word final = p + cap;
   assert(ogetb(final) == GUARD_ONE);
-  byte cls = ogetb(p - DCLS);  // don't call ocls()
-  // assert(0 < cls); // XXX
 #endif
 }
 word oalloc_try(byte len, byte cls) {
