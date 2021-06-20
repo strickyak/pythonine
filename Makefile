@@ -1,4 +1,4 @@
-all: _build run
+all: _build _octet_test _chain_test run
 
 _build:
 	python2 compile_proto.py < bc.proto -c > _generated_proto.h
@@ -10,10 +10,14 @@ _build:
 run:
 	./runpy.bin test1.bc
 
-chain_test:
+_chain_test:
 	python2 build_core.py < core.txt > _generated_core.h
 	cc -g -o chain_test.bin chain_test.c runtime.c chain.c pb.c octet.c
 	./chain_test.bin
+
+_octet_test:
+	cc -g -o octet_test.bin octet_test.c octet.c
+	./octet_test.bin
 
 db: _build
 	echo 'run test1.bc' > /tmp/test1.gdb

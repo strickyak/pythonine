@@ -139,9 +139,9 @@ bool Truth(word a) {
         return Str_len(a) > 0;
     }
   } else {
-    if (a==0) return false;  // None
-    if (a==0xFF00) return false; // Zero small.
-    if (a==0x0001) return false; // Zero tagged int.
+    if (a == 0) return false;       // None
+    if (a == 0xFF00) return false;  // Zero small.
+    if (a == 0x0001) return false;  // Zero tagged int.
   }
   return true;
 }
