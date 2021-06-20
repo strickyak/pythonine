@@ -1,0 +1,11 @@
+a.out
+*.bin
+*.bc
+*.swp
+*.pyc
+_*
+,*
+OLD/
+
+RCS/
+*,v

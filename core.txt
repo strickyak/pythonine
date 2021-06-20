@@ -1,0 +1,201 @@
+# Core definitions of builtin classes and opcodes.
+
+class Free # unused chunks.
+  oop next
+class Bytes # arbitrary bytes (of varying length).
+  byte[]
+class BC # Python bytecodes (of varying length).
+  byte[]
+class MC # 6809/6309 Machine Code (of varying length).
+  byte[]
+class Array # Array (of varying length) of OOPs.
+  oop[]
+class Chain # a chain for an use.
+  oop root
+  small len2
+class List # a chain for a list.
+  oop root
+  small len2
+class Dict # a chain for a dict.
+  oop root
+  small len2
+class Buf
+  oop bytes
+  small len
+class Str
+  oop bytes
+  small len
+  small offset
+  small single  # If a single-char string, you can use this target.
+class Class
+  oop name
+  oop meths
+  oop TODO
+
+# Opcodes.
+code  Stop  # Stop comes first, so 00 means stop.
+  in
+  out
+  {
+    done = true;
+  }
+code  Nop
+  in
+  out
+  {
+  }
+code  LitInt
+  arg lit
+  in
+  out z
+  {
+    fflush(stdout);
+    fprintf(stderr, "LitInt: lit=%d\n", lit);
+    z = Q(lit);
+  }
+code  LitStr
+  arg nth
+  in
+  out z
+  {
+    z = ChainGetNth(InternList, nth);
+    osaylabel(z, "LitStr", nth);
+  }
+code  Plus
+  in a b
+  out z
+  {
+    z = Q(N(a) + N(b));
+  }
+code  Minus
+  in a b
+  out z
+  {
+    z = Q(N(a) - N(b));
+  }
+code  Times
+  in a b
+  out z
+  {
+    z = Q(N(a) * N(b));
+  }
+code  Print
+  in a
+  out
+  {
+        printf(" <%04x> ", a);
+  }
+code  Assert
+  in a
+  out
+  {
+        assert(Truth(a));
+  }
+code  Call0
+  in fn
+  out z
+  {
+    assert(0);
+  }
+code  Call1
+  in fn a
+  out z
+  {
+    assert(0);
+  }
+code  Call2
+  in fn a b
+  out z
+  {
+    assert(0);
+  }
+code  Call3
+  in fn a b c
+  out z
+  {
+    assert(0);
+  }
+code  GlobalDict
+  in
+  out z
+  {
+    z = GlobalDict;
+  }
+code  GlobalGet
+  arg nth
+  in
+  out z
+  {
+    osay(GlobalDict);
+    word addr = ChainAddrOfNth(GlobalDict, nth);
+    assert(addr);
+    z = GetW(addr);
+  }
+code  GlobalPut
+  arg nth
+  in a
+  out
+  {
+    osay(GlobalDict);
+    word addr = ChainAddrOfNth(GlobalDict, nth);
+    assert(addr);
+    PutW(addr, a);
+    osay(GlobalDict);
+  }
+code  Branch
+  in
+  out
+  {
+        ip = (word)((int)ip + (signed char)(codes[++ip]));
+  }
+code  GetAt
+  in coll key
+  out z
+  {
+        word ptr = FindAt(coll, key, false);
+        z = ptr ? GetW(ptr) : 0;
+  }
+code  PutAt
+  in coll key value
+  out
+  {
+        word p = FindAt(coll, key, true);
+        assert(p);
+        PutW(p, value);
+  }
+code  EQ
+  in a b
+  out z
+  {
+    z = Q(N(a) == N(b));
+  }
+code  NE
+  in a b
+  out z
+  {
+    z = Q(N(a) != N(b));
+  }
+code  LT
+  in a b
+  out z
+  {
+    z = Q(N(a) < N(b));
+  }
+code  GT
+  in a b
+  out z
+  {
+    z = Q(N(a) > N(b));
+  }
+code  LE
+  in a b
+  out z
+  {
+    z = Q(N(a) <= N(b));
+  }
+code  GE
+  in a b
+  out z
+  {
+    z = Q(N(a) >= N(b));
+  }

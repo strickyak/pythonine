@@ -1,0 +1,31 @@
+# CodePack is a main set of codes followed by things
+# to create and patch in the code.
+message CodePack
+  str bytecode = 1
+  repeated InternPack interns = 2
+  repeated GlobalPack globals = 3
+  repeated FuncPack funcpacks = 4
+  repeated ClassPack classpacks = 5
+
+message InternPack
+  str s = 11
+  repeated int patch = 12  # Position to be patched in bytecode.
+
+# The name of the global is the `name_`th InternPack
+# above.
+message GlobalPack
+  int name_i = 13
+  repeated int patch = 14  # Position to be patched in bytecode.
+
+# (not used yet)
+message FuncPack
+  int name_i = 10
+  CodePack pack = 15
+  repeated int patch = 16  # Position to be patched in bytecode.
+
+# (not used yet)
+message ClassPack
+  int name_i = 17
+  repeated int field_i = 18
+  repeated FuncPack meth = 19
+  repeated int patch = 20  # Position to be patched in bytecode.
