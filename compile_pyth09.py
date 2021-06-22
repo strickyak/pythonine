@@ -5,6 +5,7 @@ import _generated_proto as T  # Tags.
 import py_pb as P  # Protocol buffers.
 E = sys.stderr
 
+# Created by Lexer:
 L_EOF = 0
 L_INT = 1
 L_STR = 2
@@ -12,6 +13,7 @@ L_IDENTIFIER = 3
 L_MULTI = 4
 L_PUNC = 5
 L_BOL = 6
+# Created by Parser::Advance:
 P_INDENT = 7
 P_DEDENT = 8
 P_EOL = 9
@@ -79,6 +81,9 @@ class Lexer(object):
         return z
 
     def Next(self):
+        """Next only returns L_BOL (with the indent #) and L_BOL 
+           as framing tokens.  Parser::Advance changes L_BOL to
+           P_EOL and P_INDENT and P_DEDENT tokens."""
         c = self.GetC()
         if not c: return ShowLex(L_EOF, None)
         col, eol = 0, False
@@ -136,6 +141,9 @@ class Parser(object):
         self.Advance()
 
     def Advance(self):
+        """Lexer::Next only returns L_BOL (with the indent column) and L_BOL 
+           as framing tokens.  Advance changes L_BOL to P_EOL
+           P_INDENT and P_DEDENT tokens."""
         if self.pending_indent:
             self.pending_indent = False
             self.t, self.x = P_INDENT, None
