@@ -143,10 +143,18 @@ code  GlobalPut
     osay(GlobalDict);
   }
 code  Branch
+  arg whither
   in
   out
   {
-        ip = (word)((int)ip + (signed char)(codes[++ip]));
+        ip = whither;
+  }
+code  BranchIfFalse
+  arg whither
+  in pred
+  out
+  {
+        if (!Truth(pred)) ip = whither;
   }
 code  GetAt
   in coll key

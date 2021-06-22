@@ -8,12 +8,29 @@ E = sys.stderr
 L_EOF = 0
 L_INT = 1
 L_STR = 2
-L_IDENT = 3
+L_IDENTIFIER = 3
 L_MULTI = 4
 L_PUNC = 5
-L_EOL = 6
+L_BOL = 6
+P_INDENT = 7
+P_DEDENT = 8
+P_EOL = 9
 
 BytecodeNumbers = {}
+
+
+def LexKind(a):
+    if a == L_EOF: return 'L_EOF'
+    elif a == L_INT: return 'L_INT'
+    elif a == L_STR: return 'L_STR'
+    elif a == L_IDENTIFIER: return 'L_IDENTIFIER'
+    elif a == L_MULTI: return 'L_MULTI'
+    elif a == L_PUNC: return 'L_PUNC'
+    elif a == L_BOL: return 'L_BOL'
+    elif a == P_INDENT: return 'P_INDENT'
+    elif a == P_DEDENT: return 'P_DEDENT'
+    elif a == P_EOL: return 'P_EOL'
+    else: return 'L_???'
 
 
 def GetBytecodeNumbers():
@@ -35,12 +52,12 @@ def IsAlfa(c):
 
 
 def IsWhite(c):
-    return c <= ' '
+    return (c) and (c <= ' ')
 
 
-def Show(a):
-    print >> E, 'SHOW{ %s }' % [a]
-    return a
+def ShowLex(kind, what):
+    print >> E, 'ShowLex => [%s %s]' % (LexKind(kind), repr(what))
+    return (kind, what)
 
 
 class Lexer(object):
@@ -49,53 +66,109 @@ class Lexer(object):
         self.i = 0
 
     def UnGetC(self):
+        print >> E, 'UnGetC <-----'
         self.i -= 1
 
     def GetC(self):
         if self.i >= len(self.program):
-            return ''
+            print >> E, 'GetC ----> None'
+            return None
         z = self.program[self.i]
         self.i += 1
+        print >> E, 'GetC ----> %s' % repr(z)
         return z
 
     def Next(self):
         c = self.GetC()
-        if not c: return Show((L_EOF, None))
-        while IsWhite(c):
-            if c == '\n' or c == '\r': return Show((L_EOL, None))
+        if not c: return ShowLex(L_EOF, None)
+        col, eol = 0, False
+        while c == '#' or IsWhite(c):
+            if c == '#':
+                while c != '\n' and c != '\r':
+                    c = self.GetC()
+                    if not c: return ShowLex(L_EOF, None)
+                col, eol = 0, True
+            elif c == '\n' or c == '\r':
+                col, eol = 0, True
+            else:
+                if c == '\t':
+                    col = ((col + 4) >> 2) << 2
+                else:
+                    col += 1
             c = self.GetC()
+
+        if not c: return ShowLex(L_EOF, None)
+        if eol:
+            self.UnGetC()
+            return ShowLex(L_BOL, col)
+
         if IsDigit(c):
             x = 0
             while IsDigit(c):
                 x = x * 10 + ord(c) - 48
                 c = self.GetC()
             self.UnGetC()
-            return Show((L_INT, x))
+            return ShowLex(L_INT, x)
         if IsAlfa(c):
             x = ''
             while IsAlfa(c) or IsDigit(c):
                 x += c
                 c = self.GetC()
             self.UnGetC()
-            return Show((L_IDENT, x))
+            return ShowLex(L_IDENTIFIER, x)
         if c in ['=', '!', '<', '>']:
             d = self.GetC()
             if d in ['=', '<', '>']:
-                return Show((L_MULTI, c + d))
+                return ShowLex(L_MULTI, c + d)
             else:
                 self.UnGetC()
                 # and fallthrough
-        return Show((L_PUNC, c))
+        return ShowLex(L_PUNC, c)
 
 
 class Parser(object):
     def __init__(self, program):
         self.program = program
         self.lex = Lexer(program)
+        self.indents = [0]
+        self.pending_indent = False
+        self.pending_dedents = 0
         self.Advance()
 
     def Advance(self):
+        if self.pending_indent:
+            self.pending_indent = False
+            self.t, self.x = P_INDENT, None
+            print >> E, 'ADVANCE -=-=-=-=->', ShowLex(self.t, self.x)
+            return
+        if self.pending_dedents:
+            self.pending_dedents -= 1
+            self.t, self.x = P_DEDENT, None
+            print >> E, 'ADVANCE -=-=-=-=->', ShowLex(self.t, self.x)
+            return
         self.t, self.x = self.lex.Next()
+        if self.t == L_BOL:
+            if self.x > self.indents[-1]:
+                self.indents.append(self.x)
+                self.pending_indent = True
+                self.t, self.x = P_EOL, None
+                print >> E, 'ADVANCE -=-=-=-=->', ShowLex(self.t, self.x)
+                return
+            if self.x < self.indents[-1]:
+                self.indents.pop()
+                if self.x not in self.indents:
+                    raise Exception('bad DEDENT: %d %s' % (self.x,
+                                                           self.indents))
+                self.pending_dedents = 1
+                while self.indents[-1] != self.x:
+                    self.pending_dedents += 1
+                    self.indents.pop()
+                self.t, self.x = P_EOL, None
+                print >> E, 'ADVANCE -=-=-=-=->', ShowLex(self.t, self.x)
+                return
+            # So self.x == self.indents[-1]
+            self.t, self.x = P_EOL, None
+        print >> E, 'ADVANCE -=-=-=-=->', ShowLex(self.t, self.x)
 
     def ParsePrim(self):
         val = self.x
@@ -105,7 +178,7 @@ class Parser(object):
         if self.t == L_STR:
             self.Advance()
             return TStr(val)
-        if self.t == L_IDENT:
+        if self.t == L_IDENTIFIER:
             self.Advance()
             return TIdent(val)
         raise Exception('bad prim: %s %s' % (self.t, val))
@@ -140,26 +213,88 @@ class Parser(object):
             op = self.x
         return p
 
+    def ParseNotOp(self):
+        return self.ParseRelop()
+
+    def ParseAndOp(self):
+        return self.ParseNotOp()
+
+    def ParseOrOp(self):
+        return self.ParseAndOp()
+
+    def ParseSingle(self):
+        return self.ParseOrOp()
+
+    def ParseIf(self):
+        print >> E, 'Start If', '#', self.indents
+        plist = [self.ParseSingle()]
+        print >> E, 'first @@@@@@ p_list====', plist
+        blist = [self.ColonBlock()]
+        print >> E, 'first @@@@@@ b_list====', blist
+        print >> E, 'first @@@@@@@@@@@@ TOKEN =', LexKind(
+            self.t), self.x, '#', self.indents
+        #if self.t != L_BOL or self.x != self.indents[-1]:
+        #    return TIf(plist, blist, None)
+
+        while self.t != L_BOL:
+            if self.x < self.indents[-1]:
+                raise Exception('%d %s' % (self.x, self.indents))
+            self.Advance()
+
+        while self.x == 'elif':
+            self.Advance()
+            plist.append(self.ParseSingle())
+            print >> E, 'middle @@@@@@ p_list====', plist
+            blist.append(self.ColonBlock())
+            print >> E, 'middle @@@@@@ b_list====', blist
+            print >> E, 'middle @@@@@@@@@@@@ TOKEN =', LexKind(
+                self.t), self.x, '#', self.indents
+        belse = None
+        print >> E, 'last @@@@@@@@@@@@ TOKEN =', LexKind(
+            self.t), self.x, '#', self.indents
+
+        if self.x == 'else':
+            self.Advance()
+            belse = self.ColonBlock()
+        print >> E, 'last @@@@@@ b_else====', belse
+        print >> E, 'final @@@@@@@@@@@@ TOKEN =', LexKind(
+            self.t), self.x, '#', self.indents
+        z = TIf(plist, blist, belse)
+        print >> E, 'Finish If', '#', self.indents, '##', repr(z)
+        return z
+
     def ParseAssign(self):
-        p = self.ParseRelop()
+        p = self.ParseSingle()
         op = self.x
         while op == '=':
             self.Advance()
             if type(p) is not TIdent:
                 print >> E, 'type(p) = %s' % type(p)
                 raise Exception('bad lhs %s' % p)
-            p2 = self.ParseRelop()
+            p2 = self.ParseSingle()
             p = TAssign(p, op, p2)
             op = self.x
         return p
 
+    def ColonBlock(self):
+        if self.x != ':':
+            raise Exception('missing colon')
+        self.Advance()
+        if self.t != P_INDENT:
+            raise Exception('missing newline and indent after colon')
+        self.Advance()
+        z = self.ParseBlock()
+        if self.t != P_DEDENT and self.t != L_EOF:
+            raise Exception('missing newline and dedent after block')
+        self.Advance()
+        return z
+
     def ParseBlock(self):
+        print >> E, 'Start Block: (((((', '#', self.indents
         vec = []
-        while self.t != L_EOF:
-            print >> E, 'nando block', self.t, self.x
-            if self.t == L_EOL:
-                self.Advance()
-                continue
+        while self.t != P_DEDENT and self.t != L_EOF:
+            print >> E, 'Think Block: [%s %s]' % (LexKind(self.t),
+                                                  self.x), '#', self.indents
             if self.x == 'print':
                 self.Advance()
                 a = self.ParseRelop()
@@ -168,13 +303,35 @@ class Parser(object):
                 self.Advance()
                 a = self.ParseRelop()
                 p = TAssert(a)
+            elif self.x == 'if':
+                self.Advance()
+                p = self.ParseIf()
+            elif self.x == 'pass':
+                self.Advance()
+                p = None
             else:
                 p = self.ParseAssign()
-            vec.append(p)
+            if p:
+                vec.append(p)
+
+            if self.t != P_EOL and self.t != L_EOF:
+                raise Exception('expected EOL after %s' % p)
+            self.Advance()
+
+        print >> E, 'Finish Block: )))))', '#', self.indents, '>===>', repr(
+            vec)
         return TBlock(vec)
 
 
-class TInt(object):
+class TBase(object):
+    def __str__(self):
+        return '<%s{%d}>' % (type(self), vars(self))
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class TInt(TBase):
     def __init__(self, x):
         self.x = int(x)
 
@@ -185,7 +342,7 @@ class TInt(object):
         return a.visitInt(self)
 
 
-class TStr(object):
+class TStr(TBase):
     def __init__(self, x):
         self.x = x
 
@@ -196,7 +353,7 @@ class TStr(object):
         return a.visitStr(self)
 
 
-class TIdent(object):
+class TIdent(TBase):
     def __init__(self, x):
         self.x = x
 
@@ -207,7 +364,7 @@ class TIdent(object):
         return a.visitIdent(self)
 
 
-class TBin(object):
+class TBin(TBase):
     def __init__(self, x, op, y):
         self.x = x
         self.op = op
@@ -220,7 +377,7 @@ class TBin(object):
         return a.visitBin(self)
 
 
-class TAssign(object):
+class TAssign(TBase):
     def __init__(self, x, op, y):
         self.x = x
         self.op = op
@@ -233,7 +390,20 @@ class TAssign(object):
         return a.visitAssign(self)
 
 
-class TPrint(object):
+class TIf(TBase):
+    def __init__(self, plist, blist, belse):
+        self.plist = plist
+        self.blist = blist
+        self.belse = belse
+
+    def __str__(self):
+        return 'TIf(%s)' % vars(self)
+
+    def visit(self, a):
+        return a.visitIf(self)
+
+
+class TPrint(TBase):
     def __init__(self, x):
         self.x = x
 
@@ -244,7 +414,7 @@ class TPrint(object):
         return a.visitPrint(self)
 
 
-class TAssert(object):
+class TAssert(TBase):
     def __init__(self, x):
         self.x = x
 
@@ -255,7 +425,7 @@ class TAssert(object):
         return a.visitAssert(self)
 
 
-class TBlock(object):
+class TBlock(TBase):
     def __init__(self, vec):
         self.vec = vec
 
@@ -330,6 +500,24 @@ class Compiler(object):
             self.bc.append(g)
         else:
             raise Exception('visitAssign: bad lhs: %s' % t.x)
+
+    def visitIf(self, t):
+        endmarks = []
+        for p, b in zip(t.plist, t.blist):
+            p.visit(self)
+            self.bc.append('BranchIfFalse')
+            skipmark = len(self.bc)
+            self.bc.append(0)
+            b.visit(self)
+            self.bc.append('Branch')
+            endmarks.append(len(self.bc))
+            self.bc.append(0)
+            self.bc[skipmark] = len(self.bc)
+        if t.belse:
+            t.belse.visit(self)
+        end = len(self.bc)
+        for m in endmarks:
+            self.bc[m] = end
 
     def visitBin(self, t):
         t.x.visit(self)
