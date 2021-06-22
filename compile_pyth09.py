@@ -225,6 +225,11 @@ class Parser(object):
     def ParseSingle(self):
         return self.ParseOrOp()
 
+    def ParseWhile(self):
+        cond = self.ParseSingle()
+        block = self.ColonBlock()
+        return TWhile(cond, block)
+
     def ParseIf(self):
         print >> E, 'Start If', '#', self.indents
         plist = [self.ParseSingle()]
@@ -233,14 +238,9 @@ class Parser(object):
         print >> E, 'first @@@@@@ b_list====', blist
         print >> E, 'first @@@@@@@@@@@@ TOKEN =', LexKind(
             self.t), self.x, '#', self.indents
-        #if self.t != L_BOL or self.x != self.indents[-1]:
-        #    return TIf(plist, blist, None)
 
-        while self.t != L_BOL:
-            if self.x < self.indents[-1]:
-                raise Exception('%d %s' % (self.x, self.indents))
+        while self.t == P_EOL:
             self.Advance()
-
         while self.x == 'elif':
             self.Advance()
             plist.append(self.ParseSingle())
@@ -253,12 +253,17 @@ class Parser(object):
         print >> E, 'last @@@@@@@@@@@@ TOKEN =', LexKind(
             self.t), self.x, '#', self.indents
 
+        while self.t == P_EOL:
+            self.Advance()
         if self.x == 'else':
             self.Advance()
             belse = self.ColonBlock()
         print >> E, 'last @@@@@@ b_else====', belse
         print >> E, 'final @@@@@@@@@@@@ TOKEN =', LexKind(
             self.t), self.x, '#', self.indents
+
+        while self.t == P_EOL:
+            self.Advance()
         z = TIf(plist, blist, belse)
         print >> E, 'Finish If', '#', self.indents, '##', repr(z)
         return z
@@ -280,8 +285,11 @@ class Parser(object):
         if self.x != ':':
             raise Exception('missing colon')
         self.Advance()
+        if self.t != P_EOL:
+            raise Exception('missing EOL after colon')
+        self.Advance()
         if self.t != P_INDENT:
-            raise Exception('missing newline and indent after colon')
+            raise Exception('missing indent after colon')
         self.Advance()
         z = self.ParseBlock()
         if self.t != P_DEDENT and self.t != L_EOF:
@@ -306,6 +314,9 @@ class Parser(object):
             elif self.x == 'if':
                 self.Advance()
                 p = self.ParseIf()
+            elif self.x == 'while':
+                self.Advance()
+                p = self.ParseWhile()
             elif self.x == 'pass':
                 self.Advance()
                 p = None
@@ -314,9 +325,8 @@ class Parser(object):
             if p:
                 vec.append(p)
 
-            if self.t != P_EOL and self.t != L_EOF:
-                raise Exception('expected EOL after %s' % p)
-            self.Advance()
+            while self.t == P_EOL:
+                self.Advance()
 
         print >> E, 'Finish Block: )))))', '#', self.indents, '>===>', repr(
             vec)
@@ -388,6 +398,18 @@ class TAssign(TBase):
 
     def visit(self, a):
         return a.visitAssign(self)
+
+
+class TWhile(TBase):
+    def __init__(self, cond, block):
+        self.cond = cond
+        self.block = block
+
+    def __str__(self):
+        return 'TWhile(%s)' % vars(self)
+
+    def visit(self, a):
+        return a.visitWhile(self)
 
 
 class TIf(TBase):
@@ -500,6 +522,21 @@ class Compiler(object):
             self.bc.append(g)
         else:
             raise Exception('visitAssign: bad lhs: %s' % t.x)
+
+    def visitWhile(self, t):
+        start = len(self.bc)
+        t.cond.visit(self)
+
+        self.bc.append('BranchIfFalse')
+        patch = len(self.bc)
+        self.bc.append(0)  # to the end.
+
+        t.block.visit(self)
+
+        self.bc.append('Branch')
+        self.bc.append(start)
+
+        self.bc[patch] = len(self.bc)  # to the end.
 
     def visitIf(self, t):
         endmarks = []

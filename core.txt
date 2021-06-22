@@ -147,14 +147,14 @@ code  Branch
   in
   out
   {
-        ip = whither;
+        ip = whither-1;
   }
 code  BranchIfFalse
   arg whither
   in pred
   out
   {
-        if (!Truth(pred)) ip = whither;
+        if (!Truth(pred)) ip = whither-1;
   }
 code  GetAt
   in coll key

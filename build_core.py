@@ -173,10 +173,10 @@ def CompileCore(core_contents):
         print '// CASE:', c, repr(code_arg[c]), repr(code_in[c]), repr(
             code_out[c])
         print 'case %s:' % c
-        i = 0
+        i = len(code_in[c])
         for e in code_in[c]:
+            i -= 1
             print '#define %s Stack[sp - %d] /*in*/' % (e, i)
-            i += 1
         i = 0
         for e in code_out[c]:
             print '#define %s Stack[sp - %d + %d + 1] /*out*/' % (

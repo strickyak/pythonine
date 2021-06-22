@@ -16,3 +16,11 @@ elif y:
     print y  # <-- 105
 else:
     print 13
+
+sum = 0
+i = 0
+while i <= 6:
+    sum = sum + i
+    i = i + 1
+print sum
+assert sum == 21
