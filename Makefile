@@ -7,7 +7,7 @@ _build:
 	python2 compile_proto.py < bc.proto -p > _generated_proto.py
 	python2 build_core.py < core.txt > _generated_core.h
 	python compile_pyth09.py < test$T.py > test$T.bc
-	cc -g -o runpy.bin runpy.c runtime.c chain.c pb.c octet.c
+	cc -g -o runpy.bin runpy.c arith.c runtime.c chain.c pb.c octet.c
 
 run:
 	./runpy.bin test$T.bc
