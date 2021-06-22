@@ -1,8 +1,3 @@
-#include <assert.h>
-#include <memory.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "octet.h"
 
 #define V_OCTET \

@@ -1,6 +1,8 @@
 #ifndef OCTET_H_
 #define OCTET_H_
 
+#include "standard.h"
+
 #ifndef GUARD
 #define GUARD 1 /* must be 0 or 1 */
 #endif

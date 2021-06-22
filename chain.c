@@ -1,6 +1,3 @@
-#include <assert.h>
-#include <stdio.h>
-
 #include "chain.h"
 
 static word init_chain_guts(word chain) {
