@@ -44,4 +44,5 @@ int main(int argc, char* argv[]) {
   word main_bytecodes;
   GlobalDict = SlurpModule(pb, &main_bytecodes);
   EvalCodes(main_bytecodes);
+  fprintf(stderr, "\n      [ [ [ FINISHED ] ] ]\n");
 }
