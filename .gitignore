@@ -8,6 +8,7 @@ a.out
 *.list
 *.link
 *.map
+*.dump
 bc
 _*
 ,*
