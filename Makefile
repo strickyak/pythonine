@@ -70,9 +70,9 @@ HARD=drive/disk2
 SDC=drive/my-68SDC.VHD
 
 emu: __always__
-	( cd ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly ; GOBIN=~/go/bin go install -x cmocly.go )
+	# ( cd ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly ; GOBIN=~/go/bin go install -x cmocly.go )
 	rm -f runpy
-	~/go/bin/cmocly -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c chain.c pb2.c arith.c defs.c octet.c
+	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c chain.c pb2.c arith.c defs.c octet.c
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	os9 copy -r runpy /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy 
