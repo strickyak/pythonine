@@ -67,21 +67,30 @@ class EasyProtoParser(object):
 
         self.m.fields.append(Field(words[1], words[0], rep, num, tag))
 
+    def Numbers(self):
+        numbers = {}
+        for name, m in sorted(self.messages.items()):
+            for f in m.fields:
+                fullname = '%s_%s' % (name, f.name)
+                numbers[f.tag] = fullname
+        return numbers
 
-lang = 'py' if (sys.argv[-1] == '-p') else 'c'
 
-lines = [line for line in sys.stdin]
-messages = EasyProtoParser().DoLines(lines).messages
-for name, m in sorted(messages.items()):
-    for f in m.fields:
-        if lang == 'c':
-            print '#define %30s %3d  // %s %s = %d' % ('%s_%s' % (name,
-                                                                  f.name),
-                                                       f.tag, 'repeated'
-                                                       if f.rep else '',
-                                                       f.type, f.num)
-        elif lang == 'py':
-            print '%-30s = %3d  # %s %s = %d' % ('%s_%s' % (name, f.name),
-                                                 f.tag, 'repeated'
-                                                 if f.rep else '', f.type,
-                                                 f.num)
+if __name__ == '__main__':
+    lang = 'py' if (sys.argv[-1] == '-p') else 'c'
+
+    lines = [line for line in sys.stdin]
+    messages = EasyProtoParser().DoLines(lines).messages
+    for name, m in sorted(messages.items()):
+        for f in m.fields:
+            if lang == 'c':
+                print '#define %30s %3d  // %s %s = %d' % ('%s_%s' % (name,
+                                                                      f.name),
+                                                           f.tag, 'repeated'
+                                                           if f.rep else '',
+                                                           f.type, f.num)
+            elif lang == 'py':
+                print '%-30s = %3d  # %s %s = %d' % ('%s_%s' % (name, f.name),
+                                                     f.tag, 'repeated'
+                                                     if f.rep else '', f.type,
+                                                     f.num)

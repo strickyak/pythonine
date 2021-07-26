@@ -3,6 +3,12 @@ a.out
 *.bc
 *.swp
 *.pyc
+*.o
+*.s
+*.list
+*.link
+*.map
+bc
 _*
 ,*
 OLD/

@@ -1,17 +1,39 @@
 #include "chain.h"
+#include "_generated_proto.h"
+#include "arith.h"
+#include "octet.h"
 
-static word init_chain_guts(word chain) {
+#if DONT_SAY
+#define SAY(what, ob) \
+  {}
+#else
+#define SAY(what, obj)        \
+  {                           \
+    printf("SAY: %s=", what); \
+    SayObj(obj, 3);           \
+    printf("\n");             \
+  }
+#endif
+
+static word Chain_Init(word chain) {
+  Chain_len2_Put(chain, 0);
   word guts = oalloc(CHAIN_CHUNK_SIZE, C_Array);
   Chain_root_Put(chain, guts);
   return chain;
 }
-word NewList() { return init_chain_guts(List_NEW()); }
-word NewDict() { return init_chain_guts(Dict_NEW()); }
+word NewList() {
+  word z = oalloc(List_Size, C_List);
+  return Chain_Init(z);
+}
+word NewDict() {
+  word z = oalloc(Dict_Size, C_Dict);
+  return Chain_Init(z);
+}
 
 // returns value at Nth
 word ChainAddrOfNth(word chain, byte nth) {
   assert(nth < INF);
-  byte len2 = Chain_len2(chain);
+  byte len2 = (byte)Chain_len2(chain);
   assert(nth < len2);
 
   word p = Chain_root(chain);
@@ -29,7 +51,7 @@ word ChainAddrOfNth(word chain, byte nth) {
 }
 
 word ChainAddrOfAppend(word chain) {
-  byte n = Chain_len2(chain);
+  byte n = (byte)Chain_len2(chain);
   assert(n < 254);  // max is 254, after +1.
   Chain_len2_Put(chain, n + 1);
 
@@ -56,7 +78,7 @@ void ChainIterStart(word chain, struct ChainIterator *iter) {
   iter->obj = Chain_root(chain);
   iter->offset = 0;  // address the first one.
   iter->count = 0;
-  iter->length = Chain_len2(chain);
+  iter->length = (byte)Chain_len2(chain);
 }
 word ChainIterNextAddr(word chain, struct ChainIterator *iter) {
   // Move to the next chunk if we need to.
@@ -90,9 +112,9 @@ void ChainIterEach(word chain, void (*fn)(word)) {
   }
 }
 void ChainIterDump(word chain, void (*fn)(word)) {
-  fprintf(stderr, "ChainIterDump:\n");
+  printf("ChainIterDump: (((\n");
   ChainIterEach(chain, osay);
-  fprintf(stderr, "\n");
+  printf("))) \n");
 }
 
 word ChainGetNth(word chain, byte nth) {
@@ -127,19 +149,30 @@ byte ChainDictWhatNth(word chain, word key) {
 }
 
 word ChainDictAddr(word chain, word key) {
+  SAY("@@@@@ chain", chain);
+  SAY("key", key);
   struct ChainIterator it;
   ChainIterStart(chain, &it);
   while (ChainIterMore(chain, &it)) {
     word ikey = ChainIterNext(chain, &it);
     assert(ChainIterMore(chain, &it));
     word iaddr = ChainIterNextAddr(chain, &it);
-    if (ikey == key) return iaddr;
+    SAY("iter_key", ikey);
+    if (ikey == key) {
+      printf("FOUND at %04x\n", iaddr);
+      return iaddr;
+    }
   }
+  SAY("NOT FOUND", key);
   return NIL;
 }
+
 word ChainDictGet(word chain, word key) {
+  SAY("@@@@@ chain", chain);
+  SAY("key", key);
   word addr = ChainDictAddr(chain, key);
   if (!addr) return NIL;
+  SAY("FOUND; value", GetW(addr));
   return GetW(addr);
 }
 void ChainDictPut(word chain, word key, word value) {

@@ -1,104 +1,171 @@
+#include "runtime.h"
 #include "_generated_proto.h"
 #include "arith.h"
 #include "chain.h"
+#include "defs.h"
 #include "octet.h"
-#include "pb.h"
-#include "runtime.h"
+#include "pb2.h"
+#include "readbuf.h"
 
-// Define strings.  They are in Core Part 2.
-#define _CORE_PART_ 2
-#include "_generated_core.h"
-#undef _CORE_PART_
+// GC Roots:
+word ForeverRoot;
+word RootForMain;  // For main() to use.
 
 word Builtins;
 word GlobalDict;  // todo: Modules.
 word InternList;
 word ClassList;
-int sp;
-word Stack[STACK_SIZE];
+word MessageList;
 
-byte GetB(word a) { return ogetb(a); }
+byte* codes;     // ????
+word codes_obj;  // ????
 
-void PutB(word a, byte x) { oputb(a, x); }
-
-word GetW(word a) { return ogetw(a); }
-void PutW(word a, word x) { oputw(a, x); }
-
-void StartQ(word a, byte x) {
-  oputb(a, 0xFF);
-  oputb(a + 1, x);
-}
-byte GetQ(word a) {
-  assert(ogetb(a) == 0xFF);
-  return ogetb(a + 1);
-}
-void PutQ(word a, byte x) {
-  assert(ogetb(a) == 0xFF);
-  oputb(a + 1, x);
-}
+word function;
+word ip;  // Stores in Frame as ip - function.
+word fp;
+word sp;  // Stores in Frame as sp - fp.
 
 byte Hex(byte b) {
   b = b & 15;
   return (b < 10) ? '0' + b : 'a' + b - 10;
 }
-void SayObj(word p) {
-  printf("<$%x=%d.> ", (int)p, (int)p);
+void SayChain(word p) {
+  struct ChainIterator iter;
+  ChainIterStart(p, &iter);
+  for (int i = 0; ChainIterMore(p, &iter); i++) {
+    word e = ChainIterNext(p, &iter);
+    printf(" [[%d]] ", i);
+    SayObj(e, 2);
+  }
+  fflush(stdout);
+}
+void SayStr(word p) {
+  assert(ocls(p) == C_Str);
+  printf("'");
+  for (byte i = 0; i < Str_len(p); i++) {
+    byte ch = Bytes_flex_At(Str_bytes(p), Str_offset(p) + i);
+    if (' ' <= ch && ch <= '~') {
+      printf("%c", ch);
+    } else {
+      printf("?");
+    }
+  }
+  printf("'");
+  fflush(stdout);
+}
+void SayObj(word p, byte level) {
+  printf("{ <$%x=%d.> ", (int)p, (int)p);
+  if (level < 1) return;
+
   if (!p) {
     printf("nil");
+  } else if (p & 1) {
+    word x = TO_INT(p);
+    printf("int: $%02x=%d.", x, x);
   } else if (ovalidaddr(p)) {
     const char* clsname = "?";
     byte cls = ocls(p);
-    if (cls < (sizeof ClassNames / sizeof *ClassNames)) {
-      clsname = ClassNames[cls];
+    if (cls == C_Str) {
+      SayStr(p);
+    } else {
+      if (cls < ClassNames_SIZE) {
+        clsname = ClassNames[cls];
+        printf("cls %s: cap=%d", clsname, ocap(p));
+        if (level < 2) return;
+        if (cls == C_Chain || cls == C_List) {
+          struct ChainIterator it;
+          ChainIterStart(p, &it);
+          printf(" list:\n");
+          for (byte i = 0; ChainIterMore(p, &it); ++i) {
+            word e = ChainIterNext(p, &it);
+            printf("\n  [%d]: ", i);
+            SayObj(e, level - 1);
+          }
+          printf("\n");
+        } else if (cls == C_Dict) {
+          struct ChainIterator it;
+          ChainIterStart(p, &it);
+          printf(" dict:\n");
+          for (byte i = 0; ChainIterMore(p, &it); ++i) {
+            word k = ChainIterNext(p, &it);
+            word v = ChainIterNext(p, &it);
+            printf("\n  [[[");
+            SayObj(k, level - 1);
+            printf("]]] = ");
+            SayObj(v, level - 1);
+          }
+          printf("\n");
+        }
+      } else if (cls < Chain_len2(ClassList)) {
+        word clsobj = ChainGetNth(ClassList, cls);
+        if (clsobj) {
+          printf("cls=");
+          SayStr(Class_className(clsobj));
+          printf(" cap=%d", ocap(p));
+        } else {
+          printf(" unknown:cls=%d", cls);
+        }
+      } else {
+        osay(p);
+      }
     }
-    char* s = oshow(p);
-    printf("%s: %s", clsname, s);
-    free(s);
-  } else if ((p & 0xFF00) == 0xFF00) {
-    printf("Q $%02x=%d.", N(p), N(p));
   } else {
-    printf("?????");
+    printf("??");
   }
+  printf("}");
+  fflush(stdout);
 }
 
 void SayStack() {
-  for (int i = 1; i <= sp; i++) {
-    word p = Stack[i];
-    printf(":::Stack[%d]: ", i);
-    SayObj(p);
+  byte cap = ocap(fp);
+  int i = 0;
+  for (word p = sp; p < fp + cap; p += 2) {
+    word x = ogetw(p);
+    printf(":::::  [%d]  ", p);
+    SayObj(x, 2);
     printf("\n");
+    ++i;
   }
+  fflush(stdout);
 }
 
-void opanic(byte a) {
-  fprintf(stderr, "\nopanic: %d\n", a);
-  assert(0);
-}
-
+#if 0  // unused for now
 word NewBuf() {
   word buf = Buf_NEW();
   word guts = oalloc(254, C_Bytes);  // XXX this is huge
   Buf_bytes_Put(buf, guts);
   return buf;
 }
+#endif
 word NewStr(word obj, byte offset, byte len) {
-  word str = Str_NEW();
-  Str_bytes_Put(str, obj);
-  Str_len_Put(str, len);
-  Str_offset_Put(str, offset);
-  return str;
+  word z = oalloc(Str_Size, C_Str);
+  Str_bytes_Put(z, obj);
+  Str_len_Put(z, len);
+  Str_offset_Put(z, offset);
+  return z;
 }
-word NewStrCopyFrom(word s, word len) {
+#if 0
+word NewStrCopyFrom(word s, byte len) {
   assert(len <= 254);
-  // TODO: Bytes pool.
   word obj = oalloc(len, C_Bytes);
   for (word i = 0; i < len; i++) {
     PutB(obj + i, GetB(s + i));
   }
   return NewStr(obj, 0, len);
 }
+#endif
+word NewStrCopyFromC(const char* s) {
+  int len = strlen(s);
+  assert(len <= 254);
+  word obj = oalloc(len, C_Bytes);
+  for (word i = 0; i < len; i++) {
+    PutB(obj + i, s[i]);
+  }
+  return NewStr(obj, 0, len);
+}
 
 /////////////
+#if 0
 char* ShowStr(word a) {
   if (ocls(a) == C_Str) {
     word guts_a = GetW(a);
@@ -125,215 +192,195 @@ char* ShowStr(word a) {
     assert1(0, "ShowStr but got cls %d", (int)ocls(a));
   }
 }
+#endif
 bool Truth(word a) {
   if (ovalidaddr(a)) {
     switch (ocls(a)) {
       case C_Chain:
       case C_List:
       case C_Dict:
-        return Chain_len2(a) > 0;
+        return (Chain_len2(a) > 0);
       case C_Str:
-        return Str_len(a) > 0;
+        return (Str_len(a) > 0);
     }
   } else {
     if (a == 0) return false;       // None
-    if (a == 0xFF00) return false;  // Zero small.
-    if (a == 0x0001) return false;  // Zero tagged int.
+    if (a == 0x0001) return false;  // Small int 0.
   }
   return true;
 }
-bool Eq(word a, word b) {
-  printf("Eq(%04x,%04x)[%x,%x]...\n", (int)a, (int)b, (int)ocls(a),
-         (int)ocls(b));
+
+bool StrEqual(word a, word b) {
+  // printf("StrEqual: ");
+  // SayStr(a);
+  // printf(", ");
+  // SayStr(b);
+  // printf(": ");
+
+  int len_a = Str_len(a);
+  int len_b = Str_len(b);
+  if (len_a != len_b) {
+    goto FALSE;
+  }
+  word guts_a = Str_bytes(a);
+  word guts_b = Str_bytes(b);
+  word addr_a = guts_a + (word)Str_offset(a);
+  word addr_b = guts_b + (word)Str_offset(b);
+
+  assert(0 <= len_a && len_a <= 254);
+  byte n = (byte)len_a;
+
+  for (byte i = 0; i < n; i++) {
+    if (GetB(addr_a + i) != GetB(addr_b + i)) {
+      goto FALSE;
+    }
+  }
+  // printf("1\n");
+  return true;
+
+FALSE:
+  // printf("0\n");
+  return false;
+}
+
+bool Equal(word a, word b) {
   if (a == b) {
     return true;
   }
+  if ((byte)a & 1) return false;
+  if ((byte)b & 1) return false;
   if (ovalidaddr(a) && ovalidaddr(b)) {
-    // Strings.
     if (ocls(a) == C_Str && ocls(b) == C_Str) {
-      {
-        char *s1 = ShowStr(a), *s2 = ShowStr(b);
-        printf("Eq( %s %s )...\n", s1, s2);
-        free(s1), free(s2);
-      }
-
-      byte len_a = GetW(a + 4);
-      byte len_b = GetW(b + 4);
-      if (len_a != len_b) {
-        return false;
-      }
-      word guts_a = GetW(a);
-      word guts_b = GetW(b);
-      word addr_a = guts_a + GetW(a + 2);
-      word addr_b = guts_b + GetW(b + 2);
-      for (byte i = 0; i < len_a; i++) {
-        if (GetB(addr_a + i) != GetB(addr_b + i)) {
-          return false;
-        }
-      }
-      return true;
+      // Strings.
+      return StrEqual(a, b);
     }
     return false;
   }
   return false;
 }
 
-bool IsQ(word addr) { return (GetW(addr) & 0xFF00) == 0xFF00; }
-
-byte VecSize2(word coll) {
-  byte t = ocls(coll);
-  assert(t == C_Dict || t == C_List);
-  assert(IsQ(coll + 2));
-  return GetQ(coll + 2);
-}
-void VecResize2(word coll, word sz2) {
-  assert(sz2 <= 128);
-  word guts = GetW(coll);
-  word cap = ocap(guts);
-  if (cap >= sz2 + sz2) {
-    PutQ(coll + 2, sz2);
-    return;
-  }
-  byte oldlen2 = VecSize2(coll);
-  word newguts = oalloc(sz2 + sz2, C_Array);
-  for (int i = 0; i < oldlen2; i++) {
-    word tmp = GetW(guts + i + i);
-    PutW(newguts + i + i, tmp);
-  }
-  PutW(coll, newguts);
-  PutQ(coll + 2, sz2);
-}
-
-word ListGetAt(word obj, byte at2) {
-  word len2 = VecSize2(obj);
-  assert2(at2 < len2, "at2=%d [should be <] len2=%d", at2, len2);
-
-  word guts = GetW(obj);
-  return GetW(guts + at2 + at2);
-}
-void ListPutAt(word obj, byte at2, word value) {
-  word len2 = VecSize2(obj);
-  assert(at2 < len2);
-
-  word guts = GetW(obj);
-  return PutW(guts + at2 + at2, value);
-}
-
-word DictFindAt(word coll, word key, bool creat) {
-  word guts = GetW(coll);
-  byte len = GetQ(coll + 2);
-  for (word i = 0; i + i < len; i += 4) {
-    if (Eq(GetW(guts + i + i), key)) {
-      return guts + i + i + 2;
-    }
-  }
-  if (creat) {
-    VecResize2(coll, len + 2);
-    guts = GetW(coll);
-    PutW(guts + len + len, key);
-    PutW(guts + len + len + 2, 0);
-    return guts + len + len + 2;
-  }
-  return 0;
-}
-word FindAt(word coll, word key, bool creat) {
-  printf("FindAt(%d):  coll=", (int)creat);
-  SayObj(coll);
-  printf("  key=");
-  SayObj(key);
-  printf("\n");
-  if (ocls(coll) == C_Dict) {
-    return DictFindAt(coll, key, creat);
-  } else {
-    osaylabel(coll, "FindAt coll", -1);
-    assert(0);
-  }
-}
 ////////////////////////////////////////
 
-void EvalCodes(word code) {
-  SayObj(code);
-  byte* codes = &ogetb(code);
+// class Frame:
+//   oop prev_frame
+//   small nargs
+//   small prev_sp
+//   small prev_ip
+//   oop[] flex
 
-  bool done = false;
-  for (byte ip = 0; !done; ip++) {
-    printf(":::::\n");
-    assert(sp >= 0);
+void EvalCodes(word fn) {
+  word fp0 = oalloc(32, C_Frame);
+  byte cap0 = ocap(fp0);
+  oputw(fp0 + cap0 - 2, fn);
+  // Frame_flex_AtPut(fp0, fn, 15);
+
+  fp = oalloc(32, C_Frame);
+  byte cap = ocap(fp);
+  Frame_prev_frame_Put(fp, fp0);
+  Frame_nargs_Put(fp, 0);
+  Frame_prev_sp_Put(fp, cap - 2);
+  Frame_prev_ip_Put(fp, 0);
+  sp = fp + ocap(fp);
+  function = fn;
+  ip = function + BC_HEADER_SIZE;
+
+  SayObj(fn, 2);
+  RunLoop();
+  printf("\n[[[ Finished RunLoop ]]]\n");
+}
+
+void RunLoop() {
+  while (1) {
+    printf("\n");
+    assert(sp >= fp + Frame_Size - 2);
+    assert(sp <= fp + ocap(fp));
     SayStack();
-    byte c = codes[ip];
-    printf("::::: ip=%d code=%d ((( %s ))) arg=%d sp=%d\n", ip, c, CodeNames[c],
-           codes[ip + 1], sp);
+    assert(ip >= function + BC_HEADER_SIZE);
+    assert(ip < function + INF);
+    byte opcode = ogetb(ip);
+    assert(opcode < CodeNames_SIZE);
+    printf("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
+           function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
+           ogetb(ip + 2), fp, (sp - fp) >> 1);
 
-    switch (c) {
-// Define bytecode cases.  They are in Core Part 3.
+  SWITCH:
+    assert(fp);
+    assert(function);
+    assert(sp > fp);
+    assert(ip > function);
+    assert(sp <= fp + INF);
+    assert(ip < function + INF);
+    switch (opcode) {
 #define _CORE_PART_ 3
 #include "_generated_core.h"
 #undef _CORE_PART_
-
+      default:
+        opanic(240);
     }  // end switch
-
+    ++ip;
   }  // next ip
 }
 
-bool StrEq(word a, word b) {
-  assert(ocls(a) == C_Str);
-  assert(ocls(b) == C_Str);
-  if (Str_len(a) != Str_len(b)) return false;
-  assert(Str_bytes(a));
-  assert(Str_bytes(b));
-  return !omemcmp(Str_bytes(a), Str_len(a), Str_bytes(b), Str_len(b));
+void RunBuiltinMethod(byte meth_num) {
+  switch (meth_num) {
+#define _CORE_PART_ 4
+#include "_generated_core.h"
+#undef _CORE_PART_
+    default:
+      opanic(241);
+  }  // end switch
 }
 
 byte InternString(word str) {
   assert(ocls(str) == C_Str);
   struct ChainIterator it;
   ChainIterStart(InternList, &it);
-  // ChainIterNext(InternList, &it);  // skip unused nth==0.
-  // byte i = 1;                      // skipped 1 already.
   byte i = 0;
   while (ChainIterMore(InternList, &it)) {
     word s = ChainIterNext(InternList, &it);
-    if (StrEq(s, str)) return i;
+    if (StrEqual(s, str)) return i;
     ++i;
   }
   ChainAppend(InternList, str);
   return i;
 }
 
-word SlurpIntern(word p, word bc, word ilist) {
-  byte i_num;
-  for (byte tag = GetB(p); tag; tag = GetB(p)) {
+void SlurpIntern(struct ReadBuf* bp, word bc, word ilist) {
+  byte i_num = INF;
+  for (byte tag = pb_current(bp); tag; tag = pb_current(bp)) {
     switch (tag) {
       case InternPack_s: {
-        word bc, bc_len;
-        p = pb_str(p, &bc, &bc_len);
-        word str = NewStrCopyFrom(bc, bc_len);
+        byte bytes_len;
+        word bytes = pb_str(bp, &bytes_len);
+        assert(bytes_len < INF);
+        // word str = NewStrCopyFrom(s, s_len);
+        word str = NewStr(bytes, 0, bytes_len);
         i_num = InternString(str);
-        assert(i_num != INF);
+        assert(i_num < INF);
         ChainAppend(ilist, Q(i_num));
       } break;
       case InternPack_patch: {
-        word offset;
-        p = pb_int(p, &offset);
+        word offset = pb_int(bp);
         assert(offset < ocap(bc));
+        assert(i_num < INF);
         PutB(bc + offset, i_num);
       } break;
       default:
-        opanic(99);
+        opanic(94);
     }
   }
-  return p + 1;  // consume the 0 tag.
+  pb_next(bp);  // consume the 0 tag.
 }
 
-word SlurpGlobal(word p, word bc, word ilist) {
+void SlurpGlobal(struct ReadBuf* bp, word bc, word ilist) {
   byte g_num;
-  for (byte tag = GetB(p); tag; tag = GetB(p)) {
+  for (byte tag = pb_current(bp); tag; tag = pb_current(bp)) {
     switch (tag) {
       case GlobalPack_name_i: {
-        word ith;
-        p = pb_int(p, &ith);
-        byte i_num = N(ChainGetNth(ilist, ith));
-        assert(i_num != INF);
+        word ith = pb_int(bp);
+        assert(ith < INF);
+        byte i_num = (byte)N(ChainGetNth(ilist, (byte)ith));
+        assert(i_num < INF);
         // TODO -- append to GlobalList.
         // Get the i_numth interned string.
         word s = ChainGetNth(InternList, i_num);
@@ -342,60 +389,283 @@ word SlurpGlobal(word p, word bc, word ilist) {
         ChainDictPut(GlobalDict, s, None);
         g_num = 1 + ChainDictWhatNth(GlobalDict, s);
         assert(g_num != INF);
+        // osaylabel(bc, "GlobalPack_name_i", ith);
       } break;
       case GlobalPack_patch: {
-        word offset;
-        p = pb_int(p, &offset);
+        word offset = pb_int(bp);
         assert(offset < ocap(bc));
         PutB(bc + offset, g_num);
       } break;
       default:
-        opanic(99);
+        opanic(98);
     }
   }
-  return p + 1;  // consume the 0 tag.
+  pb_next(bp);  // consume the 0 tag.
 }
 
-word SlurpModule(word p, word* bc_out) {
-  word bc, bc_len;
+void SlurpCodePack(struct ReadBuf* bp, word* bc_out) {
+  SlurpModule(bp, bc_out);
+}
+
+void SlurpFuncPack(struct ReadBuf* bp, word ilist, word dict) {
+  word name_str;
+  word ith;
+  for (byte tag = pb_current(bp); tag; tag = pb_current(bp)) {
+    switch (tag) {
+      case FuncPack_name_i: {
+        ith = pb_int(bp);
+        byte i_num = (byte)N(ChainGetNth(ilist, (byte)ith));
+        assert(i_num < INF);
+        // Get the i_numth interned string.
+        name_str = ChainGetNth(InternList, i_num);
+        assert(name_str);
+        printf("SLURPING FUNC: <<<");
+        SayObj(name_str, 2);
+        printf(">>>\n");
+      } break;
+      case FuncPack_pack: {
+        word bc;
+        pb_next(bp);
+        SlurpCodePack(bp, &bc);
+        ChainDictPut(dict, name_str, bc);
+        osaylabel(bc, "FuncPack_name_i", ith);
+      } break;
+      default:
+        opanic(97);
+    }
+  }
+  pb_next(bp);  // consume the 0 tag.
+}
+void SlurpClassPack(struct ReadBuf* bp, word ilist) {
+  word class_num = List_len2(ClassList);
+  word name_str;
+  word ith;
+  word field_list = NewList();
+  word meth_dict = NewDict();
+
+  word cls = oalloc(Class_Size, C_Class);
+  Class_classNum_Put(cls, class_num);
+  Class_fieldList_Put(cls, field_list);
+  Class_methDict_Put(cls, meth_dict);
+  ChainAppend(ClassList, cls);
+
+  for (byte tag = pb_current(bp); tag; tag = pb_current(bp)) {
+    switch (tag) {
+      case ClassPack_name_i: {
+        ith = pb_int(bp);
+        byte i_num = (byte)N(ChainGetNth(ilist, (byte)ith));
+        assert(i_num < INF);
+        // Get the i_numth interned string.
+        name_str = ChainGetNth(InternList, i_num);
+        assert(name_str);
+        printf("SLURPING CLASS: <<<");
+        SayObj(name_str, 2);
+        printf(">>>\n");
+        Class_className_Put(cls, name_str);
+      } break;
+      case ClassPack_field_i: {  // For a method.
+        word field_ith = pb_int(bp);
+        byte field_i_num = (byte)N(ChainGetNth(ilist, (byte)field_ith));
+        assert(field_i_num < INF);
+        word field_str = ChainGetNth(InternList, field_i_num);
+        assert(field_str);
+        printf("SLURPING FIELD <<<");
+        SayObj(field_str, 2);
+        printf(">>>\n");
+        ChainAppend(field_list, field_str);
+      } break;
+      case ClassPack_meth: {  // For a method.
+        pb_next(bp);
+        SlurpFuncPack(bp, ilist, meth_dict);
+      } break;
+      default:
+        opanic(96);
+    }
+  }
+
+  {
+    // Hand craft the constructor.
+    // TODO: call __init__.
+    word ctor = oalloc(16, C_Bytecodes);
+    Bytecodes_flex_AtPut(ctor, 3, INF);
+    Bytecodes_flex_AtPut(ctor, 4, INF);
+    Bytecodes_flex_AtPut(ctor, 5, INF);
+    Bytecodes_flex_AtPut(ctor, 6, BC_Construct);
+    Bytecodes_flex_AtPut(ctor, 7, class_num);
+
+    Bytecodes_flex_AtPut(ctor, 8, BC_Dup);
+    Bytecodes_flex_AtPut(ctor, 9, BC_CallMeth);
+    Bytecodes_flex_AtPut(ctor, 10, InternString(
+        NewStrCopyFromC("__init__")));
+    Bytecodes_flex_AtPut(ctor, 11, 1);
+    Bytecodes_flex_AtPut(ctor, 12, BC_Drop);
+
+    Bytecodes_flex_AtPut(ctor, 13, BC_Return);
+
+    ChainDictPut(GlobalDict, name_str, ctor);
+  }
+
+  pb_next(bp);  // consume the 0 tag.
+}
+
+void SlurpModule(struct ReadBuf* bp, word* bc_out) {
+  word bc;
   word ilist = NewList();
-  for (byte tag = GetB(p); tag; tag = GetB(p)) {
+  for (byte tag = pb_current(bp); tag; tag = pb_current(bp)) {
+    // printf("SM: tag=$%x=%d.\n", tag, tag);
     switch (tag) {
       case CodePack_bytecode: {
-        word ptr;
-        p = pb_str(p, &ptr, &bc_len);
-        bc = oalloc(bc_len, C_BC);
-        omemcpy(bc, ptr, bc_len);
+        bc = pb_str(bp, NULL);
+        // printf("\nbc=%x cls=%d cap=%d\n", bc, ocls(bc), ocap(bc));
+        // for (byte i = 0; i < ocap(bc); ++i) {
+        // printf(" %02x", ogetb(bc+i));
+        // }
+        // printf("\n");
       } break;
       case CodePack_interns: {
-        p = SlurpIntern(p + 1, bc, ilist);
+        pb_next(bp);
+        SlurpIntern(bp, bc, ilist);
       } break;
       case CodePack_globals: {
-        p = SlurpGlobal(p + 1, bc, ilist);
+        pb_next(bp);
+        SlurpGlobal(bp, bc, ilist);
+      } break;
+      case CodePack_funcpacks: {
+        pb_next(bp);
+        SlurpFuncPack(bp, ilist, GlobalDict);
+      } break;
+      case CodePack_classpacks: {
+        pb_next(bp);
+        SlurpClassPack(bp, ilist);
       } break;
 
       default:
-        opanic(99);
+        opanic(95);
     }
   }
   ofree(ilist);
+  assert(bc_out);
   *bc_out = bc;
-  return GlobalDict;  // XXX
+  pb_next(bp);  // consume the 0 tag.
 }
 
+void MarkRoots() {
+  omark(ForeverRoot);
+  omark(RootForMain);
+  omark(function);
+  omark(fp);
+}
+void DumpStats() {
+  word count_used = 0;
+  word bytes_used = 0;
+  odump(&count_used, &bytes_used, NULL, NULL);
+  printf("STATS: count=%d bytes=%d\n", count_used, bytes_used);
+}
 void RuntimeInit() {
-  // Fill in bogus numbers (odd primes, why not) into the
-  // first unused slot of these lists.
+  // Protect roots forever from GC.
+  // Size 10 is twice the number of elements.
+  ForeverRoot = oalloc(10, C_Array);
+
   Builtins = NewList();
-  // ChainAppend(Builtins, Q(11));
+  Array_flex_AtPut(ForeverRoot, 0, Builtins);
 
   GlobalDict = NewDict();  // todo: Modules.
-  // ChainAppend(GlobalDict, Q(13));
-  // ChainAppend(GlobalDict, Q(17));
+  Array_flex_AtPut(ForeverRoot, 1, GlobalDict);
 
   InternList = NewList();
-  // ChainAppend(InternList, Q(19));
+  Array_flex_AtPut(ForeverRoot, 2, InternList);
 
   ClassList = NewList();
-  // ChainAppend(ClassList, Q(23));
+  Array_flex_AtPut(ForeverRoot, 3, ClassList);
+
+  MessageList = NewList();
+  Array_flex_AtPut(ForeverRoot, 4, MessageList);
+
+  // Reserve builtin class slots, with None.
+  ChainAppend(ClassList, None);  // unused 0.
+  DumpStats();
+  for (byte i = 1; i < ClassNames_SIZE; i++) {
+    word cls = oalloc(Class_Size, C_Class);
+    Class_classNum_Put(cls, i);
+    const char* cstr = 2 /* skip `C_` */ + ClassNames[i];
+    word name = NewStrCopyFromC(cstr);
+    word name_isn = InternString(name);
+    name = ChainGetNth(InternList, name_isn);
+    Class_className_Put(cls, name);
+    Class_methDict_Put(cls, NewDict());
+    ChainAppend(ClassList, cls);
+  }
+  for (byte i = 0; i < MessageNames_SIZE; i++) {
+    word name = NewStrCopyFromC(MessageNames[i]);
+    word name_isn = InternString(name);
+    ChainAppend(MessageList, ChainGetNth(InternList, name_isn));
+  }
+  {
+    byte i = 0;
+    for (byte* p = BuiltinClassMessageMeths; *p; p += 2, ++i) {
+      word cls = ChainGetNth(ClassList, p[0]);
+      word meth_list = Class_methDict(cls);
+      word message = ChainGetNth(MessageList, p[1]);
+      ChainAppend(meth_list, message);
+      ChainAppend(meth_list, FROM_INT(i));
+    }
+  }
+  DumpStats();
+}
+
+void Break() { printf("\n@ Break @\n"); }
+
+byte FieldOffset(word obj, byte member_name_isn) {
+  word cls = ChainGetNth(ClassList, ocls(obj));
+  if (!cls) return INF;
+  word member_name = ChainGetNth(InternList, member_name_isn);
+  SayStr(member_name);
+  word p = Class_fieldList(cls);
+
+  struct ChainIterator iter;
+  ChainIterStart(p, &iter);
+  for (int i = 0; ChainIterMore(p, &iter); i++) {
+    word e = ChainIterNext(p, &iter);
+    if (e == member_name) {
+      return (byte)i + (byte)i;
+    }
+  }
+  // Not found.
+  return INF;
+}
+
+word MemberGet(word obj, byte member_name_isn) {
+  byte off = FieldOffset(obj, member_name_isn);
+  assert(off != INF);
+  return ogetw(obj + off);
+}
+
+void MemberPut(word obj, byte member_name_isn, word value) {
+  byte off = FieldOffset(obj, member_name_isn);
+  assert(off != INF);
+  oputw(obj + off, value);
+}
+
+word ArgGet(byte i) {
+  word old_fp = Frame_prev_frame(fp);
+  int old_sp = Frame_prev_sp(fp);
+  return ogetw(old_fp + (byte)old_sp + 2 * (i + 1));
+}
+
+word FindMethForObj(word obj, byte meth_isn) {
+  word cls = ChainGetNth(ClassList, ocls(obj));
+  SayStr(Class_className(cls));
+  word dict = Class_methDict(cls);
+  word meth_name = ChainGetNth(InternList, meth_isn);
+  SayStr(meth_name);
+  word meth = ChainDictGet(dict, meth_name);
+  assert(meth);
+  return meth;
+}
+
+word SingletonStr(byte ch) {
+  word x = NewStr(0, 6, 1);
+  Str_bytes_Put(x, x);
+  Str_single_Put(x, (word)ch << 7);
+  return x;
 }

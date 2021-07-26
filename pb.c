@@ -1,17 +1,15 @@
 // C functions to decode our protobufs.
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "octet.h"
 #include "pb.h"
+#include "octet.h"
 #include "runtime.h"
 
 word pb_get_varint(word p, word* out) {
   word z = (ogetb(p) & 0x7F);
+  byte shift = 0;
   while ((ogetb(p) & 0x80) == 0x80) {
-    z = (z << 7) | (ogetb(++p) & 0x7F);
+    shift += 7;
+    z = z | ((word)(ogetb(++p) & 0x7F) << shift);
   }
   *out = z;
   return p + 1;

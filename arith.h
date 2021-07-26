@@ -4,12 +4,6 @@
 #include "octet.h"
 #include "runtime.h"
 
-#define IS_INT(X) ((X)&1)
-#define IS_INT2(X, Y) (1&(X)&(Y))
-
-#define TO_INT(X) ((int)(X) >> 1)
-#define FROM_INT(X) ((word)(((word)(X)<<1)|1))
-
 typedef int (*BinaryIntOp)(int a, int b);
 typedef word (*BinaryPyOp)(word a, word b);
 

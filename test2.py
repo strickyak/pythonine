@@ -2,12 +2,6 @@ x = 100
 y = 5 + x
 z = x + y - 205
 assert 0 == z
-if z:
-    print z
-    assert 0
-else:
-    print 42  # <-- 42
-    assert 1
 if x:
     print x  # <-- 100
     assert 1

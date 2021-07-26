@@ -7,9 +7,6 @@
 #define CHAIN_CHUNK_WORDS (CHAIN_CHUNK_SIZE / 2)
 #define CHAIN_CHUNK_SLOTS ((CHAIN_CHUNK_WORDS)-1)
 
-#define INF 0xFF /* infinity, not a valid byte index */
-#define NIL ((word)0)
-
 // Create a new empty list.
 // The raw chain is used directly as a list.
 // It can have 0 to 254 (inclusive) items.

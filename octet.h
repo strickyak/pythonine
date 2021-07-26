@@ -3,6 +3,9 @@
 
 #include "standard.h"
 
+#define INF 0xFF /* infinity, not a valid byte index */
+#define NIL ((word)0)
+
 #ifndef GUARD
 #define GUARD 1 /* must be 0 or 1 */
 #endif
@@ -65,11 +68,23 @@ extern omarker OMarkerFn;
 
 // public api:
 
+#if unix
+
 #define ogetb(A) (ORam[(word)(A)])
 #define oputb(A, X) (ORam[(word)(A)] = (byte)(X), 0)
 #define ogetw(A) ((word)((((word)ogetb(A)) << 8) | (word)ogetb(A + 1)))
 #define oputw(A, X) (oputb(A, (word)X >> 8), oputb(A + 1, X), 0)
 #define olea(A) (ORam + A)
+
+#else
+
+#define ogetb(A) (*(byte*)(A))
+#define oputb(A, X) (*(byte*)(A) = (byte)(X))
+#define ogetw(A) (*(word*)(A))
+#define oputw(A, X) (*(word*)(A) = (X))
+#define olea(A) ((byte*)(A))
+
+#endif
 
 // Garbage collected alloc & gc.
 extern void omark(word addr);  // Mark a root object.
@@ -81,9 +96,9 @@ extern void ofree(word addr);  // Unsafe.
 bool ovalidaddr(word addr);
 byte ocap(word addr);  // capacity in bytes.
 byte ocls(word addr);
-char* oshow(word addr);
 void osay(word addr);
 void osaylabel(word addr, const char* label, int arg);
+void osayhexlabel(word p, word len, char* label);
 
 extern byte osize2bucket(byte size);
 extern void opanic(byte);
@@ -91,23 +106,28 @@ extern void ozero(word begin, word len);
 extern void oassertzero(word begin, word len);
 void omemcpy(word d, word s, byte n);
 int omemcmp(word pchar1, byte len1, word pchar2, byte len2);
-void odump();
+void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
+           word* bytes_skip_ptr);
 void ocheckguards(word addr);
 
+#if unix
 extern byte ORam[1 << 16];
+#endif
+
 #define O_NUM_BUCKETS 13
 
 // Error Numbers
 #define OE_NULL_PTR 50   /* using a null pointer */
 #define OE_BAD_PTR 51    /* using a bad pointer (too large, or not even) */
 #define OE_TOO_BIG 52    /* length of alloc cannot be over 256 */
-#define OE_TOO_LATE 53   /* cannot call oallocforever() after oalloc() */
 #define OE_ZERO_CLASS 54 /* class number can not be zero */
 #define OE_OUT_OF_MEM 55 /* out of memory */
 
+#ifdef unix
+
 #define assert0(C, F)                       \
   {                                         \
-    bool _c_ = (C);                         \
+    word _c_ = (C);                         \
     if (!_c_) {                             \
       fflush(stdout);                       \
       fprintf(stderr, "\n***** Failure: "); \
@@ -119,7 +139,7 @@ extern byte ORam[1 << 16];
 
 #define assert1(C, F, X)                    \
   {                                         \
-    bool _c_ = (C);                         \
+    word _c_ = (C);                         \
     if (!_c_) {                             \
       fflush(stdout);                       \
       fprintf(stderr, "\n***** Failure: "); \
@@ -131,7 +151,7 @@ extern byte ORam[1 << 16];
 
 #define assert2(C, F, X, Y)                 \
   {                                         \
-    bool _c_ = (C);                         \
+    word _c_ = (C);                         \
     if (!_c_) {                             \
       fflush(stdout);                       \
       fprintf(stderr, "\n***** Failure: "); \
@@ -140,5 +160,17 @@ extern byte ORam[1 << 16];
       assert(0);                            \
     }                                       \
   }
+
+#else  // unix
+
+void ofatal(const char* f, word x, word y);
+#define assert0(C, F) \
+  if (!(C)) ofatal((F), 0, 0)
+#define assert1(C, F, X) \
+  if (!(C)) ofatal((F), (X), 0)
+#define assert2(C, F, X, Y) \
+  if (!(C)) ofatal((F), (X), (Y))
+
+#endif  // unix
 
 #endif  // OCTET_H_

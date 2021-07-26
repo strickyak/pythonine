@@ -6,19 +6,19 @@
 void mark_no_roots() { printf(" ======GC====== "); }
 
 void AllocAndPrintTest() {
-  odump();
+  odump(0, 0, 0, 0);
   ogc();
-  odump();
+  odump(0, 0, 0, 0);
   for (byte j = 0; j < 10; j++) {
     printf("Round %d:\n", j);
     for (byte i = 1; i < 254; i++) {
       word p = oalloc(i, i);
       printf("%d: $%04x ", i, p);
     }
-    odump();
+    odump(0, 0, 0, 0);
   }
   ogc();
-  odump();
+  odump(0, 0, 0, 0);
 }
 
 void opanic(byte x) {

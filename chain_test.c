@@ -1,10 +1,7 @@
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-
 #include "chain.h"
-#include "runtime.h"
+#include "arith.h"
+// #include "runtime.h"
+#include "defs.h"
 
 word chain1;
 
@@ -12,21 +9,27 @@ void mark_roots() {
   if (chain1) omark(chain1);
 }
 
+#define NUM 10  // 254
+
 void Test1() {
-  oinit(500, 50000, mark_roots);
-  chain1 = NewList();
-  for (byte i = 0; i < 254; i++) {
-    word a = ChainAddrOfAppend(chain1);
-    assert(a);
-    StartQ(a, i);
+  defs_init(mark_roots);
+
+  chain1 = NewList(false);
+  for (byte i = 0; i < NUM; i++) {
+    ChainAppend(chain1, FROM_INT((int)i));
+    odump(0, 0, 0, 0);
   }
-  for (byte i = 0; i < 254; i++) {
+  odump(0, 0, 0, 0);
+  for (byte i = 0; i < NUM; i++) {
     word a = ChainAddrOfNth(chain1, i);
-    byte q = GetQ(a);
-    assert(q == i);
+    int q = TO_INT(GetW(a));
+    assert(q == (int)i);
     word b = ChainGetNth(chain1, i);
-    assert(N(b) == q);
+    assert(TO_INT(b) == q);
   }
 }
 
-int main(int argc, char* argv[]) { Test1(); }
+int main(int argc, char* argv[]) {
+  Test1();
+  return 0;
+}

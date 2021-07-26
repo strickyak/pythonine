@@ -3,13 +3,13 @@
 class Free # unused chunks.
   oop next
 class Bytes # arbitrary bytes (of varying length).
-  byte[]
-class BC # Python bytecodes (of varying length).
-  byte[]
+  byte[] flex
+class Bytecodes # Python bytecodes (of varying length).
+  byte[] flex
 class MC # 6809/6309 Machine Code (of varying length).
-  byte[]
+  byte[] flex
 class Array # Array (of varying length) of OOPs.
-  oop[]
+  oop[] flex
 class Chain # a chain for an use.
   oop root
   small len2
@@ -27,183 +27,455 @@ class Str
   small len
   small offset
   small single  # If a single-char string, you can use this target.
+class Frame
+  oop prev_frame
+  small nargs
+  small prev_sp
+  small prev_ip
+  oop[] flex
 class Class
-  oop name
-  oop meths
-  oop TODO
+  small classNum
+  oop className
+  oop methDict
+  oop fieldList
 
 # Opcodes.
+code  Abort  # Abort comes first, so 00 means abort.
+  [
+    assert0(0, "ABORT OP");
+  ]
 code  Stop  # Stop comes first, so 00 means stop.
   in
   out
-  {
-    done = true;
-  }
+  [
+    return;
+  ]
 code  Nop
   in
   out
-  {
-  }
+  [
+  ]
 code  LitInt
   arg lit
   in
   out z
-  {
-    fflush(stdout);
-    fprintf(stderr, "LitInt: lit=%d\n", lit);
-    z = Q(lit);
-  }
+  [
+    z = ( Q(lit) );
+  ]
 code  LitStr
   arg nth
   in
   out z
-  {
-    z = ChainGetNth(InternList, nth);
-    osaylabel(z, "LitStr", nth);
-  }
+  [
+    z = ( ChainGetNth(InternList, nth) );
+  ]
 code  Plus
   in a b
   out z
-  {
-    z = Q(N(a) + N(b));
-  }
+  [
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa + bb) );
+  ]
 code  Minus
   in a b
   out z
-  {
-    z = Q(N(a) - N(b));
-  }
+  [
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa - bb) );
+  ]
 code  Times
   in a b
   out z
-  {
-    z = Q(N(a) * N(b));
-  }
+  [
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa * bb) );
+  ]
 code  Print
   in a
   out
-  {
-        printf(" <%04x> ", a);
-  }
+  [
+    printf("PRINT: ");
+    SayObj(a, 2);
+    printf("\n");
+    fflush(stdout);
+#if 0
+    if (a & 1) {
+        printf(" %d.\n", TO_INT(a));
+    } else if (ocls(a) == C_Str) {
+        printf("'''");
+        word p = Str_bytes(a) + Str_offset(a);
+        for (int i = 0; i < Str_len(a); i++) {
+            byte ch = ogetb(p + i);
+            if (' ' <= ch && ch <= '~') {
+                printf("%c", ch);
+            } else {
+                printf("?");
+            }
+        }
+        printf("'''");
+    } else {
+        printf(" <%04x = %d.> ", a, a);
+        printf(" <<<");
+        osay(a);
+        printf(">>>\n");
+    }
+    fflush(stdout);
+#endif
+  ]
 code  Assert
   in a
   out
-  {
+  [
         assert(Truth(a));
-  }
-code  Call0
-  in fn
-  out z
-  {
-    assert(0);
-  }
-code  Call1
-  in fn a
-  out z
-  {
-    assert(0);
-  }
-code  Call2
-  in fn a b
-  out z
-  {
-    assert(0);
-  }
-code  Call3
-  in fn a b c
-  out z
-  {
-    assert(0);
-  }
+  ]
 code  GlobalDict
   in
   out z
-  {
-    z = GlobalDict;
-  }
+  [
+    z = ( GlobalDict );
+  ]
 code  GlobalGet
   arg nth
   in
   out z
-  {
-    osay(GlobalDict);
+  [
     word addr = ChainAddrOfNth(GlobalDict, nth);
     assert(addr);
-    z = GetW(addr);
-  }
+    SayStr(ChainGetNth(GlobalDict, nth-1));  // verbose: print name of global.
+    SayObj( GetW(addr), 3 );
+    z = ( GetW(addr) );
+  ]
 code  GlobalPut
   arg nth
   in a
   out
-  {
-    osay(GlobalDict);
+  [
     word addr = ChainAddrOfNth(GlobalDict, nth);
     assert(addr);
+    SayStr(ChainGetNth(GlobalDict, nth-1));  // verbose: print name of global.
     PutW(addr, a);
-    osay(GlobalDict);
-  }
+  ]
 code  Branch
   arg whither
   in
   out
-  {
-        ip = whither-1;
-  }
+  [
+        ip = function + whither - 1; // ip++ at bottom of loop.
+  ]
 code  BranchIfFalse
   arg whither
   in pred
   out
-  {
-        if (!Truth(pred)) ip = whither-1;
-  }
+  [
+        if (!Truth(pred)) ip = function + whither - 1; // ip++ at bottom of loop.
+  ]
 code  GetAt
   in coll key
   out z
-  {
-        word ptr = FindAt(coll, key, false);
-        z = ptr ? GetW(ptr) : 0;
-  }
+  [
+        z = (  ChainDictGet(coll, key) );
+  ]
 code  PutAt
   in coll key value
   out
-  {
-        word p = FindAt(coll, key, true);
-        assert(p);
-        PutW(p, value);
-  }
+  [
+        ChainDictPut(coll, key, value);
+  ]
 code  EQ
   in a b
   out z
-  {
-    z = Q(N(a) == N(b));
-  }
+  [
+    z = (  Q(Equal(a, b)) );
+  ]
 code  NE
   in a b
   out z
-  {
-    z = Q(N(a) != N(b));
-  }
+  [
+    z = (  Q(!Equal(a, b)) );
+  ]
 code  LT
   in a b
   out z
-  {
-    z = Q(N(a) < N(b));
-  }
+  [
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa < bb) );
+  ]
 code  GT
   in a b
   out z
-  {
-    z = Q(N(a) > N(b));
-  }
+  [
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa > bb) );
+  ]
 code  LE
   in a b
   out z
-  {
-    z = Q(N(a) <= N(b));
-  }
+  [
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa <= bb) );
+  ]
 code  GE
   in a b
   out z
-  {
-    z = Q(N(a) >= N(b));
-  }
+  [
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa >= bb) );
+  ]
+
+code ArgGet
+  arg i
+  out z
+  [
+    z = ( ArgGet(i) );
+    //word old_fp = Frame_prev_frame(fp);
+    //int old_sp = Frame_prev_sp(fp);
+    //z( ogetw(old_fp + (byte)old_sp + 2*(i+1)) );
+  ]
+
+code LocalGet
+  arg i
+  out z
+  [
+    z = (  Frame_flex_At(fp, i) );
+  ]
+
+code LocalPut
+  arg i
+  in a
+  [
+    Frame_flex_AtPut(fp, i, a);
+  ]
+
+code Drop
+  in x
+  [
+    ;
+  ]
+
+code Call
+  arg nargs
+  [
+    Break();
+    word old_fp = fp;
+    fp = oalloc(32, C_Frame);
+    Frame_prev_frame_Put(fp, old_fp);
+    Frame_nargs_Put(fp, nargs);
+    Frame_prev_sp_Put(fp, sp-old_fp);
+    Frame_prev_ip_Put(fp, ip-function+1);  // XXX Explain +1 ?
+
+    function = ogetw(sp);
+    ip = function + BC_HEADER_SIZE - 1; // ip++ at bottom of loop.
+    sp = fp + ocap(fp);
+  ]
+
+code CallMeth
+  arg meth_isn nargs
+  [
+    Break();
+    word obj = ogetw(sp);
+    word future_function = FindMethForObj(obj, meth_isn);
+    assert2(future_function, "meth %d not found on obj %d", meth_isn, obj);
+
+    // Builtin methods are indicated by a small integer.
+    if (future_function & 1) {  // If odd, is an integer.
+            RunBuiltinMethod( (byte)TO_INT(future_function) );
+    } else {
+            word old_fp = fp;
+            fp = oalloc(32, C_Frame);
+            Frame_prev_frame_Put(fp, old_fp);
+            Frame_nargs_Put(fp, nargs);
+            Frame_prev_sp_Put(fp, sp-old_fp-2); // will -=2 below.
+            Frame_prev_ip_Put(fp, ip-function+1);  // XXX Explain +1 ?
+
+            function = future_function;
+            sp -= 2;
+            oputw(sp, function);
+            ip = function + BC_HEADER_SIZE - 1; // ip++ at bottom of loop.
+            sp = fp + ocap(fp);
+    }
+  ]
+
+code Return
+  [
+    Break();
+    word retval = ogetw(sp);
+    word nargs = Frame_nargs(fp);
+    word old_fp = Frame_prev_frame(fp);
+    int old_sp = Frame_prev_sp(fp);
+
+    word older_fp = Frame_prev_frame(old_fp);
+    word older_sp = Frame_prev_sp(old_fp);
+
+    function = ogetw(older_fp + older_sp);
+    ip = function + Frame_prev_ip(fp) - 1; // ip++ at bottom of loop.
+    fp = old_fp;
+    // pop function, pop args, push retval.
+    sp = old_fp + old_sp + (nargs<<1);
+    oputw(sp, retval);
+  ]
+code  RetNone
+  in
+  out
+  [
+      sp--;
+      oputw(sp, None);
+      opcode = BC_Return;
+      goto SWITCH;
+  ]
+code Construct
+  arg cls_num
+  out new_object
+  [
+    byte size = 32;
+    word obj = oalloc(size, cls_num);
+    new_object = (obj);
+  ]
+code Dup
+  in x
+  out x1 x2
+  [
+    x1 = x2 = x;
+  ]
+code MemberGet
+  arg member
+  in obj
+  out result
+  [
+    word z = MemberGet(obj, member);
+    result = ( z );
+  ]
+code SelfMemberGet
+  arg offset2
+  out result
+  [
+    byte offset = offset2<<1;
+    word obj = ArgGet(0);
+    assert(offset < ocap(obj));
+    word z = ogetw(obj + offset);
+    SayStr(ChainGetNth(Class_fieldList(ChainGetNth(ClassList, ocls(obj))), offset2));
+    result = ( z );
+  ]
+code MemberPut
+  arg member
+  in value obj
+  [
+    MemberPut(obj, member, value);
+  ]
+code SelfMemberPut
+  arg offset2
+  in value
+  [
+    byte offset = offset2<<1;
+    word obj = ArgGet(0);
+    assert(offset < ocap(obj));
+    oputw(obj + offset, value);
+    SayStr(ChainGetNth(Class_fieldList(ChainGetNth(ClassList, ocls(obj))), offset2));
+  ]
+code List
+  arg llen
+  [
+    word z = NewList();
+    for (word p = sp + ((word)llen<<1) - 2; p >= sp; p -=2) {
+        ChainAppend(z, ogetw(p));
+    }
+    sp += ((word)llen<<1) - 2;
+    oputw(sp, z);
+  ]
+code Dict
+  arg llen
+  [
+    word z = NewDict();
+    for (word p = sp + ((word)llen<<2) - 4; p >= sp; p -=4) {
+        ChainDictPut(z, ogetw(p+2), ogetw(p));
+    }
+    sp += ((word)llen<<2) - 2;
+    oputw(sp, z);
+  ]
+code Len
+  in obj
+  out length
+  [
+    word o = obj;
+    int n;
+    switch (ocls(o)) {
+    case C_Str:
+        n = Str_len(o);
+        break;
+    case C_Buf:
+        n = Buf_len(o);
+        break;
+    case C_List:
+        n = List_len2(o);
+        break;
+    case C_Dict:
+        n = List_len2(o)>>1;
+        break;
+    default:
+        opanic(101);
+    }
+    length = (FROM_INT(n));
+  ]
+code GetItem
+  in coll key
+  out value
+  [
+    word c = coll;
+    word k = key;
+    word v;
+    switch (ocls(c)) {
+    case C_Str: {
+        word addr = Str_bytes(c) + Str_offset(c) + TO_INT(k);
+        v = SingletonStr(ogetb(addr));
+        } break;
+    case C_List: {
+        int i = TO_INT(k);
+        v = ChainGetNth(coll, i);
+        } break;
+    case C_Dict:
+        v = ChainDictGet(coll, k);
+        break;
+    default:
+        opanic(101);
+    }
+    value = (v);
+  ]
+code Hex
+  in x
+  out z
+  [
+    z = (x);
+  ]
+code Ord
+  in x
+  out z
+  [
+    word s = x;
+    assert(ocls(s) == C_Str);
+    word addr = Str_bytes(s) + Str_offset(s);
+    byte ch = ogetb(addr);
+    word zz = FROM_INT(ch);
+    z = (zz);
+  ]
+code Chr
+  in x
+  out z
+  [
+    word n = TO_INT(x);
+    word s = SingletonStr((byte)n);
+    z = (s);
+  ]
+
+
+meth Str __str__
+  in self
+  out z
+  [
+    z = self;
+  ]

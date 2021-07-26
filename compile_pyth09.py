@@ -5,6 +5,14 @@ import _generated_proto as T  # Tags.
 import py_pb as P  # Protocol buffers.
 E = sys.stderr
 
+BC_NUM_ARGS = 0
+BC_NUM_LOCALS = 1
+BC_NUM_TEMPS = 2
+BC_MODULE = 3
+BC_CLASS = 4
+BC_NAME = 5
+BC_HEADER_SIZE = 6
+
 # Created by Lexer:
 L_EOF = 0
 L_INT = 1
@@ -107,6 +115,22 @@ class Lexer(object):
             self.UnGetC()
             return ShowLex(L_BOL, col)
 
+        if c == '"':
+            s = ''
+            c = self.GetC()  # after the initial "
+            while c != '"':
+                s += c
+                c = self.GetC()
+            return ShowLex(L_STR, s)
+
+        if c == "'":
+            s = ''
+            c = self.GetC()  # after the initial '
+            while c != "'":
+                s += c
+                c = self.GetC()
+            return ShowLex(L_STR, s)
+
         if IsDigit(c):
             x = 0
             while IsDigit(c):
@@ -187,16 +211,76 @@ class Parser(object):
             self.Advance()
             return TStr(val)
         if self.t == L_IDENTIFIER:
-            self.Advance()
-            return TIdent(val)
+            return self.ParseIdentifier()
+        if self.x == '[':  # ']'
+            return self.ParseList()
+        if self.x == '{':  # '}'
+            return self.ParseDict()
+        if self.x == '(':  # ')'
+            return self.ParseParen()
         raise Exception('bad prim: %s %s' % (self.t, val))
 
+    def ParseDict(self):
+        dic = []
+        self.ConsumeX('{')
+        while self.x != '}':
+            k = self.ParseSingle()
+            self.ConsumeX(':')
+            v = self.ParseSingle()
+            dic.append((k, v))
+            if self.x == ',':
+                self.Advance()
+            elif self.x != '}':
+                raise Exception('expected `,` or `}` after dict item')
+        self.Advance()
+        return TDict(dic)
+
+    def ParseList(self):
+        vec = []
+        self.ConsumeX('[')
+        while self.x != ']':
+            a = self.ParseSingle()
+            vec.append(a)
+            if self.x == ',':
+                self.Advance()
+            elif self.x != ']':
+                raise Exception('expected `,` or `]` after list item')
+        self.Advance()
+        return TList(vec)
+
+    def ParsePrimEtc(self):
+        a = self.ParsePrim()
+        while True:
+            if self.x == '(':  # FunCall
+                self.Advance()
+                xlist = self.ParseXList()
+                self.ConsumeX(')')
+                a = TFunCall(a, xlist)
+            elif self.x == '[':  # GetItem
+                self.Advance()
+                key = self.ParseSingle()
+                self.ConsumeX(']')
+                a = TGetItem(a, key)
+            elif self.x == '.':  # Member
+                self.Advance()
+                if self.t != L_IDENTIFIER:
+                    raise Exception(
+                        'expected identifier after `.`, got `%s`' % self.x)
+                a = TMember(a, self.x)
+                self.Advance()
+            else:
+                break
+        return a
+
+    def ParseIdentifier(self):
+        return TIdent(self.ConsumeT(L_IDENTIFIER))
+
     def ParseProduct(self):
-        p = self.ParsePrim()
+        p = self.ParsePrimEtc()
         op = self.x
         while op == '*':
             self.Advance()
-            p2 = self.ParsePrim()
+            p2 = self.ParsePrimEtc()
             p = TBin(p, op, p2)
             op = self.x
         return p
@@ -232,6 +316,48 @@ class Parser(object):
 
     def ParseSingle(self):
         return self.ParseOrOp()
+
+    def ParseXList(self):
+        vec = []
+        while self.x != ')':
+            vec.append(self.ParseSingle())
+            assert self.x == ',' or self.x == ')'
+            if self.x == ',':
+                self.Advance()
+        return vec
+
+    def ParseClass(self):
+        name = self.ParseIdentifier().x
+        if self.x == '(':
+            self.ConsumeX('(')
+            if self.x == 'object':
+                self.ConsumeX('object')
+            self.ConsumeX(')')
+        block = self.ColonBlock()
+        return TClass(name, block)
+
+    def ParseDef(self):
+        name = self.ParseIdentifier().x
+        self.ConsumeX('(')
+        arglist = self.ParseVarList()
+        self.ConsumeX(')')
+        block = self.ColonBlock()
+        return TDef(name, arglist, block)
+
+    def ParseVarList(self):
+        vlist = []
+        while self.t == L_IDENTIFIER:
+            vlist.append(self.ParseIdentifier().x)
+            if self.x == ',':
+                self.Advance()
+        return vlist
+
+    def ParseReturn(self):
+        if self.t == P_EOL:
+            return TReturn(None)
+        else:
+            retval = self.ParseSingle()
+            return TReturn(retval)
 
     def ParseWhile(self):
         cond = self.ParseSingle()
@@ -279,15 +405,36 @@ class Parser(object):
     def ParseAssign(self):
         p = self.ParseSingle()
         op = self.x
-        while op == '=':
-            self.Advance()
-            if type(p) is not TIdent:
-                print >> E, 'type(p) = %s' % type(p)
-                raise Exception('bad lhs %s' % p)
-            p2 = self.ParseSingle()
-            p = TAssign(p, op, p2)
-            op = self.x
+        if op == '=':
+            while op == '=':
+                self.Advance()
+                p2 = self.ParseSingle()
+                if type(p) is TIdent or type(p) is TMember:
+                    p = TAssign(p, op, p2)
+                    print >> E, 'ParseAssign using TAssign: %s' % p
+                    op = self.x
+                else:
+                    print >> E, 'type(p) = %s' % type(p)
+                    raise Exception('bad lhs %s' % p)
+        elif self.t == P_EOL or self.t == L_EOF:
+            p = TJustExpr(p)
+            print >> E, 'ParseAssign using TJustExpr: %s' % p
+        else:
+            raise Exception('expected = or EOL, but got %s' % self.x)
         return p
+
+    def ConsumeX(self, x):
+        if self.x != x:
+            raise Exception('expected %s but got %s' % (x, self.x))
+        self.Advance()
+
+    def ConsumeT(self, t):
+        if self.t != t:
+            raise Exception('expected type %s but got %s %s' % (t, self.t,
+                                                                self.x))
+        z = self.x
+        self.Advance()
+        return z
 
     def ColonBlock(self):
         if self.x != ':':
@@ -325,6 +472,15 @@ class Parser(object):
             elif self.x == 'while':
                 self.Advance()
                 p = self.ParseWhile()
+            elif self.x == 'return':
+                self.Advance()
+                p = self.ParseReturn()
+            elif self.x == 'def':
+                self.Advance()
+                p = self.ParseDef()
+            elif self.x == 'class':
+                self.Advance()
+                p = self.ParseClass()
             elif self.x == 'pass':
                 self.Advance()
                 p = None
@@ -343,7 +499,7 @@ class Parser(object):
 
 class TBase(object):
     def __str__(self):
-        return '<%s{%d}>' % (type(self), vars(self))
+        return '<%s{%s}>' % (type(self), repr(vars(self)))
 
     def __repr__(self):
         return self.__str__()
@@ -353,9 +509,6 @@ class TInt(TBase):
     def __init__(self, x):
         self.x = int(x)
 
-    def __str__(self):
-        return 'TInt(%d)' % self.x
-
     def visit(self, a):
         return a.visitInt(self)
 
@@ -364,22 +517,50 @@ class TStr(TBase):
     def __init__(self, x):
         self.x = x
 
-    def __str__(self):
-        return 'TStr(%s)' % self.x
-
     def visit(self, a):
         return a.visitStr(self)
+
+
+class TDict(TBase):
+    def __init__(self, dic):
+        self.dic = dic
+
+    def visit(self, a):
+        return a.visitDict(self)
+
+
+class TList(TBase):
+    def __init__(self, vec):
+        self.vec = vec
+
+    def visit(self, a):
+        return a.visitList(self)
+
+
+class TGetItem(TBase):
+    def __init__(self, coll, key):
+        self.coll = coll
+        self.key = key
+
+    def visit(self, a):
+        return a.visitGetItem(self)
 
 
 class TIdent(TBase):
     def __init__(self, x):
         self.x = x
 
-    def __str__(self):
-        return 'TIdent(%s)' % self.x
-
     def visit(self, a):
         return a.visitIdent(self)
+
+
+class TMember(TBase):
+    def __init__(self, x, member):
+        self.x = x
+        self.member = member
+
+    def visit(self, a):
+        return a.visitMember(self)
 
 
 class TBin(TBase):
@@ -388,11 +569,16 @@ class TBin(TBase):
         self.op = op
         self.y = y
 
-    def __str__(self):
-        return 'TBin(%s %s %s)' % (self.x, self.op, self.y)
-
     def visit(self, a):
         return a.visitBin(self)
+
+
+class TJustExpr(TBase):
+    def __init__(self, x):
+        self.x = x
+
+    def visit(self, a):
+        return a.visitJustExpr(self)
 
 
 class TAssign(TBase):
@@ -401,20 +587,44 @@ class TAssign(TBase):
         self.op = op
         self.y = y
 
-    def __str__(self):
-        return 'TAssign(%s %s %s)' % (self.x, self.op, self.y)
-
     def visit(self, a):
         return a.visitAssign(self)
+
+
+class TFunCall(TBase):
+    def __init__(self, fn, xlist):
+        self.fn = fn
+        self.xlist = xlist
+
+    def visit(self, a):
+        return a.visitFunCall(self)
+
+
+class TDef(TBase):
+    def __init__(self, name, arglist, block):
+        self.name = name
+        self.arglist = arglist
+        self.block = block
+
+    def visit(self, a):
+        return a.visitDef(self, a.funcs, tclass=None)
+
+
+class TClass(TBase):
+    def __init__(self, name, block):
+        self.name = name
+        self.block = block
+        self.fields = set()  # To be filled in...
+        self.funcs = dict()  # To be filled in, as TDefs in block are compiled.
+
+    def visit(self, a):
+        return a.visitClass(self)
 
 
 class TWhile(TBase):
     def __init__(self, cond, block):
         self.cond = cond
         self.block = block
-
-    def __str__(self):
-        return 'TWhile(%s)' % vars(self)
 
     def visit(self, a):
         return a.visitWhile(self)
@@ -426,19 +636,21 @@ class TIf(TBase):
         self.blist = blist
         self.belse = belse
 
-    def __str__(self):
-        return 'TIf(%s)' % vars(self)
-
     def visit(self, a):
         return a.visitIf(self)
+
+
+class TReturn(TBase):
+    def __init__(self, retval):
+        self.retval = retval
+
+    def visit(self, a):
+        return a.visitReturn(self)
 
 
 class TPrint(TBase):
     def __init__(self, x):
         self.x = x
-
-    def __str__(self):
-        return 'TPrint(%s)' % self.x
 
     def visit(self, a):
         return a.visitPrint(self)
@@ -448,9 +660,6 @@ class TAssert(TBase):
     def __init__(self, x):
         self.x = x
 
-    def __str__(self):
-        return 'TAssert(%s)' % self.x
-
     def visit(self, a):
         return a.visitAssert(self)
 
@@ -459,18 +668,26 @@ class TBlock(TBase):
     def __init__(self, vec):
         self.vec = vec
 
-    def __str__(self):
-        return 'TBlock(%s)' % [str(x) for x in self.vec]
-
     def visit(self, a):
         return a.visitBlock(self)
 
 
 class Compiler(object):
-    def __init__(self):
-        self.bc = []
+    def __init__(self, parentCompiler, argVars, localVars, tclass):
+        self.parentCompiler = parentCompiler
+        self.tclass = tclass
+        argVars = [] if argVars is None else argVars
+        localVars = set() if localVars is None else localVars
+        self.argVars = argVars
+        self.localVars = sorted(localVars - set(argVars))
+        print >> E, 'Compiler init:', self.localVars, self.localVars, tclass
+
+        self.ops = [0, 0, 0, 0xFF, 0xFF, 0xFF]
         self.interns = {}
         self.globals = {}
+        self.classes = {}
+        self.funcs = {}
+        self.tempVars = []  # not used yet
 
     def AddIntern(self, s):
         # self.interns :: s -> (i, patches)
@@ -482,6 +699,7 @@ class Compiler(object):
         return z
 
     def PatchIntern(self, s, patch):
+        self.AddIntern(s)
         i, patches = self.interns[s]
         patches.append(patch)
         return i
@@ -512,123 +730,256 @@ class Compiler(object):
     def visitPrint(self, t):
         t.x.visit(self)
         print >> E, 'BC_Print,'
-        self.bc.append('Print')
+        self.ops.append('Print')
 
     def visitAssert(self, t):
         t.x.visit(self)
         print >> E, 'BC_Assert,'
-        self.bc.append('Assert')
+        self.ops.append('Assert')
+
+    def visitJustExpr(self, t):
+        t.x.visit(self)
+        print >> E, 'BC_Drop,'
+        self.ops.append('Drop')
 
     def visitAssign(self, t):
         t.y.visit(self)
         if type(t.x) is TIdent:
-            # assume GlobalDict for now.
             var = t.x.x
-            self.AddGlobal(var)
-            self.bc.append('GlobalPut')
-            g = self.PatchGlobal(var, len(self.bc))
-            self.bc.append(g)
+            if var in self.argVars:
+                self.ops.append('ArgPut')
+                self.ops.append(self.argVars.index(var))
+            elif var in self.localVars:
+                self.ops.append('LocalPut')
+                self.ops.append(self.localVars.index(var))
+            else:
+                self.AddGlobal(var)
+                self.ops.append('GlobalPut')
+                g = self.PatchGlobal(var, len(self.ops))
+                self.ops.append(g)
+        elif type(t.x) is TMember:
+            if type(t.x.x) == TIdent and t.x.x.x == 'self' and self.tclass:
+                self.ops.append('SelfMemberPut')
+                print >> E, sorted(self.tclass.fields), t.x.member
+                self.ops.append(sorted(self.tclass.fields).index(t.x.member))
+            else:
+                t.x.x.visit(self)
+                self.ops.append('MemberPut')
+                isn = self.PatchIntern(t.x.member, len(self.ops))
+                self.ops.append(isn)
         else:
             raise Exception('visitAssign: bad lhs: %s' % t.x)
 
+    def visitFunCall(self, t):
+        # fn, xlist
+        for x in t.xlist[::-1]:  # Iterate in reverse.
+            x.visit(self)
+        if type(t.fn) == TMember:
+            t.fn.x.visit(self)
+            self.ops.append('CallMeth')
+            isn = self.PatchIntern(t.fn.member, len(self.ops))
+            self.ops.append(isn)
+            self.ops.append(len(t.xlist) + 1)  # +1 for self.
+        elif type(t.fn) == TIdent and t.fn.x == 'len' and len(t.xlist) == 1:
+            self.ops.append('Len')
+        elif type(t.fn) == TIdent and t.fn.x == 'hex' and len(t.xlist) == 1:
+            self.ops.append('Hex')
+        elif type(t.fn) == TIdent and t.fn.x == 'chr' and len(t.xlist) == 1:
+            self.ops.append('Chr')
+        elif type(t.fn) == TIdent and t.fn.x == 'ord' and len(t.xlist) == 1:
+            self.ops.append('Ord')
+        else:
+            t.fn.visit(self)
+            self.ops.append('Call')
+            self.ops.append(len(t.xlist))
+
+    def visitClass(self, t):
+        self.AddGlobal(t.name)
+        init_func = None
+        for e in t.block.vec:
+            lg = AssignmentVisitor()
+            lg.visitBlock(e.block)
+            t.fields.update(lg.selfFields)
+            if e.name == '__init__':
+                init_func = e
+
+        if not init_func:
+            t.block.vec.append(TDef('__init__', ['self'], TBlock([])))
+
+        for e in t.block.vec:
+            print >> E, 'FrodooVec', repr(e)
+            if type(e) != TDef:
+                raise Exception('not supported in class %s: %s' % (t.name, e))
+            self.visitDef(e, t.funcs, t)
+
+        t.fields = sorted(t.fields)
+        print >> E, 'Frodo', repr(t)
+        print >> E, 'Frodo', repr(t.fields)
+
+        for f in t.fields:
+            self.AddIntern(f)
+        self.classes[t.name] = t
+
+    def visitDef(self, t, func_dict, tclass):
+        self.AddGlobal(t.name)
+        # First pass, pure functions only, no globals.
+        # -- name, varlist==arglist, block.
+        lg = AssignmentVisitor()
+        lg.localVars.update(t.arglist)  # args are localVars.
+        lg.visitBlock(t.block)
+
+        print >> E, "visitDef: args:", t.arglist, "locals:", lg.localVars
+        fc = Compiler(self, t.arglist, lg.localVars, tclass)
+        fc.visitBlock(t.block)
+        if not len(
+                fc.ops) or fc.ops[-1] != 'Return' and fc.ops[-1] != 'RetNone':
+            fc.ops.append('RetNone')
+        func_dict[t.name] = fc
+        print >> E, 'visitDef: func_dict=', func_dict
+
     def visitWhile(self, t):
-        start = len(self.bc)
+        start = len(self.ops)
         t.cond.visit(self)
 
-        self.bc.append('BranchIfFalse')
-        patch = len(self.bc)
-        self.bc.append(0)  # to the end.
+        self.ops.append('BranchIfFalse')
+        patch = len(self.ops)
+        self.ops.append(0)  # to the end.
 
         t.block.visit(self)
 
-        self.bc.append('Branch')
-        self.bc.append(start)
+        self.ops.append('Branch')
+        self.ops.append(start)
 
-        self.bc[patch] = len(self.bc)  # to the end.
+        self.ops[patch] = len(self.ops)  # to the end.
+
+    def visitReturn(self, t):
+        if t.retval:
+            t.retval.visit(self)
+            self.ops.append('Return')
+        else:
+            self.ops.append('RetNone')
 
     def visitIf(self, t):
         endmarks = []
         for p, b in zip(t.plist, t.blist):
             p.visit(self)
-            self.bc.append('BranchIfFalse')
-            skipmark = len(self.bc)
-            self.bc.append(0)
+            self.ops.append('BranchIfFalse')
+            skipmark = len(self.ops)
+            self.ops.append(0)
             b.visit(self)
-            self.bc.append('Branch')
-            endmarks.append(len(self.bc))
-            self.bc.append(0)
-            self.bc[skipmark] = len(self.bc)
+            self.ops.append('Branch')
+            endmarks.append(len(self.ops))
+            self.ops.append(0)
+            self.ops[skipmark] = len(self.ops)
         if t.belse:
             t.belse.visit(self)
-        end = len(self.bc)
+        end = len(self.ops)
         for m in endmarks:
-            self.bc[m] = end
+            self.ops[m] = end
 
     def visitBin(self, t):
         t.x.visit(self)
         t.y.visit(self)
         if t.op == '+':
             print >> E, 'BC_Plus,'
-            self.bc.append('Plus')
+            self.ops.append('Plus')
         elif t.op == '-':
             print >> E, 'BC_Minus,'
-            self.bc.append('Minus')
+            self.ops.append('Minus')
         elif t.op == '*':
             print >> E, 'BC_Times,'
-            self.bc.append('Times')
+            self.ops.append('Times')
         elif t.op == '==':
             print >> E, 'BC_EQ,'
-            self.bc.append('EQ')
+            self.ops.append('EQ')
         elif t.op == '!=':
             print >> E, 'BC_NE,'
-            self.bc.append('NE')
+            self.ops.append('NE')
         elif t.op == '<':
             print >> E, 'BC_LT,'
-            self.bc.append('LT')
+            self.ops.append('LT')
         elif t.op == '>':
             print >> E, 'BC_GT,'
-            self.bc.append('GT')
+            self.ops.append('GT')
         elif t.op == '<=':
             print >> E, 'BC_LE,'
-            self.bc.append('LE')
+            self.ops.append('LE')
         elif t.op == '>=':
             print >> E, 'BC_GE,'
-            self.bc.append('GE')
+            self.ops.append('GE')
         else:
             raise Exception('visitBin: bad %s' % t.op)
 
-    def visitIdent(self, t):
-        if type(t.x) is str:
-            # assume GlobalDict for now.
-            var = t.x
-            self.AddGlobal(var)
-            self.bc.append('GlobalGet')
-            g = self.PatchGlobal(var, len(self.bc))
-            self.bc.append(g)
+    def visitMember(self, t):
+        if type(t.x) is TIdent and t.x.x == 'self' and self.tclass:
+            self.ops.append('SelfMemberGet')
+            print >> E, sorted(self.tclass.fields), t.member
+            self.ops.append(sorted(self.tclass.fields).index(t.member))
         else:
-            raise Exception('visitIdent: bad var: %s %s' % (type(t.x), t.x))
+            t.x.visit(self)
+            self.ops.append('MemberGet')
+            isn = self.PatchIntern(t.member, len(self.ops))
+            self.ops.append(isn)
+
+    def visitGetItem(self, t):
+        t.coll.visit(self)
+        t.key.visit(self)
+        self.ops.append('GetItem')
+
+    def visitList(self, t):
+        for e in t.vec:
+            e.visit(self)
+        self.ops.append('List')
+        self.ops.append(len(t.vec))
+
+    def visitDict(self, t):
+        for k, v in t.dic:
+            k.visit(self)
+            v.visit(self)
+        self.ops.append('Dict')
+        self.ops.append(len(t.dic))
+
+    def visitIdent(self, t):
+        var = t.x
+        print >> E, 'visitIdent:', self.localVars, self.localVars, var
+        if type(var) is str:
+            if var in self.argVars:
+                self.ops.append('ArgGet')
+                self.ops.append(self.argVars.index(var))
+            elif var in self.localVars:
+                self.ops.append('LocalGet')
+                self.ops.append(self.localVars.index(var))
+            else:
+                self.AddGlobal(var)
+                self.ops.append('GlobalGet')
+                g = self.PatchGlobal(var, len(self.ops))
+                self.ops.append(g)
+        else:
+            raise Exception('visitIdent: bad var: %s %s' % (type(var), var))
 
     def visitStr(self, t):
-        s = t.x
-        print >> E, 'BC_LitStr,', str(len(s)), ','
-        self.bc.append('LitStr')
-        self.bc.append(len(s))
-        for ch in s:
-            print >> E, "'%s'," % ch
-            self.bc.append(ch)
+        self.ops.append('LitStr')
+        isn = self.PatchIntern(t.x, len(self.ops))
+        self.ops.append(isn)
 
     def visitInt(self, t):
         if 0 <= t.x and t.x <= 255:
             print >> E, 'BC_LitInt,', t.x, ','
-            self.bc.append('LitInt')
-            self.bc.append(255 & t.x)
+            self.ops.append('LitInt')
+            self.ops.append(255 & t.x)
         else:
             raise Exception('visitInt: bad %s' % t.x)
 
-    def Items2Bytecodes(self, bc):
+    def OpList2Bytecodes(self, ops):
+        print >> E, '@@AAA', repr(ops)
+        ops[BC_NUM_ARGS] = len(self.argVars)
+        ops[BC_NUM_LOCALS] = len(self.localVars)
+        ops[BC_NUM_TEMPS] = len(self.tempVars)
+        # z = [len(self.argVars), len(self.localVars), len(self.tempVars), 255, 255, 255]
+        # z = [chr(e) for e in z]
+        print >> E, 'AAAAA', repr(ops)
         z = []
-        print >> E, 'AAAAA', repr(bc)
-        for x in bc:
+        for x in ops:
             print >> E, 'BBBBB', repr(x)
             if type(x) is int:
                 z.append(chr(255 & x))
@@ -641,14 +992,17 @@ class Compiler(object):
         return z
 
     def OutputCodePack(self, w):
-        self.bc.append('Stop')
-        P.put_str(w, T.CodePack_bytecode, self.Items2Bytecodes(self.bc))
+        P.put_str(w, T.CodePack_bytecode, self.OpList2Bytecodes(self.ops))
 
         # sort by interns by number i, and write to protobuf in that order.
         i_vec = []
         for s, (i, patches) in self.interns.items():
             i_vec.append((i, s, patches))
-        for i, s, patches in sorted(i_vec):  # Sorted by i
+        i_vec = sorted(i_vec)  # Sorted by i
+        i_strs = []
+        for i, s, patches in i_vec:
+            assert i == len(i_strs)
+            i_strs.append(s)
             P.put_start_message(w, T.CodePack_interns)
             P.put_str(w, T.InternPack_s, s)
             for e in patches:
@@ -666,13 +1020,115 @@ class Compiler(object):
                 P.put_int(w, T.GlobalPack_patch, e)
             P.put_finish_message(w)
 
-        # later: funcpacks
-        # later: classpacks
+        # funcpacks
+        for name, fc in sorted(self.funcs.items()):
+            P.put_start_message(w, T.CodePack_funcpacks)
+            P.put_int(w, T.FuncPack_name_i, i_strs.index(name))
+
+            P.put_start_message(w, T.FuncPack_pack)
+            fc.OutputCodePack(w)
+
+            P.put_finish_message(w)  # finish CodePack_funcpacks
+
+        # classpacks
+        for name, tclass in sorted(self.classes.items()):
+            P.put_start_message(w, T.CodePack_classpacks)
+            P.put_int(w, T.ClassPack_name_i, i_strs.index(name))
+
+            for fieldName in tclass.fields:
+                isn = self.AddIntern(fieldName)
+                P.put_int(w, T.ClassPack_field_i, isn)
+
+            for methName, fc in sorted(tclass.funcs.items()):
+                P.put_start_message(w, T.ClassPack_meth)
+
+                P.put_int(w, T.FuncPack_name_i, i_strs.index(methName))
+                P.put_start_message(w, T.FuncPack_pack)
+                fc.OutputCodePack(w)
+                P.put_finish_message(w)  # finish ClassPack_meth
+
+            P.put_finish_message(w)  # finish CodePack_classpacks
 
         P.put_finish_message(w)
 
 
-class AppendWriter:
+class AssignmentVisitor(object):
+    def __init__(self):
+        self.localVars = set()  # Others are global.
+        self.selfFields = set()
+
+    def visitBlock(self, t):
+        for e in t.vec:
+            e.visit(self)
+
+    def visitPrint(self, t):
+        pass
+
+    def visitAssert(self, t):
+        pass
+
+    def visitReturn(self, t):
+        pass
+
+    def visitAssign(self, t):
+        if type(t.x) is TIdent:
+            self.localVars.add(t.x.x)
+        elif type(t.x) is TMember and type(
+                t.x.x) is TIdent and t.x.x.x == 'self':
+            self.selfFields.add(t.x.member)
+        elif type(t.x) is TMember and type(t.x.x) is TIdent:
+            pass  # Foreign member.
+        else:
+            raise Exception('visitAssign: bad lhs: %s' % t.x)
+
+    def visitClass(self, t):
+        Abort()  # No nested classes.
+
+    def visitDef(self, t, func_dict, tclass):
+        Abort()  # No nested functions, yet.
+
+    def visitWhile(self, t):
+        t.block.visit(self)
+
+    def visitIf(self, t):
+        for p, b in zip(t.plist, t.blist):
+            b.visit(self)
+        if t.belse:
+            t.belse.visit(self)
+
+    def visitBin(self, t):
+        pass
+
+    def visitIdent(self, t):
+        if type(t.x) is str:
+            # assume GlobalDict for now.
+            var = t.x
+            self.AddGlobal(var)
+            self.ops.append('GlobalGet')
+            g = self.PatchGlobal(var, len(self.ops))
+            self.ops.append(g)
+        else:
+            raise Exception('visitIdent: bad var: %s %s' % (type(t.x), t.x))
+
+    def visitStr(self, t):
+        pass
+
+    def visitInt(self, t):
+        pass
+
+
+class BytesWriter(object):
+    def __init__(self):
+        self.v = []
+
+    def append(self, x):
+        self.v.append(x)
+
+    def Bytes(self):
+        return ''.join([chr(e) for e in self.v])
+
+
+class AppendWriter(object):
     def __init__(self, w):
         self.w = w
 
@@ -681,31 +1137,15 @@ class AppendWriter:
 
 
 if __name__ == '__main__':  # test
-    XXXXXXXXXXXXXXXXXXXXXXXXXDEMO = '''
-x = 100
-y = 5 + x
-print x + y
-'''
+    GetBytecodeNumbers()
     p = Parser(sys.stdin.read())
     block = p.ParseBlock()
     print >> E, block
     for i in range(len(block.vec)):
         print >> E, '%d: %s' % (i, block.vec[i])
-    compiler = Compiler()
+    compiler = Compiler(None, None, None, None)
     compiler.visitBlock(block)
-    print >> E, repr(compiler.bc)
-    GetBytecodeNumbers()
-    print >> E, BytecodeNumbers
+    compiler.ops.append('Stop')
+    print >> E, repr(compiler.ops)
 
-    if True:
-        compiler.OutputCodePack(AppendWriter(sys.stdout))
-    else:
-        print '\001\001\001\001',
-        for x in compiler.bc:
-            if type(x) is int:
-                sys.stdout.write(chr(255 & x))
-            elif type(x) is str and len(x) == 1:
-                sys.stdout.write(x)
-            elif type(x) is str:
-                sys.stdout.write(chr(BytecodeNumbers[x]))
-        print '\001\001\001\001\000'
+    compiler.OutputCodePack(AppendWriter(sys.stdout))
