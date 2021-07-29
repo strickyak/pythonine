@@ -271,6 +271,8 @@ code Call
     Frame_prev_ip_Put(fp, ip-function+1);  // XXX Explain +1 ?
 
     function = ogetw(sp);
+    assert(ocls(function) == C_Bytecodes);
+    assert(ogetb(function + 0/*num_args*/) == nargs);
     ip = function + BC_HEADER_SIZE - 1; // ip++ at bottom of loop.
     sp = fp + ocap(fp);
   ]
@@ -295,6 +297,8 @@ code CallMeth
             Frame_prev_ip_Put(fp, ip-function+1);  // XXX Explain +1 ?
 
             function = future_function;
+            assert(ocls(function) == C_Bytecodes);
+            assert(ogetb(function + 0/*num_args*/) == nargs);
             sp -= 2;
             oputw(sp, function);
             ip = function + BC_HEADER_SIZE - 1; // ip++ at bottom of loop.

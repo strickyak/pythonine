@@ -1,11 +1,10 @@
 #ifndef PYTH09__RUNTIME_H_
 #define PYTH09__RUNTIME_H_
 
+#include "_generated_core.h"
 #include "octet.h"
 #include "pb2.h"
 #include "readbuf.h"
-
-#include "_generated_core.h"
 
 #define GetB(addr) ogetb(addr)
 #define GetW(addr) ogetw(addr)

@@ -1,4 +1,5 @@
 #include "runtime.h"
+
 #include "_generated_proto.h"
 #include "arith.h"
 #include "chain.h"
@@ -25,7 +26,8 @@ word ip;  // Stores in Frame as ip - function.
 word fp;
 word sp;  // Stores in Frame as sp - fp.
 
-#define VERB if(false)printf
+#define VERB \
+  if (true) printf
 
 byte Hex(byte b) {
   b = b & 15;
@@ -296,14 +298,14 @@ void RunLoop() {
     VERB("\n");
     assert(sp >= fp + Frame_Size - 2);
     assert(sp <= fp + ocap(fp));
-    // SayStack();
+    SayStack();  // ===========
     assert(ip >= function + BC_HEADER_SIZE);
     assert(ip < function + INF);
     byte opcode = ogetb(ip);
     assert(opcode < CodeNames_SIZE);
     VERB("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
-           function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
-           ogetb(ip + 2), fp, (sp - fp) >> 1);
+         function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
+         ogetb(ip + 2), fp, (sp - fp) >> 1);
 
   SWITCH:
     assert(fp);
@@ -353,7 +355,7 @@ void SlurpIntern(struct ReadBuf* bp, word bc, word ilist) {
     switch (tag) {
       case InternPack_s: {
         byte bytes_len;
-        word bytes = pb_str(bp, &bytes_len);
+        word bytes = pb_str(bp, C_Bytes, &bytes_len);
         assert(bytes_len < INF);
         word str = NewStr(bytes, 0, bytes_len);
         i_num = InternString(str);
@@ -464,7 +466,7 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
         printf(">>>\n");
         Class_className_Put(cls, name_str);
       } break;
-      case ClassPack_field_i: {  // For a method.
+      case ClassPack_field_i: {  // For a field.
         word field_ith = pb_int(bp);
         byte field_i_num = (byte)N(ChainGetNth(ilist, (byte)field_ith));
         assert(field_i_num < INF);
@@ -485,6 +487,13 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
   }
 
   {
+    word dunder_init_isn = InternString(NewStrCopyFromC("__init__"));
+    assert(dunder_init_isn != INF);
+    word dunder_init_name = ChainGetNth(InternList, dunder_init_isn);
+    word init_meth = ChainDictGet(meth_dict, dunder_init_name);
+    assert(init_meth);
+    assert(ocls(init_meth) == C_Bytecodes);
+
     // Hand craft the constructor.
     // TODO: call __init__.
     word ctor = oalloc(16, C_Bytecodes);
@@ -494,12 +503,11 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
     Bytecodes_flex_AtPut(ctor, 6, BC_Construct);
     Bytecodes_flex_AtPut(ctor, 7, class_num);
 
-    Bytecodes_flex_AtPut(ctor, 8, BC_Dup);
+    Bytecodes_flex_AtPut(ctor, 8, BC_Dup);  // will return inst
     Bytecodes_flex_AtPut(ctor, 9, BC_CallMeth);
-    Bytecodes_flex_AtPut(ctor, 10, InternString(
-        NewStrCopyFromC("__init__")));
-    Bytecodes_flex_AtPut(ctor, 11, 1);
-    Bytecodes_flex_AtPut(ctor, 12, BC_Drop);
+    Bytecodes_flex_AtPut(ctor, 10, dunder_init_isn);
+    Bytecodes_flex_AtPut(ctor, 11, 1);        // only arg is `self`
+    Bytecodes_flex_AtPut(ctor, 12, BC_Drop);  // result of __init__
 
     Bytecodes_flex_AtPut(ctor, 13, BC_Return);
 
@@ -516,12 +524,7 @@ void SlurpModule(struct ReadBuf* bp, word* bc_out) {
     // printf("SM: tag=$%x=%d.\n", tag, tag);
     switch (tag) {
       case CodePack_bytecode: {
-        bc = pb_str(bp, NULL);
-        // printf("\nbc=%x cls=%d cap=%d\n", bc, ocls(bc), ocap(bc));
-        // for (byte i = 0; i < ocap(bc); ++i) {
-        // printf(" %02x", ogetb(bc+i));
-        // }
-        // printf("\n");
+        bc = pb_str(bp, C_Bytecodes, NULL);
       } break;
       case CodePack_interns: {
         pb_next(bp);
@@ -563,7 +566,6 @@ void DumpStats() {
   printf("STATS: count=%d bytes=%d\n", count_used, bytes_used);
 }
 void RuntimeInit() {
-
   // Protect roots forever from GC.
   // Size 10 is twice the number of elements.
   ForeverRoot = oalloc(10, C_Array);
@@ -586,56 +588,57 @@ void RuntimeInit() {
   // Reserve builtin class slots, with None.
   ChainAppend(ClassList, None);  // unused 0.
   DumpStats();
-VERB("<%d>", __LINE__);
+  VERB("<%d>", __LINE__);
   for (byte i = 1; i < ClassNames_SIZE; i++) {
     word cls = oalloc(Class_Size, C_Class);
-VERB("<%d>", __LINE__);
+    VERB("<%d>", __LINE__);
     Class_classNum_Put(cls, i);
-VERB("<%d>", __LINE__);
+    VERB("<%d>", __LINE__);
     const char* cstr = 2 /* skip `C_` */ + ClassNames[i];
     word name = NewStrCopyFromC(cstr);
     word name_isn = InternString(name);
-VERB("<%d>", __LINE__);
+    VERB("<%d>", __LINE__);
     name = ChainGetNth(InternList, name_isn);
-VERB("<%d>", __LINE__);
+    VERB("<%d>", __LINE__);
     Class_className_Put(cls, name);
-VERB("<%d>", __LINE__);
+    VERB("<%d>", __LINE__);
     Class_methDict_Put(cls, NewDict());
-VERB("<%d>", __LINE__);
+    VERB("<%d>", __LINE__);
     ChainAppend(ClassList, cls);
   }
-VERB("<%d>", __LINE__);
+  VERB("<%d>", __LINE__);
   for (byte i = 0; i < MessageNames_SIZE; i++) {
-VERB("<%d>", __LINE__);
+    VERB("<%d>", __LINE__);
     word name = NewStrCopyFromC(MessageNames[i]);
-VERB("<%d>", __LINE__);
-// SayStr(name);
+    VERB("<%d>", __LINE__);
+    // SayStr(name);
     word name_isn = InternString(name);
-VERB("<%d>", __LINE__);
-// SayStr(ChainGetNth(InternList, name_isn));
-VERB("<%d>", __LINE__);
+    VERB("<%d>", __LINE__);
+    // SayStr(ChainGetNth(InternList, name_isn));
+    VERB("<%d>", __LINE__);
     ChainAppend(MessageList, ChainGetNth(InternList, name_isn));
-VERB("<%d>", __LINE__);
+    VERB("<%d>", __LINE__);
   }
-VERB("<%d>", __LINE__);
+  VERB("<%d>", __LINE__);
   {
     byte i = 0;
     for (const byte* p = BuiltinClassMessageMeths; *p; p += 2, ++i) {
-VERB("<%d>", __LINE__);
-VERB("p=%x p0=%x p1=%x p2=%x p3=%x i=%d.\n", p, p[0], p[1], p[2], p[3], i);
+      VERB("<%d>", __LINE__);
+      VERB("p=%x p0=%x p1=%x p2=%x p3=%x i=%d.\n", p, p[0], p[1], p[2], p[3],
+           i);
       word cls = ChainGetNth(ClassList, p[0]);
-VERB("<%d>", __LINE__);
+      VERB("<%d>", __LINE__);
       word meth_list = Class_methDict(cls);
-VERB("<%d>", __LINE__);
+      VERB("<%d>", __LINE__);
       word message = ChainGetNth(MessageList, p[1]);
-VERB("<%d>", __LINE__);
+      VERB("<%d>", __LINE__);
       ChainAppend(meth_list, message);
-VERB("<%d>", __LINE__);
+      VERB("<%d>", __LINE__);
       ChainAppend(meth_list, FROM_INT(i));
-VERB("<%d>", __LINE__);
+      VERB("<%d>", __LINE__);
     }
   }
-VERB("<%d>", __LINE__);
+  VERB("<%d>", __LINE__);
   DumpStats();
 }
 
@@ -680,10 +683,10 @@ word ArgGet(byte i) {
 
 word FindMethForObj(word obj, byte meth_isn) {
   word cls = ChainGetNth(ClassList, ocls(obj));
-  // SayStr(Class_className(cls));
+  SayStr(Class_className(cls));
   word dict = Class_methDict(cls);
   word meth_name = ChainGetNth(InternList, meth_isn);
-  // SayStr(meth_name);
+  SayStr(meth_name);
   word meth = ChainDictGet(dict, meth_name);
   assert(meth);
   return meth;

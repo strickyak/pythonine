@@ -1,9 +1,11 @@
 #include "chain.h"
+
 #include "_generated_proto.h"
 #include "arith.h"
 #include "octet.h"
 
-#define VERB if(false)printf
+#define VERB \
+  if (false) printf
 #define DONT_SAY 1
 
 #if DONT_SAY
@@ -37,8 +39,8 @@ word NewDict() {
 word ChainAddrOfNth(word chain, byte nth) {
   assert(nth < INF);
   byte len2 = (byte)Chain_len2(chain);
-VERB("   Addr@@ len2=%d nth=%d chain=%x ", len2, nth, chain);
-// osay(chain);
+  VERB("   Addr@@ len2=%d nth=%d chain=%x ", len2, nth, chain);
+  // osay(chain);
 
   assert(nth < len2);
 
@@ -124,13 +126,13 @@ void ChainIterDump(word chain, void (*fn)(word)) {
 }
 
 word ChainGetNth(word chain, byte nth) {
-VERB("   Get@@ nth=%d chain=%x ", nth, chain);
+  VERB("   Get@@ nth=%d chain=%x ", nth, chain);
   word addr = ChainAddrOfNth(chain, nth);
   assert(addr);
   return GetW(addr);
 }
 void ChainPutNth(word chain, byte nth, word value) {
-VERB("   Put@@ nth=%d chain=%x ", nth, chain);
+  VERB("   Put@@ nth=%d chain=%x ", nth, chain);
   word addr = ChainAddrOfNth(chain, nth);
   assert(addr);
   PutW(addr, value);

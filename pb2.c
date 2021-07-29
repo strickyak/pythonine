@@ -1,6 +1,7 @@
 // C functions to decode our protobufs.
 
 #include "pb2.h"
+
 #include "octet.h"
 
 word pb_get_varint(struct ReadBuf* bp) {
@@ -21,14 +22,14 @@ word pb_int(struct ReadBuf* bp) {
   return pb_get_varint(bp);
 }
 
-word pb_str(struct ReadBuf* bp, byte* len_out) {
+word pb_str(struct ReadBuf* bp, byte cls, byte* len_out) {
   assert1((pb_current(bp) & 7) == KIND_STR, "bad pb_str kind %d",
           pb_current(bp) & 7);
   pb_next(bp);
   word len_int = pb_get_varint(bp);
   assert(len_int < (word)INF);
   byte len = (byte)len_int;
-  word z = oalloc(len, BYTES_CLASS);
+  word z = oalloc(len, cls);
   byte x = pb_current(bp);
   for (byte i = 0; i < len; i++) {
     oputb(z + i, x);

@@ -1,9 +1,7 @@
 class Apple(object):
-    #def __init__(self, abc):
-    #    self.x = abc
-    #    return self
     def __init__(self):
-        pass
+        self.x = 3
+        self.y = 4
 
     def SetX(self, x):
         self.unused = 0
@@ -17,7 +15,7 @@ class Apple(object):
 
 
 a = Apple()
-a.__init__()
+assert 7 == a.Sum()
 a.SetX(20)
 a.SetY(3)
 assert 23 == a.Sum()
