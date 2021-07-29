@@ -3,6 +3,9 @@
 #include "arith.h"
 #include "octet.h"
 
+#define VERB if(false)printf
+#define DONT_SAY 1
+
 #if DONT_SAY
 #define SAY(what, ob) \
   {}
@@ -34,6 +37,9 @@ word NewDict() {
 word ChainAddrOfNth(word chain, byte nth) {
   assert(nth < INF);
   byte len2 = (byte)Chain_len2(chain);
+VERB("   Addr@@ len2=%d nth=%d chain=%x ", len2, nth, chain);
+// osay(chain);
+
   assert(nth < len2);
 
   word p = Chain_root(chain);
@@ -118,11 +124,13 @@ void ChainIterDump(word chain, void (*fn)(word)) {
 }
 
 word ChainGetNth(word chain, byte nth) {
+VERB("   Get@@ nth=%d chain=%x ", nth, chain);
   word addr = ChainAddrOfNth(chain, nth);
   assert(addr);
   return GetW(addr);
 }
 void ChainPutNth(word chain, byte nth, word value) {
+VERB("   Put@@ nth=%d chain=%x ", nth, chain);
   word addr = ChainAddrOfNth(chain, nth);
   assert(addr);
   PutW(addr, value);
@@ -159,7 +167,7 @@ word ChainDictAddr(word chain, word key) {
     word iaddr = ChainIterNextAddr(chain, &it);
     SAY("iter_key", ikey);
     if (ikey == key) {
-      printf("FOUND at %04x\n", iaddr);
+      VERB("FOUND at %04x\n", iaddr);
       return iaddr;
     }
   }

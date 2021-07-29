@@ -144,8 +144,8 @@ code  GlobalGet
   [
     word addr = ChainAddrOfNth(GlobalDict, nth);
     assert(addr);
-    SayStr(ChainGetNth(GlobalDict, nth-1));  // verbose: print name of global.
-    SayObj( GetW(addr), 3 );
+    // SayStr(ChainGetNth(GlobalDict, nth-1));  // verbose: print name of global.
+    // SayObj( GetW(addr), 3 );
     z = ( GetW(addr) );
   ]
 code  GlobalPut
@@ -155,7 +155,7 @@ code  GlobalPut
   [
     word addr = ChainAddrOfNth(GlobalDict, nth);
     assert(addr);
-    SayStr(ChainGetNth(GlobalDict, nth-1));  // verbose: print name of global.
+    // SayStr(ChainGetNth(GlobalDict, nth-1));  // verbose: print name of global.
     PutW(addr, a);
   ]
 code  Branch
@@ -359,7 +359,7 @@ code SelfMemberGet
     word obj = ArgGet(0);
     assert(offset < ocap(obj));
     word z = ogetw(obj + offset);
-    SayStr(ChainGetNth(Class_fieldList(ChainGetNth(ClassList, ocls(obj))), offset2));
+    // SayStr(ChainGetNth(Class_fieldList(ChainGetNth(ClassList, ocls(obj))), offset2));
     result = ( z );
   ]
 code MemberPut
@@ -376,7 +376,7 @@ code SelfMemberPut
     word obj = ArgGet(0);
     assert(offset < ocap(obj));
     oputw(obj + offset, value);
-    SayStr(ChainGetNth(Class_fieldList(ChainGetNth(ClassList, ocls(obj))), offset2));
+    // SayStr(ChainGetNth(Class_fieldList(ChainGetNth(ClassList, ocls(obj))), offset2));
   ]
 code List
   arg llen

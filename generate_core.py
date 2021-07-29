@@ -170,7 +170,7 @@ def CompileCore(core_contents):
     for head, _ in Funcs:
         print 'extern %s;' % head
 
-    print 'extern byte BuiltinClassMessageMeths[];'
+    print 'extern const byte const BuiltinClassMessageMeths[];'
     print
     print '#endif // _CORE_DECLARATIONS_'
     print
@@ -182,7 +182,7 @@ def CompileCore(core_contents):
     DefineEnumNames('Message', message_enums)
 
     print
-    print 'byte BuiltinClassMessageMeths[] = {'
+    print 'const byte const BuiltinClassMessageMeths[] = {'
     for topic_cls, d1 in class_message_to_meth.items():
         for topic_message, mess_num in d1.items():
             print '  C_%s, %s, // METH_%s_%s == %d' % (topic_cls,

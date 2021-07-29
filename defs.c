@@ -45,8 +45,13 @@ char data_array[MEMSIZE];
 #endif
 
 void defs_init(void (*marker_fn)()) {
+#if unix
   printf("oinit: start=%04x end=%04x markerfn=%x\n", data, data_end,
          (unsigned)(unsigned long)marker_fn);
+#else
+  printf("oinit: start=%04x end=%04x markerfn=%x\n", data, data_end,
+         (unsigned)marker_fn);
+#endif
   oinit(data, data_end, marker_fn);
   odump(0, 0, 0, 0);
 }
