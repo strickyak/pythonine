@@ -968,7 +968,12 @@ class Compiler(object):
             self.ops.append('LitInt')
             self.ops.append(255 & t.x)
         else:
-            raise Exception('visitInt: bad %s' % t.x)
+            hi, lo = 255&(t.x>>8), 255&t.x
+            print >> E, 'BC_LitInt2,', t.x, ','
+            self.ops.append('LitInt2')
+            self.ops.append(hi)
+            self.ops.append(lo)
+
 
     def OpList2Bytecodes(self, ops):
         print >> E, '@@AAA', repr(ops)

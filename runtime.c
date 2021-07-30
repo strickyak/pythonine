@@ -17,6 +17,7 @@ word GlobalDict;  // todo: Modules.
 word InternList;
 word ClassList;
 word MessageList;
+word DunderInitIsn;
 
 byte* codes;     // ????
 word codes_obj;  // ????
@@ -487,29 +488,27 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
   }
 
   {
-    word dunder_init_isn = InternString(NewStrCopyFromC("__init__"));
-    assert(dunder_init_isn != INF);
-    word dunder_init_name = ChainGetNth(InternList, dunder_init_isn);
+    word dunder_init_name = ChainGetNth(InternList, DunderInitIsn);
     word init_meth = ChainDictGet(meth_dict, dunder_init_name);
     assert(init_meth);
     assert(ocls(init_meth) == C_Bytecodes);
+    byte num_args_to_init = ogetb(init_meth + 0);
 
     // Hand craft the constructor.
-    // TODO: call __init__.
     word ctor = oalloc(16, C_Bytecodes);
+    // Future: Bytecodes_flex_AtPut(ctor, 0, num_args_to_init-1);  // less 1 for
+    // new self.
+    Bytecodes_flex_AtPut(ctor, 0, num_args_to_init-1); // less self.
     Bytecodes_flex_AtPut(ctor, 3, INF);
     Bytecodes_flex_AtPut(ctor, 4, INF);
     Bytecodes_flex_AtPut(ctor, 5, INF);
+
     Bytecodes_flex_AtPut(ctor, 6, BC_Construct);
     Bytecodes_flex_AtPut(ctor, 7, class_num);
+    Bytecodes_flex_AtPut(ctor, 8, num_args_to_init-1); // less self.
 
-    Bytecodes_flex_AtPut(ctor, 8, BC_Dup);  // will return inst
-    Bytecodes_flex_AtPut(ctor, 9, BC_CallMeth);
-    Bytecodes_flex_AtPut(ctor, 10, dunder_init_isn);
-    Bytecodes_flex_AtPut(ctor, 11, 1);        // only arg is `self`
-    Bytecodes_flex_AtPut(ctor, 12, BC_Drop);  // result of __init__
-
-    Bytecodes_flex_AtPut(ctor, 13, BC_Return);
+    Bytecodes_flex_AtPut(ctor, 9, BC_Drop);  // result of __init__
+    Bytecodes_flex_AtPut(ctor, 10, BC_Return); // new obj
 
     ChainDictPut(GlobalDict, name_str, ctor);
   }
@@ -585,6 +584,8 @@ void RuntimeInit() {
   MessageList = NewList();
   Array_flex_AtPut(ForeverRoot, 4, MessageList);
 
+  DunderInitIsn = InternString(NewStrCopyFromC("__init__"));
+
   // Reserve builtin class slots, with None.
   ChainAppend(ClassList, None);  // unused 0.
   DumpStats();
@@ -639,6 +640,7 @@ void RuntimeInit() {
     }
   }
   VERB("<%d>", __LINE__);
+
   DumpStats();
 }
 
@@ -681,20 +683,82 @@ word ArgGet(byte i) {
   return ogetw(old_fp + (byte)old_sp + 2 * (i + 1));
 }
 
-word FindMethForObj(word obj, byte meth_isn) {
+word FindMethForObjOrNull(word obj, byte meth_isn) {
   word cls = ChainGetNth(ClassList, ocls(obj));
   SayStr(Class_className(cls));
   word dict = Class_methDict(cls);
   word meth_name = ChainGetNth(InternList, meth_isn);
   SayStr(meth_name);
   word meth = ChainDictGet(dict, meth_name);
-  assert(meth);
   return meth;
 }
-
 word SingletonStr(byte ch) {
   word x = NewStr(0, 6, 1);
   Str_bytes_Put(x, x);
   Str_single_Put(x, (word)ch << 7);
   return x;
+}
+
+word Construct(byte cls_num, byte nargs /*less self */) {
+    byte size = 32;
+    word obj = oalloc(size, cls_num);
+    sp -= 2;
+    oputw(sp, obj); // duplicate for actual return
+
+    word meth = FindMethForObjOrNull(obj, DunderInitIsn);
+    if (meth) {
+      byte want = ogetb(meth+0); // counts self.
+      assert2(want-1 == nargs, "__init__ got %d args, wants %d", nargs, want-1);
+      // push obj
+      sp -= 2;
+      oputw(sp, obj);
+      CallMeth(DunderInitIsn, nargs+1);  // add self
+    }
+
+    return obj;
+}
+
+void Call(byte nargs) {
+    Break();
+    word old_fp = fp;
+    fp = oalloc(32, C_Frame);
+    Frame_prev_frame_Put(fp, old_fp);
+    Frame_nargs_Put(fp, nargs);
+    Frame_prev_sp_Put(fp, sp-old_fp);
+    Frame_prev_ip_Put(fp, ip-function+1);  // XXX Explain +1 ?
+
+    function = ogetw(sp);
+    assert(ocls(function) == C_Bytecodes);
+    assert(ogetb(function + 0/*num_args*/) == nargs);
+    ip = function + BC_HEADER_SIZE - 1; // ip++ at bottom of loop.
+    sp = fp + ocap(fp);
+}
+
+void CallMeth(byte meth_isn, byte nargs /* with self */) {
+    Break();
+    word obj = ogetw(sp);
+    word future_function = FindMethForObjOrNull(obj, meth_isn);
+    assert2(future_function, "meth %d not found on obj %d", meth_isn, obj);
+
+    // Builtin methods are indicated by a small integer.
+    if (future_function & 1) {  // If odd, is an integer.
+            RunBuiltinMethod( (byte)TO_INT(future_function) );
+    } else {
+            word old_fp = fp;
+            fp = oalloc(32, C_Frame);
+            Frame_prev_frame_Put(fp, old_fp);
+            Frame_nargs_Put(fp, nargs);
+            Frame_prev_sp_Put(fp, sp-old_fp-2); // will -=2 below.
+            Frame_prev_ip_Put(fp, ip-function+1);  // XXX Explain +1 ?
+
+            function = future_function;
+            assert(ocls(function) == C_Bytecodes);
+            byte f_num_args = ogetb(function + 0/*num_args*/); // with self
+            printf("\ngot %d args, wanted %d\n", nargs, f_num_args);
+            assert2(f_num_args == nargs, "got %d args, wanted %d", nargs, f_num_args);
+            sp -= 2;
+            oputw(sp, function);
+            ip = function + BC_HEADER_SIZE - 1; // ip++ at bottom of loop.
+            sp = fp + ocap(fp);
+    }
 }

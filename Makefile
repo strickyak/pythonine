@@ -7,24 +7,23 @@ test: 1 2 3 4 5 fib 6 7 8
 	echo
 
 1:
-	make T=1 _run emu
+	make T=1 _build emu
 2:
-	make T=2 _run emu
+	make T=2 _build emu
 3:
-	make T=3 _run emu
+	make T=3 _build emu
 4:
-	make T=4 _run emu
+	make T=4 _build emu
 5:
-	make T=5 _run emu
+	make T=5 _build emu
 6:
-	make T=6 _run emu
+	make T=6 _build emu
 7:
-	make T=7 _run emu
+	make T=7 _build emu
 8:
-	make T=8 _run emu
+	make T=8 _build emu
 fib:
-	make T=fib _run emu
-
+	make T=fib _build emu
 
 
 _build:
@@ -78,8 +77,8 @@ emu: __always__
 	os9 copy -r runpy /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
 	os9 attr -per /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
 	:
-	echo "runpy #128" | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
-	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) || echo "*** CRASHED ($$?) ***" >&2
+	(echo "runpy #128"; echo "dir /d1") | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
+	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
 
 
 mooh:

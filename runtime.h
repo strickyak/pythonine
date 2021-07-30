@@ -82,8 +82,12 @@ void SayObj(word p, byte level);
 word MemberGet(word obj, byte isn);
 void MemberPut(word obj, byte isn, word value);
 word ArgGet(byte i);
-word FindMethForObj(word obj, byte meth_isn);
+word FindMethForObjOrNull(word obj, byte meth_isn);
 word SingletonStr(byte ch);
 void RunBuiltinMethod(byte meth_num);
+
+word Construct(byte cls_num, byte nargs);
+void Call(byte nargs);
+void CallMeth(byte meth_isn, byte nargs);
 
 #endif  // PYTH09__RUNTIME_H_
