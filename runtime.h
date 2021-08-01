@@ -85,10 +85,23 @@ word ArgGet(byte i);
 word FindMethForObjOrNull(word obj, byte meth_isn);
 word SingletonStr(byte ch);
 void RunBuiltin(byte builtin_num);
+void Directory();
 
-void Construct(byte cls_num, byte nargs);
+bool ConstructPerhapsNext(byte cls_num, byte nargs);
 void Call(byte nargs, word fn);
 void CallMeth(byte meth_isn, byte nargs);
 bool ReturnPerhapsStop(word retval);  // returns true to stop.
+
+#define FOR_EACH(I, ITEM, X)                           \
+  {                                                    \
+    struct ChainIterator iter;                         \
+    ChainIterStart((X), &iter);                        \
+    for (byte I = 0; ChainIterMore((X), &iter); I++) { \
+      word ITEM = ChainIterNext((X), &iter);
+#define DO {
+#define DONE \
+  }          \
+  }          \
+  }
 
 #endif  // PYTH09__RUNTIME_H_

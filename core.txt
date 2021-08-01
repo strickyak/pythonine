@@ -249,6 +249,7 @@ code Call
   arg nargs
   in fn
   [
+Directory();
    sp += 2;
    Call(nargs, fn);
    goto NEXT;
@@ -257,6 +258,7 @@ code Call
 code CallMeth
   arg meth_isn nargs
   [
+Directory();
     CallMeth(meth_isn, nargs);
     goto NEXT;
   ]
@@ -264,6 +266,7 @@ code CallMeth
 code Return
   in retval
   [
+Directory();
     byte stop = ReturnPerhapsStop(retval);
     if (stop) return;  // exit the interpreter loop.
     goto NEXT;
@@ -271,6 +274,7 @@ code Return
 code  RetSelf
   in
   [
+Directory();
     word old_fp = Frame_prev_frame(fp);
     assert (old_fp);
     word old_sp = Frame_prev_sp(fp);
@@ -282,6 +286,7 @@ code  RetSelf
   ]
 code  RetNone
   [
+Directory();
     byte stop = ReturnPerhapsStop(None);
     if (stop) return;  // exit the interpreter loop.
     goto NEXT;
@@ -289,7 +294,8 @@ code  RetNone
 code Construct
   arg cls_num nargs
   [
-    Construct(cls_num, nargs);
+    bool next = ConstructPerhapsNext(cls_num, nargs);
+    if (next) goto NEXT;
   ]
 code Dup
   in x

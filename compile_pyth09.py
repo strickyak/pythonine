@@ -649,7 +649,7 @@ class Compiler(object):
         localVars = set() if localVars is None else localVars
         self.argVars = argVars
         self.localVars = sorted(localVars - set(argVars))
-        print >> E, 'Compiler init:', self.localVars, self.localVars, tclass
+        print >> E, 'Compiler init:', 'parent', parentCompiler, 'argVars', self.argVars, 'localVars', self.localVars, 'tclass', tclass, 'isDunderInit', isDunderInit
 
         self.ops = [0, 0, 0, 0xFF, 0xFF, 0xFF]
         self.interns = {}
@@ -786,13 +786,14 @@ class Compiler(object):
         lg.localVars.update(t.arglist)  # args are localVars.
         lg.visitBlock(t.block)
 
+        #// def __init__(self, parentCompiler, argVars, localVars, tclass, isDunderInit):
         fc = Compiler(self, t.arglist, lg.localVars, tclass, t.name == '__init__')
         fc.visitBlock(t.block)
         if not len(fc.ops) or (
                 fc.ops[-1] != 'Return' and
                 fc.ops[-1] != 'RetNone' and
                 fc.ops[-1] != 'RetSelf'):
-            fc.ops.append('RetSelf' if self.isDunderInit else 'RetNone')
+            fc.ops.append('RetSelf' if fc.isDunderInit else 'RetNone')
         func_dict[t.name] = fc
 
     def visitWhile(self, t):
