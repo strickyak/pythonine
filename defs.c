@@ -13,7 +13,13 @@ bool IS_INT2(word x, word y) { return (byte)1 & (byte)x & (byte)y; }
 
 int TO_INT(word x) {
   assert1(x & 1u, "TO_INT %04x", x);
-  return (int)(x >> 1);
+  if (x & 0x8000) {
+    // neg
+    return 0x4000 | 0x3FFF & -(int)(x >> 1);
+  } else {
+    // pos
+    return 0x3FFF & (x >> 1);
+  }
 }
 
 word FROM_INT(int x) {

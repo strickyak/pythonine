@@ -84,10 +84,11 @@ void MemberPut(word obj, byte isn, word value);
 word ArgGet(byte i);
 word FindMethForObjOrNull(word obj, byte meth_isn);
 word SingletonStr(byte ch);
-void RunBuiltinMethod(byte meth_num);
+void RunBuiltin(byte builtin_num);
 
-word Construct(byte cls_num, byte nargs);
-void Call(byte nargs);
+void Construct(byte cls_num, byte nargs);
+void Call(byte nargs, word fn);
 void CallMeth(byte meth_isn, byte nargs);
+bool ReturnPerhapsStop(word retval);  // returns true to stop.
 
 #endif  // PYTH09__RUNTIME_H_

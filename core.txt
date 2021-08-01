@@ -29,6 +29,7 @@ class Str
   small single  # If a single-char string, you can use this target.
 class Frame
   oop prev_frame
+  oop function
   small nargs
   small prev_sp
   small prev_ip
@@ -170,13 +171,15 @@ code  EQ
   in a b
   out z
   [
-    z = (  Q(Equal(a, b)) );
+    word p = Equal(a, b);
+    z = Q(p);
   ]
 code  NE
   in a b
   out z
   [
-    z = (  Q(!Equal(a, b)) );
+    word p = !Equal(a, b);
+    z = Q(p);
   ]
 code  LT
   in a b
@@ -184,7 +187,8 @@ code  LT
   [
     int aa = N(a);
     int bb = N(b);
-    z = ( Q(aa < bb) );
+    word p = (aa < bb);
+    z = Q(p);
   ]
 code  GT
   in a b
@@ -192,7 +196,8 @@ code  GT
   [
     int aa = N(a);
     int bb = N(b);
-    z = ( Q(aa > bb) );
+    word p = (aa > bb);
+    z = Q(p);
   ]
 code  LE
   in a b
@@ -200,7 +205,8 @@ code  LE
   [
     int aa = N(a);
     int bb = N(b);
-    z = ( Q(aa <= bb) );
+    word p = (aa <= bb);
+    z = Q(p);
   ]
 code  GE
   in a b
@@ -208,17 +214,15 @@ code  GE
   [
     int aa = N(a);
     int bb = N(b);
-    z = ( Q(aa >= bb) );
+    word p = (aa >= bb);
+    z = Q(p);
   ]
 
 code ArgGet
   arg i
   out z
   [
-    z = ( ArgGet(i) );
-    //word old_fp = Frame_prev_frame(fp);
-    //int old_sp = Frame_prev_sp(fp);
-    //z( ogetw(old_fp + (byte)old_sp + 2*(i+1)) );
+    z = ArgGet(i);
   ]
 
 code LocalGet
@@ -236,55 +240,56 @@ code LocalPut
   ]
 
 code Drop
-  in x
+  in unused
   [
     {}
   ]
 
 code Call
   arg nargs
+  in fn
   [
-   Call(nargs);
+   sp += 2;
+   Call(nargs, fn);
+   goto NEXT;
   ]
 
 code CallMeth
   arg meth_isn nargs
   [
     CallMeth(meth_isn, nargs);
+    goto NEXT;
   ]
 
 code Return
+  in retval
   [
-    Break();
-    word retval = ogetw(sp);
-    word nargs = Frame_nargs(fp);
+    byte stop = ReturnPerhapsStop(retval);
+    if (stop) return;  // exit the interpreter loop.
+    goto NEXT;
+  ]
+code  RetSelf
+  in
+  [
     word old_fp = Frame_prev_frame(fp);
-    int old_sp = Frame_prev_sp(fp);
-
-    word older_fp = Frame_prev_frame(old_fp);
-    word older_sp = Frame_prev_sp(old_fp);
-
-    function = ogetw(older_fp + older_sp);
-    ip = function + Frame_prev_ip(fp) - 1; // ip++ at bottom of loop.
-    fp = old_fp;
-    // pop function, pop args, push retval.
-    sp = old_fp + old_sp + (nargs<<1);
-    oputw(sp, retval);
+    assert (old_fp);
+    word old_sp = Frame_prev_sp(fp);
+    word self_addr = old_fp + old_sp;  // last on previous stack.
+    word self = ogetw(self_addr);
+    byte stop = ReturnPerhapsStop(self);
+    if (stop) return;  // exit the interpreter loop.
+    goto NEXT;
   ]
 code  RetNone
-  in
-  out z
   [
-    sp-=2;
-    oputw(sp, None);
-    opcode = BC_Return;
-    goto SWITCH;
+    byte stop = ReturnPerhapsStop(None);
+    if (stop) return;  // exit the interpreter loop.
+    goto NEXT;
   ]
 code Construct
   arg cls_num nargs
-  out new_object
   [
-    new_object = Construct(cls_num, nargs);
+    Construct(cls_num, nargs);
   ]
 code Dup
   in x
@@ -298,17 +303,16 @@ code MemberGet
   out result
   [
     word z = MemberGet(obj, member);
-    result = ( z );
+    result = z;
   ]
 code SelfMemberGet
-  arg offset2
+  arg offset
   out result
   [
-    byte offset = offset2<<1;
     word obj = ArgGet(0);
     assert(offset < ocap(obj));
-    word z = ogetw(obj + offset);
-    result = ( z );
+    word addr = obj + offset;
+    result = ogetw(addr);
   ]
 code MemberPut
   arg member

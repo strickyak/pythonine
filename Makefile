@@ -1,7 +1,8 @@
 T=2
 
 # all except emu
-all: _build _octet_test _chain_test _runpy
+all: _build _runpy
+# all: _build _octet_test _chain_test _runpy
 
 test: 1 2 3 4 5 fib 6 7 8
 	echo
@@ -78,6 +79,7 @@ emu: __always__
 	os9 attr -per /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
 	:
 	(echo "runpy #128"; echo "dir /d1") | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
+	: T=$T
 	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
 
 
