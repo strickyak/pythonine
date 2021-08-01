@@ -106,9 +106,11 @@ code  Print
   in a
   out
   [
-    printf("PRINT: ");
-    SayObj(a, 2);
-    printf("\n");
+    if (a&1) {
+      printf("%d. ", N(a));
+    } else {
+      printf("$%x ", a);
+    }
     fflush(stdout);
   ]
 code  Assert
@@ -249,7 +251,6 @@ code Call
   arg nargs
   in fn
   [
-Directory();
    sp += 2;
    Call(nargs, fn);
    goto NEXT;
@@ -258,7 +259,6 @@ Directory();
 code CallMeth
   arg meth_isn nargs
   [
-Directory();
     CallMeth(meth_isn, nargs);
     goto NEXT;
   ]
@@ -266,7 +266,6 @@ Directory();
 code Return
   in retval
   [
-Directory();
     byte stop = ReturnPerhapsStop(retval);
     if (stop) return;  // exit the interpreter loop.
     goto NEXT;
@@ -274,7 +273,6 @@ Directory();
 code  RetSelf
   in
   [
-Directory();
     word old_fp = Frame_prev_frame(fp);
     assert (old_fp);
     word old_sp = Frame_prev_sp(fp);
@@ -286,7 +284,6 @@ Directory();
   ]
 code  RetNone
   [
-Directory();
     byte stop = ReturnPerhapsStop(None);
     if (stop) return;  // exit the interpreter loop.
     goto NEXT;

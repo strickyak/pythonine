@@ -27,14 +27,20 @@ word ip;  // Stores in Frame as ip - function.
 word fp;
 word sp;  // Stores in Frame as sp - fp.
 
+#if unix
 #define VERB \
   if (true) printf
+#else
+#define VERB \
+  if (false) printf
+#endif
 
 byte Hex(byte b) {
   b = b & 15;
   return (b < 10) ? '0' + b : 'a' + b - 10;
 }
 void SayChain(word p) {
+#if unix
   struct ChainIterator iter;
   ChainIterStart(p, &iter);
   for (int i = 0; ChainIterMore(p, &iter); i++) {
@@ -43,8 +49,10 @@ void SayChain(word p) {
     SayObj(e, 2);
   }
   fflush(stdout);
+#endif
 }
 void SayStr(word p) {
+#if unix
   assert(ocls(p) == C_Str);
   printf("'");
   for (byte i = 0; i < Str_len(p); i++) {
@@ -57,8 +65,10 @@ void SayStr(word p) {
   }
   printf("'");
   fflush(stdout);
+#endif
 }
 void SayObj(word p, byte level) {
+#if unix
   printf("{ <$%x=%d.> ", (int)p, (int)p);
   if (level < 1) return;
 
@@ -119,9 +129,11 @@ void SayObj(word p, byte level) {
   }
   printf("}");
   fflush(stdout);
+#endif
 }
 
 void SayStack() {
+#if unix
   byte cap = ocap(fp);
   int i = 0;
   for (word p = sp; p < fp + cap; p += 2) {
@@ -132,6 +144,7 @@ void SayStack() {
     ++i;
   }
   fflush(stdout);
+#endif
 }
 
 #if 0  // unused for now
@@ -487,11 +500,9 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
 
   {
     word dunder_init_name = ChainGetNth(InternList, DunderInitIsn);
-    printf("\nnando dunder_init_name: ");
     SayObj(dunder_init_name, 3);
     osay(dunder_init_name);
     word init_meth = ChainDictGet(meth_dict, dunder_init_name);
-    printf("\nnando init_meth: ");
     SayObj(init_meth, 3);
     osay(init_meth);
     byte num_args_to_ctor = 0;
@@ -499,7 +510,6 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
       assert(ocls(init_meth) == C_Bytecodes);
       num_args_to_ctor = ogetb(init_meth + BC_NUM_ARGS) - 1;
     }
-    printf("\nnando num_args_to_ctor: %d\n", num_args_to_ctor);
 
     // Hand craft the constructor.
     word ctor = oalloc(16, C_Bytecodes);
@@ -642,24 +652,16 @@ void RuntimeInit() {
     Class_methDict_Put(cls, d);
     ChainAppend(ClassList, cls);
   }
-  VERB("<%d>", __LINE__);
   for (byte i = 0; i < MessageNames_SIZE; i++) {
-    VERB("<%d>", __LINE__);
     word name = NewStrCopyFromC(MessageNames[i]);
-    VERB("<%d>", __LINE__);
     // SayStr(name);
     word name_isn = InternString(name);
-    VERB("<%d>", __LINE__);
     // SayStr(ChainGetNth(InternList, name_isn));
-    VERB("<%d>", __LINE__);
     ChainAppend(MessageList, ChainGetNth(InternList, name_isn));
-    VERB("<%d>", __LINE__);
   }
-  VERB("<%d>", __LINE__);
   {
     byte i = 0;
     for (const byte* p = BuiltinClassMessageMeths; *p; p += 2, ++i) {
-      printf("wwwwwwwwww %d: %d %d\n", i, p[0], p[1]);
       word cls = ChainGetNth(ClassList, p[0]);
       SayObj(cls, 3);
       word meth_list = Class_methDict(cls);
@@ -673,6 +675,7 @@ void RuntimeInit() {
 }
 
 void Break() {
+#if unix
   printf("\n@ Break (((\n");
   printf("  fp=%d sp-fp=%d fn=%d ip-fn=%d\n", fp, sp - fp, function,
          ip - function);
@@ -684,13 +687,14 @@ void Break() {
     osay(p);
   }
   printf("\n@ Break )))\n");
+#endif
 }
 
 byte FieldOffset(word obj, byte member_name_isn) {
   word cls = ChainGetNth(ClassList, ocls(obj));
   if (!cls) return INF;
   word member_name = ChainGetNth(InternList, member_name_isn);
-  printf("Field Offset of ");
+  VERB("Field Offset of ");
   SayStr(member_name);
   word p = Class_fieldList(cls);
 
@@ -699,11 +703,11 @@ byte FieldOffset(word obj, byte member_name_isn) {
   for (int i = 0; ChainIterMore(p, &iter); i++) {
     word e = ChainIterNext(p, &iter);
     if (e == member_name) {
-      printf("Field %d off %d\n", i, i + i);
+      VERB("Field %d off %d\n", i, i + i);
       return (byte)i + (byte)i;
     }
   }
-  printf("Not Found.\n");
+  VERB("Not Found.\n");
   // Not found.
   return INF;
 }
@@ -713,7 +717,7 @@ word MemberGet(word obj, byte member_name_isn) {
   assert(off != INF);
   word addr = obj + off;
   word z = ogetw(addr);
-  printf("addr %d MemberGet->%d\n", addr, z);
+  VERB("addr %d MemberGet->%d\n", addr, z);
   return z;
 }
 
@@ -721,19 +725,19 @@ void MemberPut(word obj, byte member_name_isn, word value) {
   byte off = FieldOffset(obj, member_name_isn);
   assert(off != INF);
   word addr = obj + off;
-  printf("addr %d MemberPut<-%d\n", addr, value);
+  VERB("addr %d MemberPut<-%d\n", addr, value);
   oputw(addr, value);
 }
 
 word ArgGet(byte i) {
-  printf("ArgGet(%d): ", i);
+  VERB("ArgGet(%d): ", i);
   word old_fp = Frame_prev_frame(fp);
-  printf("fp: %d old_fp %d ", fp, old_fp);
+  VERB("fp: %d old_fp %d ", fp, old_fp);
   int old_sp = old_fp + Frame_prev_sp(fp);
-  printf("prev_sp: %d old_sp %d ", Frame_prev_sp(fp), old_sp);
+  VERB("prev_sp: %d old_sp %d ", Frame_prev_sp(fp), old_sp);
   word addr = old_sp + i + i;
   word z = ogetw(addr);
-  printf("addr: %d z: %d\n", addr, z);
+  VERB("addr: %d z: %d\n", addr, z);
   return z;
 }
 
@@ -754,25 +758,15 @@ word SingletonStr(byte ch) {
 }
 
 bool ConstructPerhapsNext(byte cls_num, byte nargs /*less self */) {
-  printf("CONS: SP=%d\n", sp);
   // Push nargs args from caller's frame onto our stack.
   word old_fp = Frame_prev_frame(fp);
   word old_sp = old_fp + Frame_prev_sp(fp);
-  printf("aCONS: SP=%d\n", sp);
   for (byte i = 0; i < nargs; i++) {
-    printf("bCONS: SP=%d\n", sp);
     word p = old_sp + ((nargs - i - 1) << 1);
-    printf("p=%d\n", p);
-    printf("xCONS: SP=%d\n", sp);
     word tmp_arg = ogetw(p);
-    printf("temp_arg=%d\n", tmp_arg);
-    printf("yCONS: SP=%d\n", sp);
     sp -= 2;
-    printf("zCONS: SP=%d\n", sp);
     oputw(sp, tmp_arg);
-    printf("cCONS: SP=%d\n", sp);
   }
-  printf("2CONS: SP=%d\n", sp);
 
   // Create the object and push self to our stack.
   byte size = 32;
@@ -781,27 +775,20 @@ bool ConstructPerhapsNext(byte cls_num, byte nargs /*less self */) {
   oputw(sp, obj);
 
   word meth = FindMethForObjOrNull(obj, DunderInitIsn);
-  printf(" __init__isn=%d ", DunderInitIsn);
-  printf(" meth=%d ", meth);
-  printf("3CONS: SP=%d\n", sp);
   if (meth) {
     byte want = ogetb(meth + BC_NUM_ARGS);  // counts self.
     assert2(want == 1 + nargs, "__init__ got %d args, wants %d", 1 + nargs,
             want);
-    printf(" Constructor calling __init__.\n");
-    printf("4CONS: SP=%d\n", sp);
     CallMeth(DunderInitIsn, nargs + 1);  // add 1 for self.
     return true;
     // THEN GOTO NEXT.
   } else {
-    printf(" Constructor without __init__.\n");
     assert(!nargs);
     return false;
   }
 }
 
 void Call(byte nargs, word fn) {
-  printf("CALL: SP=%d\n", sp);
   Break();
   if (fn & 1) {  // If odd, is an integer.
     RunBuiltin((byte)TO_INT(fn));
@@ -811,7 +798,6 @@ void Call(byte nargs, word fn) {
 
   word old_fp = fp;
   fp = oalloc(32, C_Frame);
-  printf("2CALL: SP=%d\n", sp);
 
   Frame_prev_frame_Put(fp, old_fp);
   Frame_function_Put(fp, fn);
@@ -831,12 +817,10 @@ void Call(byte nargs, word fn) {
 }
 
 void CallMeth(byte meth_isn, byte nargs /* with self */) {
-  printf("CALLMETH: SP=%d\n", sp);
   word self = ogetw(sp);
   word fn = FindMethForObjOrNull(self, meth_isn);
   assert2(fn, "meth %d not found on self %d", meth_isn, self);
 
-  printf("2CALLMETH: SP=%d\n", sp);
   Call(nargs, fn);
   // THEN GOTO NEXT.
 }

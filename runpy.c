@@ -16,18 +16,13 @@ int main(int argc, char* argv[]) {
 
   defs_init(MarkRoots);
   RuntimeInit();
-#if unix
-  Directory();
-#endif
 
   struct ReadBuf read_buf;
   ReadBufOpen(&read_buf, "bc");
 
   word main_bytecodes;
   SlurpModule(&read_buf, &main_bytecodes);
-#if unix
   Directory();
-#endif
 
   EvalCodes(main_bytecodes);
   printf("\n[[[ FINISHED ]]]\n");

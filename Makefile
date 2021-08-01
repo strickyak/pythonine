@@ -1,4 +1,5 @@
 T=2
+C=42
 
 # all except emu
 all: _build _runpy
@@ -84,7 +85,7 @@ emu: __always__
 
 
 mooh:
-	cp -f ~/go/src/github.com/strickyak/doing_os9/gomar/drive/mooh-sdcard-co42.img /tmp/_img
+	cp -f ~/go/src/github.com/strickyak/doing_os9/gomar/drive/mooh-sdcard-co$C.img /tmp/_img
 	dd bs=512 skip=512 count=7650 if=/tmp/_img of=/tmp/_drive
 	os9 copy -r test$T.bc /tmp/_drive,bc
 	os9 copy -r runpy /tmp/_drive,CMDS/runpy

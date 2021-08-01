@@ -32,11 +32,7 @@ word NewList() {
 }
 word NewDict() {
   word z = oalloc(Dict_Size, C_Dict);
-  printf("\nNewDict: z=%d ", z);
-  word zz = Chain_Init(z);
-  printf(" zz=%d\n", zz);
-  assert(z == zz);
-  return z;
+  return Chain_Init(z);
 }
 
 // returns value at Nth

@@ -233,15 +233,14 @@ void omark(word addr) {
 }
 
 void ogc() {
-  printf("\nogc: begin {{{\n");
+  printf(" {GC");
   // Mark all our roots.
   OMarkerFn();
-  printf("ogc: ran OMarkerFn\n");
+  printf(":");
 
   // Reset all the buckets.
   for (byte i = 0; i < O_NUM_BUCKETS; i++) OBucket[i] = 0;
 
-  printf("ogc: sweep ===\n");
   word p = ORamBegin + DHDR;
   while (p < ORamUsed) {
 #if GUARD
@@ -264,7 +263,7 @@ void ogc() {
     }
     p += cap + DHDR;
   }
-  printf("ogc: end }}}\n");
+  printf("} ");
 }
 
 void osayhexlabel(word p, word len, char* label) {
