@@ -4,15 +4,13 @@
 #include "readbuf.h"
 #include "runtime.h"
 
-// extern const byte const BuiltinClassMessageMeths[];
-
 int main(int argc, char* argv[]) {
   {
-    const byte* q = BuiltinClassMessageMeths;
+    const byte* q = Prims;
     printf("\nINIT(a): q=%x : %x %x %x %x %x %x\n", q, q[0], q[1], q[2], q[3],
            q[4], q[5]);
-    assert(q[0] == 10);
-    assert(q[2] == 10);
+    assert(q[0] == C_Str);
+    assert(q[2] == C_Str);
     assert(q[4] == 0);
   }
 

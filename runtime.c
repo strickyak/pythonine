@@ -3,6 +3,7 @@
 #include "_generated_proto.h"
 #include "arith.h"
 #include "chain.h"
+#include "data.h"
 #include "defs.h"
 #include "octet.h"
 #include "pb2.h"
@@ -649,14 +650,12 @@ void RuntimeInit() {
   }
   for (byte i = 0; i < MessageNames_SIZE; i++) {
     word name = NewStrCopyFromC(MessageNames[i]);
-    // SayStr(name);
     word name_isn = InternString(name);
-    // SayStr(ChainGetNth(InternList, name_isn));
     ChainAppend(MessageList, ChainGetNth(InternList, name_isn));
   }
   {
     byte i = 0;
-    for (const byte* p = BuiltinClassMessageMeths; *p; p += 2, ++i) {
+    for (const byte* p = Prims; *p; p += 2, ++i) {
       word cls = ChainGetNth(ClassList, p[0]);
       SayObj(cls, 3);
       word meth_list = Class_methDict(cls);

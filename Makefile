@@ -35,14 +35,14 @@ _build:
 	python2 compile_pyth09.py < test$T.py > test$T.bc
 	cp test$T.bc bc
 	python2 print_pb.py bc.proto _generated_core.h < bc | tee test$T.dump | tee ,dump
-	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c chain.c defs.c pb2.c octet.c
+	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c defs.c pb2.c octet.c
 
 _runpy:
 	./runpy.bin
 
 _chain_test:
 	python2 generate_core.py < core.txt > _generated_core.h
-	cc -DDONT_SAY -g -o chain_test.bin chain_test.c defs.c chain.c octet.c
+	cc -DDONT_SAY -g -o chain_test.bin chain_test.c defs.c data.c chain.c octet.c
 	./chain_test.bin
 
 _octet_test:
@@ -72,7 +72,7 @@ SDC=drive/my-68SDC.VHD
 
 emu: __always__
 	rm -f runpy
-	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c chain.c pb2.c arith.c defs.c octet.c
+	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c chain.c pb2.c arith.c defs.c octet.c
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:

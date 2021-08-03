@@ -6,9 +6,11 @@ class SmallInt # 1: Inside OOP with the low bit set.
   # no contents
 class Bytes # 2: arbitrary bytes (of varying length).
   byte[] flex
-class Bytecodes # 3: Python bytecodes (of varying length).
+class Buf # 3: byte buffer
+  byte[] flex  # first byte is len.
+class Bytecodes # 4: Python bytecodes (of varying length).
   byte[] flex
-class MC # 4: 6809/6309 Machine Code (of varying length).
+class MC # 5: 6809/6309 Machine Code (of varying length).
   byte[] flex
 class Array # Array (of varying length) of OOPs.
   oop[] flex
@@ -21,9 +23,6 @@ class List # a chain for a list.
 class Dict # a chain for a dict.
   oop root
   small len2
-class Buf
-  oop bytes
-  small len
 class Str
   oop bytes
   small len
@@ -370,7 +369,7 @@ code Len
         n = Str_len(o);
         break;
     case C_Buf:
-        n = Buf_len(o);
+        n = BufLen(o);
         break;
     case C_List:
         n = List_len2(o);
@@ -432,16 +431,16 @@ code Chr
   ]
 
 
-meth Str __str__
+prim Str __str__
   in self
   out z
-  [
-    z = self;
-  ]
+[
+  z = self;
+]
 
-meth Str __foo__
+prim Str __foo__
   in self
   out z
-  [
-    z = DunderInitStr;
-  ]
+[
+  z = DunderInitStr;
+]

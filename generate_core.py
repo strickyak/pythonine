@@ -49,7 +49,7 @@ def CompileCore(core_contents):
     code_in = {}
     code_out = {}
     code_body = {}
-    meth_enums = []
+    prim_enums = []
     message_enums = []
     class_message_to_meth = dict()
     in_body = False
@@ -72,9 +72,9 @@ def CompileCore(core_contents):
             code_arg[topic] = []
             code_in[topic] = []
             code_out[topic] = []
-        elif words[0] == 'meth':
+        elif words[0] == 'prim':
             kind = 'm'
-            topic = 'METH_%s_%s' % (words[1], words[2])
+            topic = 'PRIM_%s' % '_'.join(words[1:])
             topic_cls = words[1]
             topic_message = words[2]
 
@@ -83,8 +83,8 @@ def CompileCore(core_contents):
 
             if topic_cls not in class_message_to_meth:
                 class_message_to_meth[topic_cls] = dict()
-            class_message_to_meth[topic_cls][topic_message] = len(meth_enums)
-            meth_enums.append(topic)
+            class_message_to_meth[topic_cls][topic_message] = len(prim_enums)
+            prim_enums.append(topic)
 
             code_in[topic] = []
             code_out[topic] = []
@@ -161,7 +161,7 @@ def CompileCore(core_contents):
     print
     DefineEnum('Message', message_enums)
     print
-    DefineEnum('Meth', meth_enums)
+    DefineEnum('Prim', prim_enums)
     print
 
     for m in Macros:
@@ -170,7 +170,7 @@ def CompileCore(core_contents):
     for head, _ in Funcs:
         print 'extern %s;' % head
 
-    print 'extern const byte const BuiltinClassMessageMeths[];'
+    print 'extern const byte Prims[];'
     print
     print '#endif // _CORE_DECLARATIONS_'
     print
@@ -182,7 +182,7 @@ def CompileCore(core_contents):
     DefineEnumNames('Message', message_enums)
 
     print
-    print 'const byte const BuiltinClassMessageMeths[] = {'
+    print 'const byte Prims[] = {'
     for topic_cls, d1 in class_message_to_meth.items():
         for topic_message, mess_num in d1.items():
             print '  C_%s, %s, // METH_%s_%s == %d' % (topic_cls,
@@ -240,7 +240,7 @@ def CompileCore(core_contents):
     print
     print '#if _CORE_PART_ == 4'
     print
-    for c in meth_enums:
+    for c in prim_enums:
         print '// CASE:', c, repr(code_in[c]), repr(code_out[c])
         print 'case %s: {' % c
         i = len(code_in[c])

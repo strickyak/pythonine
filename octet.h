@@ -64,7 +64,7 @@ extern word ORamBegin;
 extern word ORamEnd;
 extern omarker OMarkerFn;
 
-#define O_LAST_NONPTR_CLASS 4 /* classes 2, 3, and 4 are bytes */
+#define O_LAST_NONPTR_CLASS 5 /* classes 2, 3, 4, 5 are bytes */
 
 // public api:
 

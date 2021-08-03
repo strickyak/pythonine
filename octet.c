@@ -15,6 +15,8 @@ word ORamUsed;
 word ORamBegin;
 word ORamEnd;
 omarker OMarkerFn;
+word OGrace1;
+word OGrace2;
 
 // Free chunks are link-listed from OBucket, by word addr.
 // Word addr 0 means empty bucket or end of list.
@@ -203,6 +205,10 @@ word oalloc(byte len, byte cls) {
   ocheckguards(p);
 #endif
   ozero(p, ocap(p));  // Clear payload.
+
+  // Grace period for 2 recent objs, against GC:
+  OGrace2 = OGrace1;
+  OGrace1 = p;
   return p;
 }
 
@@ -258,6 +264,8 @@ void omark(word addr) {
 void ogc() {
   printf(" {GC");
   // Mark all our roots.
+  omark(OGrace1);
+  omark(OGrace2);
   OMarkerFn();
   printf(":");
 
