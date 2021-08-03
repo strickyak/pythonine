@@ -9,7 +9,6 @@
 #include "readbuf.h"
 
 // GC Roots:
-word ForeverRoot;
 word RootForMain;  // For main() to use.
 
 word Builtins;
@@ -17,7 +16,8 @@ word GlobalDict;  // todo: Modules.
 word InternList;
 word ClassList;
 word MessageList;
-word DunderInitIsn;
+word DunderInitStr;
+byte DunderInitIsn;
 
 byte* codes;     // ????
 word codes_obj;  // ????
@@ -308,13 +308,16 @@ void EvalCodes(word fn) {
 void RunLoop() {
   for (; 1; ++ip) {
   NEXT:
+#ifdef CAREFUL
     VERB("\n");
     assert(sp >= fp + Frame_Size - 2);
     assert(sp <= fp + ocap(fp));
     SayStack();  // ===========
     assert(ip >= function + BC_HEADER_SIZE);
     assert(ip < function + INF);
+#endif
     byte opcode = ogetb(ip);
+#ifdef CAREFUL
     assert(opcode < CodeNames_SIZE);
     VERB("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
          function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
@@ -327,6 +330,7 @@ void RunLoop() {
     assert(ip > function);
     assert(sp <= fp + INF);
     assert(ip < function + INF);
+#endif
     switch (opcode) {
 #define _CORE_PART_ 3
 #include "_generated_core.h"
@@ -499,10 +503,9 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
   }
 
   {
-    word dunder_init_name = ChainGetNth(InternList, DunderInitIsn);
-    SayObj(dunder_init_name, 3);
-    osay(dunder_init_name);
-    word init_meth = ChainDictGet(meth_dict, dunder_init_name);
+    SayObj(DunderInitStr, 3);
+    osay(DunderInitStr);
+    word init_meth = ChainDictGet(meth_dict, DunderInitStr);
     SayObj(init_meth, 3);
     osay(init_meth);
     byte num_args_to_ctor = 0;
@@ -568,7 +571,11 @@ void SlurpModule(struct ReadBuf* bp, word* bc_out) {
 }
 
 void MarkRoots() {
-  omark(ForeverRoot);
+  omark(Builtins);
+  omark(GlobalDict);
+  omark(InternList);
+  omark(ClassList);
+  omark(MessageList);
   omark(RootForMain);
   omark(function);
   omark(fp);
@@ -616,26 +623,14 @@ void Directory() {
 #endif
 }
 void RuntimeInit() {
-  // Protect roots forever from GC.
-  // Size 10 is twice the number of elements.
-  ForeverRoot = oalloc(10, C_Array);
-
   Builtins = NewList();
-  Array_flex_AtPut(ForeverRoot, 0, Builtins);
-
   GlobalDict = NewDict();  // todo: Modules.
-  Array_flex_AtPut(ForeverRoot, 1, GlobalDict);
-
   InternList = NewList();
-  Array_flex_AtPut(ForeverRoot, 2, InternList);
-
   ClassList = NewList();
-  Array_flex_AtPut(ForeverRoot, 3, ClassList);
-
   MessageList = NewList();
-  Array_flex_AtPut(ForeverRoot, 4, MessageList);
 
   DunderInitIsn = InternString(NewStrCopyFromC("__init__"));
+  DunderInitStr = ChainGetNth(InternList, DunderInitIsn);
 
   // Reserve builtin class slots, with None.
   ChainAppend(ClassList, None);  // unused 0.
@@ -792,6 +787,7 @@ void Call(byte nargs, word fn) {
   Break();
   if (fn & 1) {  // If odd, is an integer.
     RunBuiltin((byte)TO_INT(fn));
+    ++ip;  // Do it here, because Call uses "goto NEXT".
     return;
   }
   assert(ocls(fn) == C_Bytecodes);

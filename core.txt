@@ -106,10 +106,15 @@ code  Print
   in a
   out
   [
+#if unix
+    // is hard to see with so much debugging output.
+    // make it more obvious
+    printf("\n@@@@@ PRINT @@@@@ ");
+#endif
     if (a&1) {
-      printf("%d. ", N(a));
+      printf("%d ", N(a));
     } else {
-      printf("$%x ", a);
+      printf("[$%x] ", a);
     }
     fflush(stdout);
   ]
@@ -430,4 +435,11 @@ meth Str __str__
   out z
   [
     z = self;
+  ]
+
+meth Str __foo__
+  in self
+  out z
+  [
+    z = DunderInitStr;
   ]

@@ -23,25 +23,31 @@ byte OBucketCap[] = {2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 254};
 
 bool ovalidaddr(word p) {
   bool z = ((p & 1u) == 0u && ORamBegin < p && p < ORamEnd);
+#if CAREFUL
 #if GUARD
   if (z) {
     assert(ogetb(p - 4) == GUARD_ONE);
     assert(ogetb(p - 1) == GUARD_TWO);
   }
 #endif
+#endif
   return z;
 }
 
 byte ocap(word a) {
+#if CAREFUL
   assert(ovalidaddr(a));
   ocheckguards(a);
+#endif
   byte cap = (0x7F & ogetb(a - DCAP)) << 1;
   assert(cap);
   return cap;
 }
 byte ocls(word a) {
+#if CAREFUL
   assert(ovalidaddr(a));
   ocheckguards(a);
+#endif
   return ogetb(a - DCLS);
 }
 
@@ -70,7 +76,9 @@ void oinit(word begin, word end, omarker fn) {
   ORamUsed = begin;
   for (byte i = 0; i < O_NUM_BUCKETS; i++) OBucket[i] = 0;
   V_OCTET("oinit: ORamBegin=%x ORamEnd=%x\n", ORamBegin, ORamEnd);
+#if 0
   ozero(ORamBegin, ORamEnd - ORamBegin);
+#endif
   V_OCTET("oinit: ORamBegin=%x ORamEnd=%x\n", ORamBegin, ORamEnd);
 #if GUARD
   oputb(ORamBegin, GUARD_ONE);
@@ -93,14 +101,18 @@ void oassertzero(word begin, word len) {
 #endif
 
 word ocarve(byte len, byte cls) {
+#if CAREFUL
   if (!cls) opanic(OE_ZERO_CLASS);
   if (len == 0xFF) opanic(OE_TOO_BIG);
+#endif
   if (len & 1) ++len;  // align up to even len.  // XXX
   byte buck = osize2bucket(len);
   byte cap = OBucketCap[buck];
+#if CAREFUL
   assert(cap >= len);
   V_OCTET("carve: cls=%d. len=%d. buck=%d. cap=%d.\n", cls, len, buck, cap);
   V_OCTET("carve: ORamUsed=%x ORamEnd=%x\n", ORamUsed, ORamEnd);
+#endif
 
   // reserve both initial and spare final header.
   word delta = (word)DHDR + (word)cap;
@@ -123,15 +135,20 @@ word ocarve(byte len, byte cls) {
   oputb(p - DCAP, cap >> 1);
   oputb(p - DCLS, cls);
 #if DEBUG
-  oassertzero(p, cap);
+//#if CAREFUL
+// oassertzero(p, cap);
+//#endif
 #endif
 
   ORamUsed = final;
+#if CAREFUL
   ocheckguards(p);
+#endif
   return p;
 }
 
 void ocheckguards(word p) {
+#if CAREFUL
 #if GUARD
   assert(ogetb(p - 4) == GUARD_ONE);
   assert(ogetb(p - 1) == GUARD_TWO);
@@ -139,6 +156,7 @@ void ocheckguards(word p) {
   assert(cap);
   word final = p + cap;
   assert(ogetb(final) == GUARD_ONE);
+#endif
 #endif
 }
 word oalloc_try(byte len, byte cls) {
@@ -156,10 +174,12 @@ word oalloc_try(byte len, byte cls) {
     oputw(p, 0);               // Clear where the link was.
     oputb(p - DCLS, cls);
     word cap = ocap(p);
+#if CAREFUL
     assert(cap >= len);
-#if DEBUG
-    oassertzero(p, cap);
 #endif
+    //#if DEBUG
+    // oassertzero(p, cap);
+    //#endif
     V_OCTET("reuse: buck=%d cap=%d p=%d cls=%d\n", buck, cap, p, cls);
     return p;
   }
@@ -179,7 +199,10 @@ word oalloc(byte len, byte cls) {
   }
   V_OCTET("oalloc %d %d -> %d\n", len, cls, p);
   if (!p) opanic(OE_OUT_OF_MEM);
+#if CAREFUL
   ocheckguards(p);
+#endif
+  ozero(p, ocap(p));  // Clear payload.
   return p;
 }
 
@@ -253,7 +276,9 @@ void ogc() {
     // TODO: !cls doesn't mean anything.
     if (!cls || !mark_bit) {
       oputb(p - DCLS, 0);  // Clear class.
+#if 0
       ozero(p, cap);       // Clear payload.
+#endif
       byte buck = osize2bucket(cap);
       // Add p to front of linked list.
       oputw(p, OBucket[buck]);

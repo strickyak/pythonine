@@ -97,7 +97,7 @@ mooh:
 	dd bs=512 seek=512 count=7650 if=/tmp/_drive of=/tmp/_img
 	sync
 	test -b /dev/sdb && sudo dd bs=1024k if=/tmp/_img of=/dev/sdb
-	sync
+	sync; sync; sync
 
 
 __always__:
