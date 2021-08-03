@@ -1,12 +1,14 @@
 # Core definitions of builtin classes and opcodes.
 
-class Free # unused chunks.
+class Free # 0: unused chunks.
   oop next
-class Bytes # arbitrary bytes (of varying length).
+class SmallInt # 1: Inside OOP with the low bit set.
+  # no contents
+class Bytes # 2: arbitrary bytes (of varying length).
   byte[] flex
-class Bytecodes # Python bytecodes (of varying length).
+class Bytecodes # 3: Python bytecodes (of varying length).
   byte[] flex
-class MC # 6809/6309 Machine Code (of varying length).
+class MC # 4: 6809/6309 Machine Code (of varying length).
   byte[] flex
 class Array # Array (of varying length) of OOPs.
   oop[] flex
