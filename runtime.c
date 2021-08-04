@@ -844,3 +844,20 @@ bool ReturnPerhapsStop(word retval) {
   return false;  // don't stop.
   // THEN GOTO NEXT.
 }
+void DoTry(byte catch_loc) {
+  word try = oalloc(Try_Size, C_Try);
+  Try_catch_loc_Put(try, catch_loc);
+  word next = Frame_tries(fp);
+  Try_next_Put(try, next);
+}
+void DoCatch(byte end_catch_loc) {
+  // Called at the end of a try.
+  // Consulted on a Catch, which starts at the next opcode.
+
+  // Remove one Try block from the `tries` chain.
+  word try = Frame_tries(fp);
+  word next = Try_next(try);
+  Frame_tries_Put(fp, next);
+  ip = end_catch_loc;
+  // THEN GOTO NEXT.
+}

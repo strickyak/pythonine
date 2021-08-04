@@ -37,12 +37,16 @@ class Frame
   small nargs
   small prev_sp
   small prev_ip
+  oop tries
   oop[] flex
 class Class
   small classNum
   oop className
   oop methDict
   oop fieldList
+class Try
+  small catch_loc
+  oop next
 
 # Opcodes.
 code  Abort  # Abort comes first, so 00 means abort.
@@ -432,7 +436,18 @@ code Chr
     word n = TO_INT(x);
     z = SingletonStr((byte)n);
   ]
-
+code Try
+  arg catch_loc
+[
+  DoTry(catch_loc);
+]
+code Catch
+  arg end_catch_loc catch_var
+[
+  (void) catch_var; // used when catching.
+  DoCatch(end_catch_loc);
+  goto NEXT;
+]
 
 prim Str __str__
   in self

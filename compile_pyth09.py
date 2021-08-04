@@ -355,6 +355,17 @@ class Parser(object):
         block = self.ColonBlock()
         return TWhile(cond, block)
 
+    def ParseTry(self):
+        try_block = self.ColonBlock()
+        self.ConsumeX('except')
+        if self.x == 'as':
+            self.ConsumeX('as')
+        except_var = None
+        if self.t == L_IDENTIFIER:
+            except_var = self.ParseIdentifier()
+        catch_block = self.ColonBlock()
+        return TTryExcept(try_block, except_var, catch_block)
+
     def ParseIf(self):
         plist = [self.ParseSingle()]
         blist = [self.ColonBlock()]
@@ -439,6 +450,9 @@ class Parser(object):
             elif self.x == 'if':
                 self.Advance()
                 p = self.ParseIf()
+            elif self.x == 'try':
+                self.Advance()
+                p = self.ParseTry()
             elif self.x == 'while':
                 self.Advance()
                 p = self.ParseWhile()
@@ -597,6 +611,14 @@ class TWhile(TBase):
     def visit(self, a):
         return a.visitWhile(self)
 
+class TTryExcept(TBase):
+    def __init__(self, try_block, except_var, catch_block):
+        self.try_block = try_block
+        self.except_var = except_var
+        self.catch_block = catch_block
+
+    def visit(self, a):
+        return a.visitTryExcept(self)
 
 class TIf(TBase):
     def __init__(self, plist, blist, belse):
@@ -795,6 +817,24 @@ class Compiler(object):
                 fc.ops[-1] != 'RetSelf'):
             fc.ops.append('RetSelf' if fc.isDunderInit else 'RetNone')
         func_dict[t.name] = fc
+
+    def visitTryExcept(self, t):
+        self.ops.append('Try')
+        patch_try = len(self.ops)
+        self.ops.append(0)  # to the end.
+
+        t.try_block.visit(self)
+        self.ops[patch_try] = len(self.ops)
+
+        self.ops.append('Catch')
+        patch_catch = len(self.ops)
+        self.ops.append(0)  # to the end.
+        if t.except_var:
+            self.ops.append(self.localVars.index(t.except_var.x))
+
+        t.catch_block.visit(self)
+        self.ops[patch_catch] = len(self.ops)
+
 
     def visitWhile(self, t):
         start = len(self.ops)
@@ -1038,6 +1078,12 @@ class AssignmentVisitor(object):
 
     def visitDef(self, t, func_dict, tclass):
         Abort()  # No nested functions, yet.
+
+    def visitTryExcept(self, t):
+        t.try_block.visit(self)
+        t.catch_block.visit(self)
+        if t.except_var:
+            self.localVars.add(t.except_var.x)
 
     def visitWhile(self, t):
         t.block.visit(self)

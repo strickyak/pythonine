@@ -91,6 +91,8 @@ bool ConstructPerhapsNext(byte cls_num, byte nargs);
 void Call(byte nargs, word fn);
 void CallMeth(byte meth_isn, byte nargs);
 bool ReturnPerhapsStop(word retval);  // returns true to stop.
+void DoTry(byte catch_loc);
+void DoCatch(byte end_catch_loc);
 
 #define FOR_EACH(I, ITEM, X)                           \
   {                                                    \

@@ -1,4 +1,4 @@
-T=2
+T=1
 C=42
 
 # all except emu

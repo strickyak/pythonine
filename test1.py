@@ -1,6 +1,10 @@
-x = 100
-y = 5 + x
-z = x + y - 205
-print z
-assert 0 == z
-assert "hi" == "hi".__str__()
+def stuff():
+    x = 100
+    try:
+        y = x + x
+    except as e:
+        assert 0 == 1
+
+    assert y == 200
+
+stuff()
