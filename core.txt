@@ -20,6 +20,9 @@ class Chain # a chain for an use.
 class List # a chain for a list.
   oop root
   small len2
+class Tuple # just like List.
+  oop root
+  small len2
 class Dict # a chain for a dict.
   oop root
   small len2
@@ -167,13 +170,13 @@ code  GetAt
   in coll key
   out z
   [
-        z = (  ChainDictGet(coll, key) );
+        z = (  ChainMapGet(coll, key) );
   ]
 code  PutAt
   in coll key value
   out
   [
-        ChainDictPut(coll, key, value);
+        ChainMapPut(coll, key, value);
   ]
 code  EQ
   in a b
@@ -353,7 +356,7 @@ code Dict
   [
     word z = NewDict();
     for (word p = sp + ((word)llen<<2) - 4; p >= sp; p -=4) {
-        ChainDictPut(z, ogetw(p+2), ogetw(p));
+        ChainMapPut(z, ogetw(p+2), ogetw(p));
     }
     sp += ((word)llen<<2) - 2;
     oputw(sp, z);
@@ -399,7 +402,7 @@ code GetItem
         v = ChainGetNth(coll, i);
         } break;
     case C_Dict:
-        v = ChainDictGet(coll, k);
+        v = ChainMapGet(coll, k);
         break;
     default:
         opanic(101);

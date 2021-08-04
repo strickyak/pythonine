@@ -20,19 +20,15 @@
   }
 #endif
 
-static word Chain_Init(word chain) {
+static word ChainInit(word chain) {
   Chain_len2_Put(chain, 0);
   word guts = oalloc(CHAIN_CHUNK_SIZE, C_Array);
   Chain_root_Put(chain, guts);
   return chain;
 }
-word NewList() {
-  word z = oalloc(List_Size, C_List);
-  return Chain_Init(z);
-}
-word NewDict() {
-  word z = oalloc(Dict_Size, C_Dict);
-  return Chain_Init(z);
+word NewChain(byte root_size, byte cls) {
+  word z = oalloc(root_size, cls);
+  return ChainInit(z);
 }
 
 // returns value at Nth
@@ -143,7 +139,7 @@ void ChainAppend(word chain, word value) {
   PutW(addr, value);
 }
 
-byte ChainDictWhatNth(word chain, word key) {
+byte ChainMapWhatNth(word chain, word key) {
   struct ChainIterator it;
   ChainIterStart(chain, &it);
   byte i = 0;
@@ -158,7 +154,7 @@ byte ChainDictWhatNth(word chain, word key) {
   return INF;
 }
 
-word ChainDictAddr(word chain, word key) {
+word ChainMapAddr(word chain, word key) {
   SAY("@@@@@ chain", chain);
   SAY("key", key);
   struct ChainIterator it;
@@ -177,16 +173,16 @@ word ChainDictAddr(word chain, word key) {
   return NIL;
 }
 
-word ChainDictGet(word chain, word key) {
+word ChainMapGet(word chain, word key) {
   SAY("@@@@@ chain", chain);
   SAY("key", key);
-  word addr = ChainDictAddr(chain, key);
+  word addr = ChainMapAddr(chain, key);
   if (!addr) return NIL;
   SAY("FOUND; value", GetW(addr));
   return GetW(addr);
 }
-void ChainDictPut(word chain, word key, word value) {
-  word addr = ChainDictAddr(chain, key);
+void ChainMapPut(word chain, word key, word value) {
+  word addr = ChainMapAddr(chain, key);
   if (!addr) {
     addr = ChainAddrOfAppend(chain);
     assert(addr);

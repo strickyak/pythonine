@@ -88,7 +88,8 @@ void SayObj(word p, byte level) {
         clsname = ClassNames[cls];
         printf("cls %s: cap=%d", clsname, ocap(p));
         if (level < 2) return;
-        if (cls == C_Chain || cls == C_List) {
+        if (cls == C_Chain || cls == C_List || cls == C_Tuple ||
+            cls == C_Dict) {
           struct ChainIterator it;
           ChainIterStart(p, &it);
           printf(" list:\n");
@@ -406,8 +407,8 @@ void SlurpGlobal(struct ReadBuf* bp, word bc, word ilist) {
         word s = ChainGetNth(InternList, i_num);
         assert(s);
         // Create a global slot for that string.
-        ChainDictPut(GlobalDict, s, None);
-        g_num = 1 + ChainDictWhatNth(GlobalDict, s);
+        DictPut(GlobalDict, s, None);
+        g_num = 1 + DictWhatNth(GlobalDict, s);
         assert(g_num != INF);
         // osaylabel(bc, "GlobalPack_name_i", ith);
       } break;
@@ -447,7 +448,7 @@ void SlurpFuncPack(struct ReadBuf* bp, word ilist, word dict) {
         word bc;
         pb_next(bp);
         SlurpCodePack(bp, &bc);
-        ChainDictPut(dict, name_str, bc);
+        DictPut(dict, name_str, bc);
         osaylabel(bc, "FuncPack_name_i", ith);
       } break;
       default:
@@ -506,7 +507,7 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
   {
     SayObj(DunderInitStr, 3);
     osay(DunderInitStr);
-    word init_meth = ChainDictGet(meth_dict, DunderInitStr);
+    word init_meth = DictGet(meth_dict, DunderInitStr);
     SayObj(init_meth, 3);
     osay(init_meth);
     byte num_args_to_ctor = 0;
@@ -530,7 +531,7 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
 
     Bytecodes_flex_AtPut(ctor, step++, BC_Return);  // new obj
 
-    ChainDictPut(GlobalDict, name_str, ctor);
+    DictPut(GlobalDict, name_str, ctor);
   }
 
   pb_next(bp);  // consume the 0 tag.
@@ -741,7 +742,7 @@ word FindMethForObjOrNull(word obj, byte meth_isn) {
   word dict = Class_methDict(cls);
   word meth_name = ChainGetNth(InternList, meth_isn);
   SayStr(meth_name);
-  word meth = ChainDictGet(dict, meth_name);
+  word meth = DictGet(dict, meth_name);
   return meth;
 }
 word SingletonStr(byte ch) {
