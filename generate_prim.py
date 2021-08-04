@@ -174,9 +174,9 @@ def CompileCore(core_contents):
     print
     print '#endif // _CORE_DECLARATIONS_'
     print
-    print '#ifdef _CORE_PART_'
+    print '#ifdef PRIM_PART'
     print
-    print '#if _CORE_PART_ == 2'
+    print '#if PRIM_PART == 2'
     DefineEnumNames('Class', class_enums)
     DefineEnumNames('Code', code_enums)
     DefineEnumNames('Message', message_enums)
@@ -194,11 +194,11 @@ def CompileCore(core_contents):
 
     for head, body in Funcs:
         print '%s %s' % (head, body)
-    print '#endif // if _CORE_PART_ == 2'
+    print '#endif // if PRIM_PART == 2'
     print
     print '////////////////////////////////'
     print
-    print '#if _CORE_PART_ == 3'
+    print '#if PRIM_PART == 3'
     print
     for c in code_enums:
         print '// CASE:', c, repr(code_arg[c]), repr(code_in[c]), repr(
@@ -234,11 +234,11 @@ def CompileCore(core_contents):
         print '} break;'
         print ''
         print ''
-    print '#endif // if _CORE_PART_ == 3'
+    print '#endif // if PRIM_PART == 3'
     print
     print '////////////////////////////////'
     print
-    print '#if _CORE_PART_ == 4'
+    print '#if PRIM_PART == 4'
     print
     for c in prim_enums:
         print '// CASE:', c, repr(code_in[c]), repr(code_out[c])
@@ -271,9 +271,9 @@ def CompileCore(core_contents):
         print '} break;'
         print ''
         print ''
-    print '#endif // if _CORE_PART_ == 4'
+    print '#endif // if PRIM_PART == 4'
     print
-    print '#endif // ifdef _CORE_PART_'
+    print '#endif // ifdef PRIM_PART'
     print
     i = 0
     for c in code_enums:

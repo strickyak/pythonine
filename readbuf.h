@@ -1,7 +1,7 @@
 #ifndef PYTHONINE_READBUF_H_
 #define PYTHONINE_READBUF_H_
 
-#include "_generated_core.h"
+#include "_generated_prim.h"
 #include "defs.h"
 #include "octet.h"
 #include "standard.h"

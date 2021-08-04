@@ -334,9 +334,9 @@ void RunLoop() {
     assert(ip < function + INF);
 #endif
     switch (opcode) {
-#define _CORE_PART_ 3
-#include "_generated_core.h"
-#undef _CORE_PART_
+#define PRIM_PART 3
+#include "_generated_prim.h"
+#undef PRIM_PART
       default:
         opanic(240);
     }  // end switch
@@ -345,9 +345,9 @@ void RunLoop() {
 
 void RunBuiltin(byte builtin_num) {
   switch (builtin_num) {
-#define _CORE_PART_ 4
-#include "_generated_core.h"
-#undef _CORE_PART_
+#define PRIM_PART 4
+#include "_generated_prim.h"
+#undef PRIM_PART
     default:
       opanic(241);
   }  // end switch

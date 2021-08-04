@@ -3,9 +3,9 @@
 #include "arith.h"
 #include "octet.h"
 
-#define _CORE_PART_ 2
-#include "_generated_core.h"
-#undef _CORE_PART_
+#define PRIM_PART 2
+#include "_generated_prim.h"
+#undef PRIM_PART
 
 bool IS_INT(word x) { return (byte)1 & (byte)x; }
 

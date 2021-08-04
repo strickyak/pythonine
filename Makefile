@@ -31,17 +31,17 @@ fib:
 _build:
 	python2 compile_proto.py < bc.proto -c > _generated_proto.h
 	python2 compile_proto.py < bc.proto -p > _generated_proto.py
-	python2 generate_core.py < core.txt > _generated_core.h
+	python2 generate_prim.py < prim.txt > _generated_prim.h
 	python2 compile_pyth09.py < test$T.py > test$T.bc
 	cp test$T.bc bc
-	python2 print_pb.py bc.proto _generated_core.h < bc | tee test$T.dump | tee ,dump
+	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test$T.dump | tee ,dump
 	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c defs.c pb2.c octet.c
 
 _runpy:
 	./runpy.bin
 
 _chain_test:
-	python2 generate_core.py < core.txt > _generated_core.h
+	python2 generate_prim.py < prim.txt > _generated_prim.h
 	cc -DDONT_SAY -g -o chain_test.bin chain_test.c defs.c data.c chain.c octet.c
 	./chain_test.bin
 

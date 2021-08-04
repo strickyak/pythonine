@@ -1,7 +1,7 @@
 #ifndef PYTH09__RUNTIME_H_
 #define PYTH09__RUNTIME_H_
 
-#include "_generated_core.h"
+#include "_generated_prim.h"
 #include "octet.h"
 #include "pb2.h"
 #include "readbuf.h"

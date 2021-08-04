@@ -46,7 +46,7 @@ def LexKind(a):
 def GetBytecodeNumbers():
     # Demo: BC_Print = 7,
     regexp = re.compile('BC_([A-Za-z0-9_]+) = ([0-9]+),')
-    with open('_generated_core.h') as fd:
+    with open('_generated_prim.h') as fd:
         for line in fd:
             m = regexp.match(line.strip())
             if m:
