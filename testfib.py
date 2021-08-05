@@ -4,7 +4,7 @@ def fib(n):
     return fib(n - 1) + fib(n - 2)
 
 
-# 1, 1, 2, 3, 5, 8.
-fib6 = fib(6)
-print fib6
-assert fib6 == 8
+# 1, 1, 2, 3, 5, 8, 13.
+fib7 = fib(7)
+print fib7
+assert fib7 == 13

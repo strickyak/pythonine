@@ -214,7 +214,7 @@ def CompileCore(core_contents):
             print '    word %s = 0; // out' % e
         print '{'
         for e in code_arg[c]:
-            print '  byte %s = ogetb(++ip);' % e
+            print '  byte %s = ogetb(ip++);' % e
         print code_body[c]
         print '}'
         pops = len(code_in[c]) - len(code_out[c])

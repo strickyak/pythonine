@@ -161,14 +161,14 @@ code  Branch
   in
   out
   [
-        ip = function + whither - 1; // ip++ at bottom of loop.
+        ip = function + whither;
   ]
 code  BranchIfFalse
   arg whither
   in pred
   out
   [
-        if (!Truth(pred)) ip = function + whither - 1; // ip++ at bottom of loop.
+        if (!Truth(pred)) ip = function + whither;
   ]
 code  GetAt
   in coll key
@@ -262,26 +262,28 @@ code Drop
 
 code Call
   arg nargs
-  in fn
   [
+   // pop fn from stack (don't use `in`!).
+   word fn = ogetw(sp);
+   oputw(sp, 0xDEAD);
    sp += 2;
    Call(nargs, fn);
-   goto NEXT;
   ]
 
 code CallMeth
   arg meth_isn nargs
   [
     CallMeth(meth_isn, nargs);
-    goto NEXT;
   ]
 
 code Return
-  in retval
   [
+    // pop retval from stack (don't use `in`!).
+    word retval = ogetw(sp);
+    oputw(sp, 0xDEAD);
+    sp += 2;
     byte stop = ReturnPerhapsStop(retval);
     if (stop) return;  // exit the interpreter loop.
-    goto NEXT;
   ]
 code  RetSelf
   in
@@ -293,19 +295,16 @@ code  RetSelf
     word self = ogetw(self_addr);
     byte stop = ReturnPerhapsStop(self);
     if (stop) return;  // exit the interpreter loop.
-    goto NEXT;
   ]
 code  RetNone
   [
     byte stop = ReturnPerhapsStop(None);
     if (stop) return;  // exit the interpreter loop.
-    goto NEXT;
   ]
 code Construct
   arg cls_num nargs
   [
-    bool next = ConstructPerhapsNext(cls_num, nargs);
-    if (next) goto NEXT;
+    Construct(cls_num, nargs);
   ]
 code Dup
   in x
@@ -446,14 +445,15 @@ code Catch
 [
   (void) catch_var; // used when catching.
   DoCatch(end_catch_loc);
-  goto NEXT;
 ]
 code Raise
-  in ex
 [
+   // pop ex from stack (don't use `in`!).
+   word ex = ogetw(sp);
+   oputw(sp, 0xDEAD);
+   sp += 2;
   bool b = DoRaisePossiblyQuit(ex);
   if (b) return;
-  goto NEXT;
 ]
 
 prim Str __str__

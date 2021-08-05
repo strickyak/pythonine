@@ -308,8 +308,7 @@ void EvalCodes(word fn) {
 }
 
 void RunLoop() {
-  for (; 1; ++ip) {
-  NEXT:
+  while (1) {
 #ifdef CAREFUL
     VERB("\n");
     assert(sp >= fp + Frame_Size - 2);
@@ -330,9 +329,10 @@ void RunLoop() {
     assert(function);
     assert(sp > fp);
     assert(ip > function);
-    assert(sp <= fp + INF);
-    assert(ip < function + INF);
+    assert(sp <= fp + ocap(fp));
+    assert(ip < function + ocap(function));
 #endif
+    ip++;
     switch (opcode) {
 #define PRIM_PART 3
 #include "_generated_prim.h"
@@ -752,7 +752,7 @@ word SingletonStr(byte ch) {
   return x;
 }
 
-bool ConstructPerhapsNext(byte cls_num, byte nargs /*less self */) {
+void Construct(byte cls_num, byte nargs /*less self */) {
   // Push nargs args from caller's frame onto our stack.
   word old_fp = Frame_prev_frame(fp);
   word old_sp = old_fp + Frame_prev_sp(fp);
@@ -775,11 +775,8 @@ bool ConstructPerhapsNext(byte cls_num, byte nargs /*less self */) {
     assert2(want == 1 + nargs, "__init__ got %d args, wants %d", 1 + nargs,
             want);
     CallMeth(DunderInitIsn, nargs + 1);  // add 1 for self.
-    return true;
-    // THEN GOTO NEXT.
   } else {
     assert(!nargs);
-    return false;
   }
 }
 
@@ -787,7 +784,6 @@ void Call(byte nargs, word fn) {
   Break();
   if (fn & 1) {  // If odd, is an integer.
     RunBuiltin((byte)TO_INT(fn));
-    ++ip;  // Do it here, because Call uses "goto NEXT".
     return;
   }
   assert(ocls(fn) == C_Bytecodes);
@@ -799,7 +795,7 @@ void Call(byte nargs, word fn) {
   Frame_function_Put(fp, fn);
   Frame_nargs_Put(fp, nargs);
   Frame_prev_sp_Put(fp, sp - old_fp);
-  Frame_prev_ip_Put(fp, ip - function + 1);  // XXX Explain +1 ?
+  Frame_prev_ip_Put(fp, ip - function);
 
   function = fn;
   Frame_function_Put(fp, function);
@@ -809,7 +805,6 @@ void Call(byte nargs, word fn) {
           nargs, ogetb(function + BC_NUM_ARGS));
   sp = fp + ocap(fp);
   ip = function + BC_HEADER_SIZE;
-  // THEN GOTO NEXT.
 }
 
 void CallMeth(byte meth_isn, byte nargs /* with self */) {
@@ -818,7 +813,6 @@ void CallMeth(byte meth_isn, byte nargs /* with self */) {
   assert2(fn, "meth %d not found on self %d", meth_isn, self);
 
   Call(nargs, fn);
-  // THEN GOTO NEXT.
 }
 
 // Return true to stop.
@@ -840,9 +834,11 @@ bool ReturnPerhapsStop(word retval) {
   // pop args, push retval.
   // actually function was there to, but leave one slot on stack for retval.
   sp = old_sp + (nargs << 1) - 2;  // -2 for retval.
+  for (word p = old_sp; p < sp; p += 2) {
+    oputw(p, 0xDEAD);
+  }
   oputw(sp, retval);
   return false;  // don't stop.
-  // THEN GOTO NEXT.
 }
 void DoTry(byte catch_loc) {
   word try = oalloc(Try_Size, C_Try);
@@ -862,7 +858,6 @@ void DoCatch(byte end_catch_loc) {
   word next = Try_next(try);
   Frame_tries_Put(fp, next);
   ip = function + end_catch_loc;
-  // THEN GOTO NEXT.
 }
 bool DoRaisePossiblyQuit(byte ex) {
   for (word p = fp; p; p = Frame_prev_frame(p)) {
@@ -884,7 +879,6 @@ bool DoRaisePossiblyQuit(byte ex) {
       byte local_var_num = ogetb(ip - 1);
       Frame_flex_AtPut(fp, local_var_num, ex);
       return false;
-      // THEN GOTO NEXT.
     }
   }
   printf("\nUncaught Exception: ");

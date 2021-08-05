@@ -1161,6 +1161,6 @@ if __name__ == '__main__':  # test
     block = p.ParseBlock()
     compiler = Compiler(None, None, None, None, False)
     compiler.visitBlock(block)
-    compiler.ops.append('Return')
+    compiler.ops.append('RetNone')
 
     compiler.OutputCodePack(AppendWriter(sys.stdout))

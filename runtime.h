@@ -87,7 +87,7 @@ word SingletonStr(byte ch);
 void RunBuiltin(byte builtin_num);
 void Directory();
 
-bool ConstructPerhapsNext(byte cls_num, byte nargs);
+void Construct(byte cls_num, byte nargs);
 void Call(byte nargs, word fn);
 void CallMeth(byte meth_isn, byte nargs);
 bool ReturnPerhapsStop(word retval);  // returns true to stop.
