@@ -448,6 +448,13 @@ code Catch
   DoCatch(end_catch_loc);
   goto NEXT;
 ]
+code Raise
+  in ex
+[
+  bool b = DoRaisePossiblyQuit(ex);
+  if (b) return;
+  goto NEXT;
+]
 
 prim Str __str__
   in self

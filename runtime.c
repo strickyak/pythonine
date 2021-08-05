@@ -847,8 +847,11 @@ bool ReturnPerhapsStop(word retval) {
 void DoTry(byte catch_loc) {
   word try = oalloc(Try_Size, C_Try);
   Try_catch_loc_Put(try, catch_loc);
+
+  // Add link to front of tries.
   word next = Frame_tries(fp);
   Try_next_Put(try, next);
+  Frame_tries_Put(fp, try);
 }
 void DoCatch(byte end_catch_loc) {
   // Called at the end of a try.
@@ -858,6 +861,34 @@ void DoCatch(byte end_catch_loc) {
   word try = Frame_tries(fp);
   word next = Try_next(try);
   Frame_tries_Put(fp, next);
-  ip = end_catch_loc;
+  ip = function + end_catch_loc;
   // THEN GOTO NEXT.
+}
+bool DoRaisePossiblyQuit(byte ex) {
+  for (word p = fp; p; p = Frame_prev_frame(p)) {
+    word try = Frame_tries(p);
+    if (try) {
+      fp = p;
+
+      // Unlink the Try record.
+      word next = Try_next(try);
+      Frame_tries_Put(fp, next);
+
+      // Set execution state to Catch clause.
+      function = Frame_function(fp);
+      sp = fp + ocap(fp);  // empty stack.
+      // catch_loc is the 3-byte "Catch" instruction,
+      // which we do not want to execute,
+      // but we do want the last byte, the local var num.
+      ip = function + Try_catch_loc(try) + 3;
+      byte local_var_num = ogetb(ip - 1);
+      Frame_flex_AtPut(fp, local_var_num, ex);
+      return false;
+      // THEN GOTO NEXT.
+    }
+  }
+  printf("\nUncaught Exception: ");
+  SayObj(ex, 3);
+  osay(ex);
+  return true;
 }

@@ -343,6 +343,10 @@ class Parser(object):
                 self.Advance()
         return vlist
 
+    def ParseRaise(self):
+        ex = self.ParseSingle()
+        return TRaise(ex)
+
     def ParseReturn(self):
         if self.t == P_EOL:
             return TReturn(None)
@@ -364,7 +368,7 @@ class Parser(object):
         if self.t == L_IDENTIFIER:
             except_var = self.ParseIdentifier()
         catch_block = self.ColonBlock()
-        return TTryExcept(try_block, except_var, catch_block)
+        return TTry(try_block, except_var, catch_block)
 
     def ParseIf(self):
         plist = [self.ParseSingle()]
@@ -456,6 +460,9 @@ class Parser(object):
             elif self.x == 'while':
                 self.Advance()
                 p = self.ParseWhile()
+            elif self.x == 'raise':
+                self.Advance()
+                p = self.ParseRaise()
             elif self.x == 'return':
                 self.Advance()
                 p = self.ParseReturn()
@@ -611,14 +618,14 @@ class TWhile(TBase):
     def visit(self, a):
         return a.visitWhile(self)
 
-class TTryExcept(TBase):
+class TTry(TBase):
     def __init__(self, try_block, except_var, catch_block):
         self.try_block = try_block
         self.except_var = except_var
         self.catch_block = catch_block
 
     def visit(self, a):
-        return a.visitTryExcept(self)
+        return a.visitTry(self)
 
 class TIf(TBase):
     def __init__(self, plist, blist, belse):
@@ -628,6 +635,14 @@ class TIf(TBase):
 
     def visit(self, a):
         return a.visitIf(self)
+
+
+class TRaise(TBase):
+    def __init__(self, ex):
+        self.ex = ex
+
+    def visit(self, a):
+        return a.visitRaise(self)
 
 
 class TReturn(TBase):
@@ -818,7 +833,7 @@ class Compiler(object):
             fc.ops.append('RetSelf' if fc.isDunderInit else 'RetNone')
         func_dict[t.name] = fc
 
-    def visitTryExcept(self, t):
+    def visitTry(self, t):
         self.ops.append('Try')
         patch_try = len(self.ops)
         self.ops.append(0)  # to the end.
@@ -850,6 +865,10 @@ class Compiler(object):
         self.ops.append(start)
 
         self.ops[patch] = len(self.ops)  # to the end.
+
+    def visitRaise(self, t):
+        t.ex.visit(self)
+        self.ops.append('Raise')
 
     def visitReturn(self, t):
         rv = t.retval
@@ -1059,6 +1078,8 @@ class AssignmentVisitor(object):
     def visitAssert(self, t):
         pass
 
+    def visitRaise(self, t):
+        pass
     def visitReturn(self, t):
         pass
 
@@ -1079,7 +1100,7 @@ class AssignmentVisitor(object):
     def visitDef(self, t, func_dict, tclass):
         Abort()  # No nested functions, yet.
 
-    def visitTryExcept(self, t):
+    def visitTry(self, t):
         t.try_block.visit(self)
         t.catch_block.visit(self)
         if t.except_var:

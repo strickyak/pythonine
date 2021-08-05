@@ -93,6 +93,7 @@ void CallMeth(byte meth_isn, byte nargs);
 bool ReturnPerhapsStop(word retval);  // returns true to stop.
 void DoTry(byte catch_loc);
 void DoCatch(byte end_catch_loc);
+bool DoRaisePossiblyQuit(byte ex);
 
 #define FOR_EACH(I, ITEM, X)                           \
   {                                                    \
