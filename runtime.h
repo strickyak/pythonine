@@ -94,6 +94,7 @@ bool ReturnPerhapsStop(word retval);  // returns true to stop.
 void DoTry(byte catch_loc);
 void DoCatch(byte end_catch_loc);
 bool DoRaisePossiblyQuit(byte ex);
+void SetJmp(word a);
 
 #define FOR_EACH(I, ITEM, X)                           \
   {                                                    \
@@ -105,6 +106,14 @@ bool DoRaisePossiblyQuit(byte ex);
 #define DONE \
   }          \
   }          \
+  }
+
+#define CHECK(PRED, ERR)                  \
+  if (!(PRED)) {                          \
+    bool err = NewStrCopyFromC(ERR);      \
+    bool quit = DoRaisePossiblyQuit(err); \
+    assert(!quit);                        \
+    return;                               \
   }
 
 #endif  // PYTH09__RUNTIME_H_

@@ -6,6 +6,7 @@
 #include "data.h"
 #include "defs.h"
 #include "octet.h"
+#include "osetjmp.h"
 #include "pb2.h"
 #include "readbuf.h"
 
@@ -175,10 +176,11 @@ word NewStrCopyFrom(word s, byte len) {
 }
 #endif
 word NewStrCopyFromC(const char* s) {
-  int len = strlen(s);
-  assert(len <= 254);
+  int slen = strlen(s);
+  assert(slen <= 254);
+  byte len = (byte)slen;
   word obj = oalloc(len, C_Bytes);
-  for (word i = 0; i < len; i++) {
+  for (byte i = 0; i < len; i++) {
     PutB(obj + i, s[i]);
   }
   return NewStr(obj, 0, len);
@@ -307,7 +309,9 @@ void EvalCodes(word fn) {
   printf("\n[[[ Finished RunLoop ]]]\n");
 }
 
+ojmp_buf run_loop_jump;
 void RunLoop() {
+  osetjmp(run_loop_jump);
   while (1) {
 #ifdef CAREFUL
     VERB("\n");
@@ -338,9 +342,12 @@ void RunLoop() {
 #include "_generated_prim.h"
 #undef PRIM_PART
       default:
+        printf("opcode=%d function=%d ip=%d fp=%d sp=%d\n", opcode, function,
+               ip, fp, sp);
         opanic(240);
     }  // end switch
-  }    // next ip
+    // olongjmp(run_loop_jump, 1);
+  }  // next ip
 }
 
 void RunBuiltin(byte builtin_num) {
@@ -786,7 +793,7 @@ void Call(byte nargs, word fn) {
     RunBuiltin((byte)TO_INT(fn));
     return;
   }
-  assert(ocls(fn) == C_Bytecodes);
+  CHECK(ocls(fn) == C_Bytecodes, "bad_fn_cls");
 
   word old_fp = fp;
   fp = oalloc(32, C_Frame);
@@ -799,10 +806,15 @@ void Call(byte nargs, word fn) {
 
   function = fn;
   Frame_function_Put(fp, function);
+#if 1
+  CHECK(ocls(function) == C_Bytecodes, "bad_bc_cls");
+  CHECK(ogetb(function + BC_NUM_ARGS) == nargs, "bad_nargs");
+#else
   assert2(ocls(function) == C_Bytecodes, "func got cls %d, want %d",
           ocls(function), C_Bytecodes);
   assert2(ogetb(function + BC_NUM_ARGS) == nargs, "func got %d args, want %d",
           nargs, ogetb(function + BC_NUM_ARGS));
+#endif
   sp = fp + ocap(fp);
   ip = function + BC_HEADER_SIZE;
 }

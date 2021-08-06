@@ -2,7 +2,7 @@ def one(a):
     return a
 
 def two(a, b):
-    return a + b
+    return a+b
 
 def work():
     x = 0

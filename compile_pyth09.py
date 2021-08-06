@@ -161,6 +161,10 @@ class Parser(object):
         self.Advance()
 
     def Advance(self):
+        self.Advance9()
+        print >>E, 'Advance', self.t, self.x, repr(self.lex.program[:self.lex.i])
+
+    def Advance9(self):
         """Lexer::Next only returns L_BOL (with the indent column) and L_BOL 
            as framing tokens.  Advance changes L_BOL to P_EOL
            P_INDENT and P_DEDENT tokens."""

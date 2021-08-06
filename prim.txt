@@ -162,6 +162,8 @@ code  Branch
   out
   [
         ip = function + whither;
+olongjmp(run_loop_jump, 1);
+
   ]
 code  BranchIfFalse
   arg whither
@@ -268,12 +270,14 @@ code Call
    oputw(sp, 0xDEAD);
    sp += 2;
    Call(nargs, fn);
+olongjmp(run_loop_jump, 1);
   ]
 
 code CallMeth
   arg meth_isn nargs
   [
     CallMeth(meth_isn, nargs);
+olongjmp(run_loop_jump, 1);
   ]
 
 code Return
@@ -284,9 +288,9 @@ code Return
     sp += 2;
     byte stop = ReturnPerhapsStop(retval);
     if (stop) return;  // exit the interpreter loop.
+olongjmp(run_loop_jump, 1);
   ]
 code  RetSelf
-  in
   [
     word old_fp = Frame_prev_frame(fp);
     assert (old_fp);
@@ -295,16 +299,19 @@ code  RetSelf
     word self = ogetw(self_addr);
     byte stop = ReturnPerhapsStop(self);
     if (stop) return;  // exit the interpreter loop.
+olongjmp(run_loop_jump, 1);
   ]
 code  RetNone
   [
     byte stop = ReturnPerhapsStop(None);
     if (stop) return;  // exit the interpreter loop.
+olongjmp(run_loop_jump, 1);
   ]
 code Construct
   arg cls_num nargs
   [
     Construct(cls_num, nargs);
+olongjmp(run_loop_jump, 1);
   ]
 code Dup
   in x

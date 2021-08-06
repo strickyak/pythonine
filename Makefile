@@ -5,7 +5,7 @@ C=42
 all: _build _runpy
 # all: _build _octet_test _chain_test _runpy
 
-test: 1 2 3 4 5 fib 6 7 8 101 102
+test: 1 2 3 4 5 fib 6 7 8 101 102 103
 	echo
 
 1:
@@ -30,6 +30,8 @@ fib:
 	make T=101 _build emu
 102:
 	make T=102 _build emu
+103:
+	make T=103 _build emu
 
 
 _build:
@@ -39,14 +41,14 @@ _build:
 	python2 compile_pyth09.py < test$T.py > test$T.bc
 	cp test$T.bc bc
 	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test$T.dump | tee ,dump
-	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c defs.c pb2.c octet.c
+	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c osetjmp.c defs.c pb2.c octet.c
 
 _runpy:
 	./runpy.bin
 
 _chain_test:
 	python2 generate_prim.py < prim.txt > _generated_prim.h
-	cc -DDONT_SAY -g -o chain_test.bin chain_test.c defs.c data.c chain.c octet.c
+	cc -DDONT_SAY -g -o chain_test.bin chain_test.c osetjmp.c defs.c data.c chain.c octet.c
 	./chain_test.bin
 
 _octet_test:
@@ -76,7 +78,7 @@ SDC=drive/my-68SDC.VHD
 
 emu: __always__
 	rm -f runpy
-	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c chain.c pb2.c arith.c defs.c octet.c
+	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c chain.c pb2.c arith.c osetjmp.c defs.c octet.c
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -86,6 +88,20 @@ emu: __always__
 	(echo "runpy #128"; echo "dir /d1") | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
 	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
+
+
+temu: __always__
+	rm -f runpy
+	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c chain.c pb2.c arith.c osetjmp.c defs.c octet.c
+	:
+	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
+	:
+	os9 copy -r runpy /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
+	os9 attr -per /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
+	:
+	(echo "runpy #128"; echo "dir /d1") | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
+	: T=$T
+	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2,trace gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
 
 
 mooh:
