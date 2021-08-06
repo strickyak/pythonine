@@ -309,45 +309,44 @@ void EvalCodes(word fn) {
   printf("\n[[[ Finished RunLoop ]]]\n");
 }
 
-ojmp_buf run_loop_jump;
+ojmp_buf run_loop_jmp_buf;
 void RunLoop() {
-  osetjmp(run_loop_jump);
-  while (1) {
-#ifdef CAREFUL
-    VERB("\n");
-    assert(sp >= fp + Frame_Size - 2);
-    assert(sp <= fp + ocap(fp));
-    SayStack();  // ===========
-    assert(ip >= function + BC_HEADER_SIZE);
-    assert(ip < function + INF);
-#endif
-    byte opcode = ogetb(ip);
-#ifdef CAREFUL
-    assert(opcode < CodeNames_SIZE);
-    VERB("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
-         function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
-         ogetb(ip + 2), fp, (sp - fp) >> 1);
+  byte message = osetjmp(run_loop_jmp_buf);
+  if (message == FINISH) return;
 
-    // SWITCH:
-    assert(fp);
-    assert(function);
-    assert(sp > fp);
-    assert(ip > function);
-    assert(sp <= fp + ocap(fp));
-    assert(ip < function + ocap(function));
+RUN_LOOP:
+#ifdef CAREFUL
+  VERB("\n");
+  assert(sp >= fp + Frame_Size - 2);
+  assert(sp <= fp + ocap(fp));
+  SayStack();  // ===========
+  assert(ip >= function + BC_HEADER_SIZE);
+  assert(ip < function + INF);
 #endif
-    ip++;
-    switch (opcode) {
+  byte opcode = ogetb(ip);
+#ifdef CAREFUL
+  assert(opcode < CodeNames_SIZE);
+  VERB("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
+       function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
+       ogetb(ip + 2), fp, (sp - fp) >> 1);
+
+  // SWITCH:
+  assert(fp);
+  assert(function);
+  assert(sp > fp);
+  assert(ip > function);
+  assert(sp <= fp + ocap(fp));
+  assert(ip < function + ocap(function));
+#endif
+  ip++;
+  switch (opcode) {
 #define PRIM_PART 3
 #include "_generated_prim.h"
 #undef PRIM_PART
-      default:
-        printf("opcode=%d function=%d ip=%d fp=%d sp=%d\n", opcode, function,
-               ip, fp, sp);
-        opanic(240);
-    }  // end switch
-    // olongjmp(run_loop_jump, 1);
-  }  // next ip
+  }  // end switch
+  printf("opcode=%d function=%d ip=%d fp=%d sp=%d\n", opcode, function, ip, fp,
+         sp);
+  opanic(240);
 }
 
 void RunBuiltin(byte builtin_num) {
@@ -890,11 +889,11 @@ bool DoRaisePossiblyQuit(byte ex) {
       ip = function + Try_catch_loc(try) + 3;
       byte local_var_num = ogetb(ip - 1);
       Frame_flex_AtPut(fp, local_var_num, ex);
-      return false;
+      olongjmp(run_loop_jmp_buf, CONTINUE);
     }
   }
   printf("\nUncaught Exception: ");
   SayObj(ex, 3);
   osay(ex);
-  return true;
+  olongjmp(run_loop_jmp_buf, FINISH);
 }

@@ -3,8 +3,12 @@
 
 #include "_generated_prim.h"
 #include "octet.h"
+#include "osetjmp.h"
 #include "pb2.h"
 #include "readbuf.h"
+
+// For olongjmp() to run_loop_jmp_buf:
+enum { FINISH = 1, CONTINUE = 2 };
 
 #define GetB(addr) ogetb(addr)
 #define GetW(addr) ogetw(addr)
@@ -48,6 +52,7 @@ extern word function;
 extern word ip;  // Stores in Frame as ip - function.
 extern word fp;
 extern word sp;  // Stores in Frame as sp - fp.
+extern ojmp_buf run_loop_jmp_buf;
 
 // Header on bytecodes object:
 #define BC_NUM_ARGS 0

@@ -231,7 +231,7 @@ def CompileCore(core_contents):
         for e in code_out[c]:
             i -= 1
             print 'oputw(sp + %d, %s); // out' % (2 * i, e)
-        print '} break;'
+        print '} goto RUN_LOOP;'
         print ''
         print ''
     print '#endif // if PRIM_PART == 3'
