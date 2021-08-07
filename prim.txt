@@ -251,11 +251,7 @@ code Drop
 code Call
   arg nargs
   [
-   // pop fn from stack (don't use `in`!).
-   word fn = ogetw(sp);
-   oputw(sp, 0xDEAD);
-   sp += 2;
-   Call(nargs, fn);
+   Call(nargs, PopSp());  // don't use `in`
   ]
 
 code CallMeth
@@ -266,27 +262,15 @@ code CallMeth
 
 code Return
   [
-    // pop retval from stack (don't use `in`!).
-    word retval = ogetw(sp);
-    oputw(sp, 0xDEAD);
-    sp += 2;
-    byte stop = ReturnPerhapsStop(retval);
-    if (stop) return;  // exit the interpreter loop.
+    Return(PopSp());  // don't use `in`
   ]
 code  RetSelf
   [
-    word old_fp = Frame_prev_frame(fp);
-    assert (old_fp);
-    word old_sp = Frame_prev_sp(fp);
-    word self_addr = old_fp + old_sp;  // last on previous stack.
-    word self = ogetw(self_addr);
-    byte stop = ReturnPerhapsStop(self);
-    if (stop) return;  // exit the interpreter loop.
+    Return(ArgGet(0));
   ]
 code  RetNone
   [
-    byte stop = ReturnPerhapsStop(None);
-    if (stop) return;  // exit the interpreter loop.
+    Return(None);
   ]
 code Construct
   arg cls_num nargs
@@ -359,12 +343,6 @@ code GetItem
 [
   value = GetItem(coll, key);
 ]
-code Hex
-  in x
-  out z
-  [
-    z = x;
-  ]
 code Ord
   in x
   out z
@@ -390,16 +368,14 @@ code Try
 code Catch
   arg end_catch_loc catch_var
 [
+  // This actually is used for ending the Try block.
+  // Catching starts immediately after this instruction. 
   (void) catch_var; // used when catching.
   DoCatch(end_catch_loc);
 ]
 code Raise
 [
-   // pop ex from stack (don't use `in`!).
-   word ex = ogetw(sp);
-   oputw(sp, 0xDEAD);
-   sp += 2;
-   Raise(ex);
+   Raise(PopSp());  // Don't use `in`
 ]
 code Explode
   arg len

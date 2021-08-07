@@ -95,7 +95,7 @@ void Directory();
 void Construct(byte cls_num, byte nargs);
 void Call(byte nargs, word fn);
 void CallMeth(byte meth_isn, byte nargs);
-bool ReturnPerhapsStop(word retval);  // returns true to stop.
+void Return(word retval);
 void DoTry(byte catch_loc);
 void DoCatch(byte end_catch_loc);
 bool Raise(byte ex);
@@ -105,6 +105,8 @@ byte Len(word o);
 void Explode(byte len);
 word GetItem(word coll, word key);
 void RaiseStr(const char* err);
+word PopSp();
+void PushSp(word a);
 
 #define FOR_EACH(I, ITEM, X)                           \
   {                                                    \

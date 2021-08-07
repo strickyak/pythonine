@@ -731,14 +731,10 @@ void MemberPut(word obj, byte member_name_isn, word value) {
 }
 
 word ArgGet(byte i) {
-  VERB("ArgGet(%d): ", i);
   word old_fp = Frame_prev_frame(fp);
-  VERB("fp: %d old_fp %d ", fp, old_fp);
   int old_sp = old_fp + Frame_prev_sp(fp);
-  VERB("prev_sp: %d old_sp %d ", Frame_prev_sp(fp), old_sp);
   word addr = old_sp + i + i;
   word z = ogetw(addr);
-  VERB("addr: %d z: %d\n", addr, z);
   return z;
 }
 
@@ -826,14 +822,13 @@ void CallMeth(byte meth_isn, byte nargs /* with self */) {
   Call(nargs, fn);
 }
 
-// Return true to stop.
-bool ReturnPerhapsStop(word retval) {
+void Return(word retval) {
   Break();
   word old_fp = Frame_prev_frame(fp);
   if (!old_fp) {
     // Stop when no previous frame.
     printf("\n[[[ Returning from urframe ]]]\n");
-    return true;  // Do stop.
+    olongjmp(run_loop_jmp_buf, FINISH);
   }
 
   word nargs = Frame_nargs(fp);
@@ -849,7 +844,6 @@ bool ReturnPerhapsStop(word retval) {
     oputw(p, 0xDEAD);
   }
   oputw(sp, retval);
-  return false;  // don't stop.
 }
 void DoTry(byte catch_loc) {
   word try = oalloc(Try_Size, C_Try);
@@ -963,4 +957,14 @@ word GetItem(word coll, word key) {
 void RaiseStr(const char* err) {
   word s = NewStrCopyFromC(err);
   Raise(s);
+}
+word PopSp() {
+  word z = ogetw(sp);
+  oputw(sp, 0xDEAD);
+  sp += 2;
+  return z;
+}
+void PushSp(word a) {
+  sp -= 2;
+  oputw(sp, a);
 }

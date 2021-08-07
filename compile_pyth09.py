@@ -834,8 +834,6 @@ class Compiler(object):
             self.ops.append(len(t.xlist) + 1)  # +1 for self.
         elif type(t.fn) == TIdent and t.fn.x == 'len' and len(t.xlist) == 1:
             self.ops.append('Len')
-        elif type(t.fn) == TIdent and t.fn.x == 'hex' and len(t.xlist) == 1:
-            self.ops.append('Hex')
         elif type(t.fn) == TIdent and t.fn.x == 'chr' and len(t.xlist) == 1:
             self.ops.append('Chr')
         elif type(t.fn) == TIdent and t.fn.x == 'ord' and len(t.xlist) == 1:
