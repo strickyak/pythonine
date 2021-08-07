@@ -98,8 +98,13 @@ void CallMeth(byte meth_isn, byte nargs);
 bool ReturnPerhapsStop(word retval);  // returns true to stop.
 void DoTry(byte catch_loc);
 void DoCatch(byte end_catch_loc);
-bool DoRaisePossiblyQuit(byte ex);
+bool Raise(byte ex);
 void SetJmp(word a);
+void Implode(byte len, word chain);
+byte Len(word o);
+void Explode(byte len);
+word GetItem(word coll, word key);
+void RaiseStr(const char* err);
 
 #define FOR_EACH(I, ITEM, X)                           \
   {                                                    \
@@ -113,12 +118,11 @@ void SetJmp(word a);
   }          \
   }
 
-#define CHECK(PRED, ERR)                  \
-  if (!(PRED)) {                          \
-    bool err = NewStrCopyFromC(ERR);      \
-    bool quit = DoRaisePossiblyQuit(err); \
-    assert(!quit);                        \
-    return;                               \
+#define CHECK(PRED, ERR)             \
+  if (!(PRED)) {                     \
+    bool err = NewStrCopyFromC(ERR); \
+    Raise(err);                      \
+    return;                          \
   }
 
 #endif  // PYTH09__RUNTIME_H_

@@ -170,18 +170,6 @@ code  BranchIfFalse
   [
         if (!Truth(pred)) ip = function + whither;
   ]
-code  GetAt
-  in coll key
-  out z
-  [
-        z = (  ChainMapGet(coll, key) );
-  ]
-code  PutAt
-  in coll key value
-  out
-  [
-        ChainMapPut(coll, key, value);
-  ]
 code  EQ
   in a b
   out z
@@ -343,74 +331,34 @@ code SelfMemberPut
     assert(offset < ocap(obj));
     oputw(obj + offset, value);
   ]
-code List
+code NewTuple
   arg llen
   [
-    word z = NewList();
-    for (word p = sp + ((word)llen<<1) - 2; p >= sp; p -=2) {
-        ChainAppend(z, ogetw(p));
-    }
-    sp += ((word)llen<<1) - 2;
-    oputw(sp, z);
+    Implode(llen, NewTuple());
   ]
-code Dict
+code NewList
   arg llen
   [
-    word z = NewDict();
-    for (word p = sp + ((word)llen<<2) - 4; p >= sp; p -=4) {
-        ChainMapPut(z, ogetw(p+2), ogetw(p));
-    }
-    sp += ((word)llen<<2) - 2;
-    oputw(sp, z);
+    Implode(llen, NewList());
+  ]
+code NewDict
+  arg llen
+  [
+    Implode(llen<<1, NewDict());
   ]
 code Len
   in obj
   out length
   [
-    word o = obj;
-    int n;
-    switch (ocls(o)) {
-    case C_Str:
-        n = Str_len(o);
-        break;
-    case C_Buf:
-        n = BufLen(o);
-        break;
-    case C_List:
-        n = List_len2(o);
-        break;
-    case C_Dict:
-        n = List_len2(o)>>1;
-        break;
-    default:
-        opanic(101);
-    }
+    int n = Len(obj);
     length = FROM_INT(n);
   ]
 code GetItem
   in coll key
   out value
-  [
-    word c = coll;
-    word k = key;
-    word v;
-    switch (ocls(c)) {
-    case C_Str: {
-        word addr = Str_bytes(c) + Str_offset(c) + TO_INT(k);
-        v = SingletonStr(ogetb(addr));
-        } break;
-    case C_List: {
-        int i = TO_INT(k);
-        v = ChainGetNth(coll, i);
-        } break;
-    case C_Dict:
-        v = ChainMapGet(coll, k);
-        break;
-    default:
-        opanic(101);
-    }
-    value = v;
-  ]
+[
+  value = GetItem(coll, key);
+]
 code Hex
   in x
   out z
@@ -451,10 +399,13 @@ code Raise
    word ex = ogetw(sp);
    oputw(sp, 0xDEAD);
    sp += 2;
-  bool b = DoRaisePossiblyQuit(ex);
-  if (b) return;
+   Raise(ex);
 ]
-
+code Explode
+  arg len
+[
+  Explode(len);
+]
 prim Str __str__
   in self
   out z

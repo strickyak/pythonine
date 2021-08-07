@@ -162,7 +162,7 @@ class Parser(object):
 
     def Advance(self):
         self.Advance9()
-        print >>E, 'Advance', self.t, self.x, repr(self.lex.program[:self.lex.i])
+        print >>E, 'Advance', '::', self.t, '::', repr(self.x), '::', repr(self.lex.program[:self.lex.i])
 
     def Advance9(self):
         """Lexer::Next only returns L_BOL (with the indent column) and L_BOL 
@@ -229,6 +229,22 @@ class Parser(object):
                 raise Exception('expected `,` or `}` after dict item')
         self.Advance()
         return TDict(dic)
+
+    def ParseParen(self):
+        vec = []
+        self.ConsumeX('(')
+        while self.x != ')':
+            a = self.ParseSingle()
+            vec.append(a)
+            if self.x == ',':
+                self.Advance()
+            elif self.x != ')':
+                raise Exception('expected `,` or `)` after paren item')
+        self.Advance()
+        if len(vec)==1:
+            return vec[0]
+        else:
+            return TTuple(vec)
 
     def ParseList(self):
         vec = []
@@ -311,6 +327,20 @@ class Parser(object):
 
     def ParseSingle(self):
         return self.ParseOrOp()
+
+    def ParseCommaList(self):
+        vec = []
+        while True:
+            vec.append(self.ParseSingle())
+            if self.x != ',':
+                break
+            self.Advance()
+        if len(vec) < 1:
+            raise Exception('how < 1')
+        elif len(vec) == 1:
+            return vec[0]
+        else:
+            return TTuple(vec)
 
     def ParseXList(self):
         vec = []
@@ -398,13 +428,13 @@ class Parser(object):
         return z
 
     def ParseAssign(self):
-        p = self.ParseSingle()
+        p = self.ParseCommaList()
         op = self.x
         if op == '=':
             while op == '=':
                 self.Advance()
-                p2 = self.ParseSingle()
-                if type(p) is TIdent or type(p) is TMember:
+                p2 = self.ParseCommaList()
+                if type(p) is TIdent or type(p) is TMember or type(p) is TTuple: # TODO nested
                     p = TAssign(p, op, p2)
                     op = self.x
                 else:
@@ -520,6 +550,14 @@ class TDict(TBase):
 
     def visit(self, a):
         return a.visitDict(self)
+
+
+class TTuple(TBase):
+    def __init__(self, vec):
+        self.vec = vec
+
+    def visit(self, a):
+        return a.visitTuple(self)
 
 
 class TList(TBase):
@@ -751,8 +789,11 @@ class Compiler(object):
 
     def visitAssign(self, t):
         t.y.visit(self)
-        if type(t.x) is TIdent:
-            var = t.x.x
+        self.assignTo(t.x)
+
+    def assignTo(self, a):
+        if type(a) is TIdent:
+            var = a.x
             if var in self.argVars:
                 self.ops.append('ArgPut')
                 self.ops.append(self.argVars.index(var))
@@ -764,17 +805,22 @@ class Compiler(object):
                 self.ops.append('GlobalPut')
                 g = self.PatchGlobal(var, len(self.ops))
                 self.ops.append(g)
-        elif type(t.x) is TMember:
-            if type(t.x.x) == TIdent and t.x.x.x == 'self' and self.tclass:
+        elif type(a) is TMember:
+            if type(a.x) == TIdent and a.x.x == 'self' and self.tclass:
                 self.ops.append('SelfMemberPut')
-                self.ops.append(sorted(self.tclass.fields).index(t.x.member))
+                self.ops.append(sorted(self.tclass.fields).index(a.member))
             else:
-                t.x.x.visit(self)
+                a.x.visit(self)
                 self.ops.append('MemberPut')
-                isn = self.PatchIntern(t.x.member, len(self.ops))
+                isn = self.PatchIntern(a.member, len(self.ops))
                 self.ops.append(isn)
+        elif type(a) is TTuple:
+            self.ops.append('Explode')
+            self.ops.append(len(a.vec))
+            for b in a.vec:
+                self.assignTo(b)
         else:
-            raise Exception('visitAssign: bad lhs: %s' % t.x)
+            raise Exception('assignTo: bad lhs: %s' % a)
 
     def visitFunCall(self, t):
         # fn, xlist
@@ -944,17 +990,23 @@ class Compiler(object):
         t.key.visit(self)
         self.ops.append('GetItem')
 
+    def visitTuple(self, t):
+        for e in t.vec:
+            e.visit(self)
+        self.ops.append('NewTuple')
+        self.ops.append(len(t.vec))
+
     def visitList(self, t):
         for e in t.vec:
             e.visit(self)
-        self.ops.append('List')
+        self.ops.append('NewList')
         self.ops.append(len(t.vec))
 
     def visitDict(self, t):
         for k, v in t.dic:
             k.visit(self)
             v.visit(self)
-        self.ops.append('Dict')
+        self.ops.append('NewDict')
         self.ops.append(len(t.dic))
 
     def visitIdent(self, t):

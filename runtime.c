@@ -870,7 +870,7 @@ void DoCatch(byte end_catch_loc) {
   Frame_tries_Put(fp, next);
   ip = function + end_catch_loc;
 }
-bool DoRaisePossiblyQuit(byte ex) {
+bool Raise(byte ex) {
   for (word p = fp; p; p = Frame_prev_frame(p)) {
     word try = Frame_tries(p);
     if (try) {
@@ -896,4 +896,71 @@ bool DoRaisePossiblyQuit(byte ex) {
   SayObj(ex, 3);
   osay(ex);
   olongjmp(run_loop_jmp_buf, FINISH);
+}
+void Implode(byte len, word chain) {
+  for (word p = sp + ((word)len << 1) - 2; p >= sp; p -= 2) {
+    ChainAppend(chain, ogetw(p));
+  }
+  sp += ((word)len << 1) - 2;  // -2 for new list.
+  oputw(sp, chain);
+}
+byte Len(word o) {
+  byte n;
+  switch (ocls(o)) {
+    case C_Str:
+      n = Str_len(o);
+      break;
+    case C_Buf:
+      n = BufLen(o);
+      break;
+    case C_Tuple:
+    case C_List:
+      n = List_len2(o);
+      break;
+    case C_Dict:
+      n = List_len2(o) >> 1;
+      break;
+    default:
+      opanic(101);
+  }
+  return n;
+}
+void Explode(byte len) {
+  word o = ogetw(sp);
+  sp += 2;
+  byte n = Len(o);
+  if (n != len) {
+    RaiseStr("explode_bad_len");
+  }
+  byte j = n;
+  for (byte i = 0; i < n; i++) {
+    j--;
+    word x = GetItem(o, FROM_INT(j));
+    sp -= 2;
+    oputw(sp, x);
+  }
+}
+word GetItem(word coll, word key) {
+  word value;
+  switch (ocls(coll)) {
+    case C_Str: {
+      word addr = Str_bytes(coll) + Str_offset(coll) + TO_INT(key);
+      value = SingletonStr(ogetb(addr));
+    } break;
+    case C_Tuple:
+    case C_List: {
+      int i = TO_INT(key);
+      value = ChainGetNth(coll, i);
+    } break;
+    case C_Dict:
+      value = ChainMapGet(coll, key);
+      break;
+    default:
+      opanic(101);
+  }
+  return value;
+}
+void RaiseStr(const char* err) {
+  word s = NewStrCopyFromC(err);
+  Raise(s);
 }
