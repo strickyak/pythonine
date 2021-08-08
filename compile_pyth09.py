@@ -440,7 +440,7 @@ class Parser(object):
                 else:
                     raise Exception('bad lhs %s' % p)
         elif self.t == P_EOL or self.t == L_EOF:
-            p = TJustExpr(p)
+            p = TExprAndDrop(p)
         else:
             raise Exception('expected = or EOL, but got %s' % self.x)
         return p
@@ -604,12 +604,12 @@ class TBin(TBase):
         return a.visitBin(self)
 
 
-class TJustExpr(TBase):
+class TExprAndDrop(TBase):
     def __init__(self, x):
         self.x = x
 
     def visit(self, a):
-        return a.visitJustExpr(self)
+        return a.visitExprAndDrop(self)
 
 
 class TAssign(TBase):
@@ -783,7 +783,7 @@ class Compiler(object):
         t.x.visit(self)
         self.ops.append('Assert')
 
-    def visitJustExpr(self, t):
+    def visitExprAndDrop(self, t):
         t.x.visit(self)
         self.ops.append('Drop')
 
@@ -1135,6 +1135,9 @@ class AssignmentVisitor(object):
     def visitRaise(self, t):
         pass
     def visitReturn(self, t):
+        pass
+
+    def visitExprAndDrop(self, t):
         pass
 
     def visitAssign(self, t):
