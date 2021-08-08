@@ -74,3 +74,48 @@ word DictGet(word chain, word key) { return ChainMapGet(chain, key); }
 void DictPut(word chain, word key, word value) {
   return ChainMapPut(chain, key, value);
 }
+
+word NewChainIter(word base, byte cls) {
+  word it = oalloc(ListIter_Size, cls);
+  ListIter_base_Put(it, base);
+  ListIter_p_Put(it, List_root(base));
+  ListIter_i_Put(it, 0);
+  ListIter_len2_Put(it, List_len2(base));
+  return it;
+}
+word NewListIter(word base) { return NewChainIter(base, C_ListIter); }
+
+word ListIterNext(word it) {
+  int len2 = ListIter_len2(it);
+  if (!len2) {
+    // Stop the iteration with an exception.
+    RaiseC("StopIter");
+  }
+  ListIter_len2_Put(it, len2 - 1);
+
+  word p = ListIter_p(it);
+  int i = ListIter_i(it);
+  word z = ogetw(p + i);
+  // printf("ListIterNext: len2=%d p=%d cap=%d i=%d z=%d\n", len2, p, ocap(p),
+  // i, z);
+  i += 2;
+
+  byte cap = ocap(p);
+  if (i == cap - 2) {
+    // overflow
+    ListIter_p_Put(it, ogetw(ListIter_p(it) + cap - 2));
+    ListIter_i_Put(it, 0);
+  } else {
+    // normal advance
+    ListIter_i_Put(it, i);
+  }
+  return z;
+}
+
+word NewDictIter(word base) { return NewChainIter(base, C_DictIter); }
+
+word DictIterNext(word it) {
+  word key = ListIterNext(it);  // key
+  (void)ListIterNext(it);       // value
+  return key;
+}

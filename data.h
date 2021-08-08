@@ -23,6 +23,9 @@ word NewList();
 word ListGetNth(word list, byte nth);
 void ListPutNth(word list, byte nth, word value);
 void ListAppend(word list, word value);
+word NewListIter(word base);
+word ListIterNext(word it);
+word NewChainIter(word base, byte cls);
 
 // Dict
 word NewDict();
@@ -30,5 +33,7 @@ byte DictWhatNth(word chain, word key);
 word DictAddr(word chain, word key);
 word DictGet(word chain, word key);
 void DictPut(word chain, word key, word value);
+word NewDictIter(word base);
+word DictIterNext(word it);
 
 #endif

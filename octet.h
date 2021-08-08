@@ -68,10 +68,9 @@ extern omarker OMarkerFn;
 
 // public api:
 
+#if unix
 word ogetw(word addr);
 void oputw(word addr, word value);
-
-#if unix
 
 #define ogetb(A) (ORam[(word)(A)])
 #define oputb(A, X) (ORam[(word)(A)] = (byte)(X), 0)
@@ -83,8 +82,8 @@ void oputw(word addr, word value);
 
 #define ogetb(A) (*(byte*)(A))
 #define oputb(A, X) (*(byte*)(A) = (byte)(X))
-#define OGETW(A) (*(word*)(A))
-#define OPUTW(A, X) (*(word*)(A) = (X))
+#define ogetw(A) (*(word*)(A))
+#define oputw(A, X) (*(word*)(A) = (X))
 #define olea(A) ((byte*)(A))
 
 #endif
@@ -112,6 +111,7 @@ int omemcmp(word pchar1, byte len1, word pchar2, byte len2);
 void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
            word* bytes_skip_ptr);
 void ocheckguards(word addr);
+void ocheckall();
 
 #if unix
 extern byte ORam[1 << 16];

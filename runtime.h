@@ -103,6 +103,7 @@ void Implode(byte len, word chain);
 byte Len(word o);
 void Explode(byte len);
 word GetItem(word coll, word key);
+word PutItem(word coll, word key, word value);
 void Raise(word ex);
 void RaiseC(const char* err);
 word PopSp();

@@ -434,7 +434,7 @@ class Parser(object):
             while op == '=':
                 self.Advance()
                 p2 = self.ParseCommaList()
-                if type(p) is TIdent or type(p) is TMember or type(p) is TTuple: # TODO nested
+                if type(p) is TIdent or type(p) is TMember or type(p) is TGetItem or type(p) is TTuple: # TODO nested
                     p = TAssign(p, op, p2)
                     op = self.x
                 else:
@@ -805,6 +805,10 @@ class Compiler(object):
                 self.ops.append('GlobalPut')
                 g = self.PatchGlobal(var, len(self.ops))
                 self.ops.append(g)
+        elif type(a) is TGetItem:
+            a.coll.visit(self)
+            a.key.visit(self)
+            self.ops.append('PutItem')
         elif type(a) is TMember:
             if type(a.x) == TIdent and a.x.x == 'self' and self.tclass:
                 self.ops.append('SelfMemberPut')
@@ -1148,6 +1152,8 @@ class AssignmentVisitor(object):
             self.selfFields.add(t.x.member)
         elif type(t.x) is TMember and type(t.x.x) is TIdent:
             pass  # Foreign member.
+        elif type(t.x) is TGetItem:
+            pass  # puts at.
         else:
             raise Exception('visitAssign: bad lhs: %s' % t.x)
 

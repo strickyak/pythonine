@@ -21,7 +21,9 @@ def DefineEnumNames(name, members):
     print 'const char* const %sNames[] = {' % name
     i = 0
     for m in members:
-        print '  "%s", // %d' % (m, i)
+        f = m.find('_')
+        assert f>0
+        print '  "%s", // %d' % (m[f+1:], i)
         i += 1
     print '};'
     print 'word %sNames_SIZE = %d;' % (name, len(members))
@@ -78,8 +80,8 @@ def CompileCore(core_contents):
             topic_cls = words[1]
             topic_message = words[2]
 
-            if topic_message not in message_enums:
-                message_enums.append(topic_message)
+            if 'M_' + topic_message not in message_enums:
+                message_enums.append('M_' + topic_message)
 
             if topic_cls not in class_message_to_meth:
                 class_message_to_meth[topic_cls] = dict()
@@ -183,9 +185,13 @@ def CompileCore(core_contents):
 
     print
     print 'const byte Prims[] = {'
+    prims_items = []
     for topic_cls, d1 in class_message_to_meth.items():
         for topic_message, mess_num in d1.items():
-            print '  C_%s, %s, // METH_%s_%s == %d' % (topic_cls,
+            prims_items.append((mess_num, topic_cls, topic_message))
+
+    for mess_num, topic_cls, topic_message in sorted(prims_items):
+            print '  C_%s, M_%s, // METH_%s_%s == %d' % (topic_cls,
                                                        topic_message,
                                                        topic_cls,
                                                        topic_message, mess_num)

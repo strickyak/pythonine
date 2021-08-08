@@ -23,8 +23,24 @@ word OGrace2;
 word OBucket[O_NUM_BUCKETS];
 byte OBucketCap[] = {2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 254};
 
-word ogetw(word addr) { return OGETW(addr); }
-void oputw(word addr, word value) { OPUTW(addr, value); }
+#if unix
+word ogetw(word addr) {
+  ocheckall();
+  return OGETW(addr);
+}
+void oputw(word addr, word value) {
+  OPUTW(addr, value);
+  ocheckall();
+}
+#endif
+word qgetb(word addr) { return ogetb(addr); }
+word qgetw(word addr) {
+#if unix
+  return OGETW(addr);
+#else
+  return ogetw(addr);
+#endif
+}
 
 bool ovalidaddr(word p) {
   bool z = ((p & 1u) == 0u && ORamBegin < p && p < ORamEnd);
@@ -332,6 +348,29 @@ void osay(word p) {
   printf("\n");
 }
 
+void ocheckall() {
+  word p = ORamBegin + DHDR;
+  while (p < ORamUsed) {
+    ocheckguards(p);
+    byte cap = (byte)(qgetb(p - DCAP) << 1);
+    byte cls = (byte)(qgetb(p - DCLS));
+    if (cls) {
+      if (cls > O_LAST_NONPTR_CLASS) {
+        for (byte i = 0; i < cap; i += 2) {
+          word x = qgetw(p + i);
+          if (x) {
+            if (ovalidaddr(x)) {
+              ocheckguards(x);
+            } else {
+              assert(x & 1);
+            }
+          }
+        }
+      }
+    }
+    p += cap + DHDR;
+  }
+}
 void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
            word* bytes_skip_ptr) {
   word count_used = 0;

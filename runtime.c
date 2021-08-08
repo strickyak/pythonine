@@ -654,7 +654,7 @@ void RuntimeInit() {
   for (byte i = 1; i < ClassNames_SIZE; i++) {
     word cls = oalloc(Class_Size, C_Class);
     Class_classNum_Put(cls, i);
-    const char* cstr = 2 /* skip `C_` */ + ClassNames[i];
+    const char* cstr = ClassNames[i];
     word name = NewStrCopyFromC(cstr);
     word name_isn = InternString(name);
     name = ChainGetNth(InternList, name_isn);
@@ -677,6 +677,10 @@ void RuntimeInit() {
       word message = ChainGetNth(MessageList, p[1]);
       ChainAppend(meth_list, message);
       ChainAppend(meth_list, FROM_INT(i));
+      printf(
+          "PRIMS: %d %d -> cls %d meth_list %d message %d i %d FROM_INT(i) "
+          "%d\n",
+          p[0], p[1], cls, meth_list, message, i, FROM_INT(i));
     }
   }
 
@@ -793,7 +797,8 @@ void Construct(byte cls_num, byte nargs /*less self */) {
 void Call(byte nargs, word fn) {
   Break("CALL");
   if (fn & 1) {  // If odd, is an integer.
-    RunBuiltin((byte)TO_INT(fn));
+    byte i = (byte)TO_INT(fn);
+    RunBuiltin(i);
     return;
   }
   CHECK(ocls(fn) == C_Bytecodes, "bad_fn_cls");
@@ -969,6 +974,20 @@ word GetItem(word coll, word key) {
     } break;
     case C_Dict:
       value = ChainMapGet(coll, key);
+      break;
+    default:
+      opanic(101);
+  }
+  return value;
+}
+word PutItem(word coll, word key, word value) {
+  switch (ocls(coll)) {
+    case C_List: {
+      int i = TO_INT(key);
+      ChainPutNth(coll, i, value);
+    } break;
+    case C_Dict:
+      ChainMapPut(coll, key, value);
       break;
     default:
       opanic(101);

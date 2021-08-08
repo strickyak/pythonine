@@ -47,6 +47,21 @@ class Class
 class Try
   small catch_loc
   oop next
+class ListIter
+  oop base
+  oop p
+  small i
+  small len2
+class DictIter
+  oop base
+  oop p
+  small i
+  small len4
+class StrIter
+  oop base
+  oop p
+  small i
+  small len
 
 # Opcodes.
 code  Abort  # Abort comes first, so 00 means abort.
@@ -344,6 +359,11 @@ code GetItem
 [
   value = GetItem(coll, key);
 ]
+code PutItem
+  in value coll key
+[
+  PutItem(coll, key, value);
+]
 code Ord
   in x
   out z
@@ -395,4 +415,40 @@ prim Str __foo__
   out z
 [
   z = DunderInitStr;
+]
+
+prim List __iter__
+  in self
+  out z
+[
+  z = NewListIter(self);
+]
+
+prim ListIter next
+  in self
+  out z
+[
+  z = ListIterNext(self);
+]
+
+prim Tuple __iter__
+  in self
+  out z
+[
+  // ListIter works for Tuple.
+  z = NewListIter(self);
+]
+
+prim Dict __iter__
+  in self
+  out z
+[
+  z = NewDictIter(self);
+]
+
+prim DictIter next
+  in self
+  out z
+[
+  z = DictIterNext(self);
 ]

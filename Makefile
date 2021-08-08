@@ -5,35 +5,39 @@ C=42
 all: _build _runpy
 # all: _build _octet_test _chain_test _runpy
 
-test: 1 2 3 4 5 fib 6 7 8 101 102 103 104
+test: 1 2 3 4 5 fib 6 7 8 101 102 103 104 105
 	echo
 
 1:
-	make T=1 _build emu
+	make T=1 _build _runpy emu
 2:
-	make T=2 _build emu
+	make T=2 _build _runpy emu
 3:
-	make T=3 _build emu
+	make T=3 _build _runpy emu
 4:
-	make T=4 _build emu
+	make T=4 _build _runpy emu
 5:
-	make T=5 _build emu
+	make T=5 _build _runpy emu
 6:
-	make T=6 _build emu
+	make T=6 _build _runpy emu
 7:
-	make T=7 _build emu
+	make T=7 _build _runpy emu
 8:
-	make T=8 _build emu
+	make T=8 _build _runpy emu
 fib:
-	make T=fib _build emu
+	make T=fib _build _runpy emu
 101:
-	make T=101 _build emu
+	make T=101 _build _runpy emu
 102:
-	make T=102 _build emu
+	make T=102 _build _runpy emu
 103:
-	make T=103 _build emu
+	make T=103 _build _runpy emu
 104:
-	make T=104 _build emu
+	make T=104 _build _runpy emu
+105:
+	make T=105 _build _runpy emu
+106:
+	make T=106 _build _runpy emu
 
 
 _build:
