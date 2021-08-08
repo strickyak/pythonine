@@ -315,7 +315,7 @@ ojmp_buf run_loop_jmp_buf;
 void RunLoop() {
   byte message = osetjmp(run_loop_jmp_buf);
   if (message) {
-    printf("osetjmp: %d\n");
+    printf("osetjmp: %d\n", message);
     fflush(stdout);
   }
   if (message == FINISH) return;
