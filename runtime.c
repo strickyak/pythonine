@@ -307,11 +307,17 @@ void EvalCodes(word fn) {
 
   RunLoop();
   printf("\n[[[ Finished RunLoop ]]]\n");
+  fp = function = None;
+  sp = ip = 0;
 }
 
 ojmp_buf run_loop_jmp_buf;
 void RunLoop() {
   byte message = osetjmp(run_loop_jmp_buf);
+  if (message) {
+    printf("osetjmp: %d\n");
+    fflush(stdout);
+  }
   if (message == FINISH) return;
 
 RUN_LOOP:
@@ -412,8 +418,10 @@ void SlurpGlobal(struct ReadBuf* bp, word bc, word ilist) {
         // Get the i_numth interned string.
         word s = ChainGetNth(InternList, i_num);
         assert(s);
-        // Create a global slot for that string.
-        DictPut(GlobalDict, s, None);
+        // Create a global slot for that string, if not already there.
+        if (!DictAddr(GlobalDict, s)) {
+          DictPut(GlobalDict, s, None);
+        }
         g_num = 1 + DictWhatNth(GlobalDict, s);
         assert(g_num != INF);
         // osaylabel(bc, "GlobalPack_name_i", ith);
@@ -675,9 +683,9 @@ void RuntimeInit() {
   DumpStats();
 }
 
-void Break() {
+void Break(const char* why) {
 #if unix
-  printf("\n@ Break (((\n");
+  printf("\n@ Break `%s'(((\n", why);
   printf("  fp=%d sp-fp=%d fn=%d ip-fn=%d\n", fp, sp - fp, function,
          ip - function);
   for (word p = fp; p; p = Frame_prev_frame(p)) {
@@ -783,7 +791,7 @@ void Construct(byte cls_num, byte nargs /*less self */) {
 }
 
 void Call(byte nargs, word fn) {
-  Break();
+  Break("CALL");
   if (fn & 1) {  // If odd, is an integer.
     RunBuiltin((byte)TO_INT(fn));
     return;
@@ -823,7 +831,7 @@ void CallMeth(byte meth_isn, byte nargs /* with self */) {
 }
 
 void Return(word retval) {
-  Break();
+  Break("RETURN");
   word old_fp = Frame_prev_frame(fp);
   if (!old_fp) {
     // Stop when no previous frame.
@@ -864,9 +872,21 @@ void DoCatch(byte end_catch_loc) {
   Frame_tries_Put(fp, next);
   ip = function + end_catch_loc;
 }
-bool Raise(byte ex) {
+void RaiseC(const char* msg) {
+  printf("\nRaiseC: %s\n", msg);
+  Raise(NewStrCopyFromC(msg));
+}
+void Raise(word ex) {
+  if (!fp) {
+    printf("\nException Outside RunLoop: ");
+    SayObj(ex, 3);
+    osay(ex);
+    exit(13);
+  }
+  Break("RAISE");
   for (word p = fp; p; p = Frame_prev_frame(p)) {
     word try = Frame_tries(p);
+    printf("frame %d tries=%d\n", p, try);
     if (try) {
       fp = p;
 
@@ -883,6 +903,7 @@ bool Raise(byte ex) {
       ip = function + Try_catch_loc(try) + 3;
       byte local_var_num = ogetb(ip - 1);
       Frame_flex_AtPut(fp, local_var_num, ex);
+      Break("LONGJMP");
       olongjmp(run_loop_jmp_buf, CONTINUE);
     }
   }
@@ -924,7 +945,7 @@ void Explode(byte len) {
   sp += 2;
   byte n = Len(o);
   if (n != len) {
-    RaiseStr("explode_bad_len");
+    RaiseC("explode_bad_len");
   }
   byte j = n;
   for (byte i = 0; i < n; i++) {
@@ -953,10 +974,6 @@ word GetItem(word coll, word key) {
       opanic(101);
   }
   return value;
-}
-void RaiseStr(const char* err) {
-  word s = NewStrCopyFromC(err);
-  Raise(s);
 }
 word PopSp() {
   word z = ogetw(sp);

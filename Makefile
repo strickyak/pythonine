@@ -5,7 +5,7 @@ C=42
 all: _build _runpy
 # all: _build _octet_test _chain_test _runpy
 
-test: 1 2 3 4 5 fib 6 7 8 101 102 103
+test: 1 2 3 4 5 fib 6 7 8 101 102 103 104
 	echo
 
 1:
@@ -32,6 +32,8 @@ fib:
 	make T=102 _build emu
 103:
 	make T=103 _build emu
+104:
+	make T=104 _build emu
 
 
 _build:

@@ -143,6 +143,7 @@ code  GlobalGet
   in
   out z
   [
+    SayObj(GlobalDict, 3);
     word addr = ChainAddrOfNth(GlobalDict, nth);
     assert(addr);
     z = GetW(addr);

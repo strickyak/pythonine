@@ -68,20 +68,23 @@ extern omarker OMarkerFn;
 
 // public api:
 
+word ogetw(word addr);
+void oputw(word addr, word value);
+
 #if unix
 
 #define ogetb(A) (ORam[(word)(A)])
 #define oputb(A, X) (ORam[(word)(A)] = (byte)(X), 0)
-#define ogetw(A) ((word)((((word)ogetb(A)) << 8) | (word)ogetb(A + 1)))
-#define oputw(A, X) (oputb(A, (word)X >> 8), oputb(A + 1, X), 0)
+#define OGETW(A) ((word)((((word)ogetb(A)) << 8) | (word)ogetb(A + 1)))
+#define OPUTW(A, X) (oputb(A, (word)X >> 8), oputb(A + 1, X), 0)
 #define olea(A) (ORam + A)
 
 #else
 
 #define ogetb(A) (*(byte*)(A))
 #define oputb(A, X) (*(byte*)(A) = (byte)(X))
-#define ogetw(A) (*(word*)(A))
-#define oputw(A, X) (*(word*)(A) = (X))
+#define OGETW(A) (*(word*)(A))
+#define OPUTW(A, X) (*(word*)(A) = (X))
 #define olea(A) ((byte*)(A))
 
 #endif

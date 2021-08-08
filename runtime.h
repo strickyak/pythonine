@@ -36,7 +36,7 @@ bool Truth(word a);
 void RuntimeInit();
 void MarkRoots();
 void SlurpModule(struct ReadBuf*, word* bc_out);
-void Break();
+void Break(const char* why);
 
 // GC Roots:
 extern word ForeverRoot;
@@ -98,13 +98,13 @@ void CallMeth(byte meth_isn, byte nargs);
 void Return(word retval);
 void DoTry(byte catch_loc);
 void DoCatch(byte end_catch_loc);
-bool Raise(byte ex);
 void SetJmp(word a);
 void Implode(byte len, word chain);
 byte Len(word o);
 void Explode(byte len);
 word GetItem(word coll, word key);
-void RaiseStr(const char* err);
+void Raise(word ex);
+void RaiseC(const char* err);
 word PopSp();
 void PushSp(word a);
 
@@ -123,7 +123,7 @@ void PushSp(word a);
 #define CHECK(PRED, ERR)             \
   if (!(PRED)) {                     \
     bool err = NewStrCopyFromC(ERR); \
-    Raise(err);                      \
+    RaiseC(ERR);                     \
     return;                          \
   }
 

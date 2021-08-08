@@ -23,6 +23,9 @@ word OGrace2;
 word OBucket[O_NUM_BUCKETS];
 byte OBucketCap[] = {2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 254};
 
+word ogetw(word addr) { return OGETW(addr); }
+void oputw(word addr, word value) { OPUTW(addr, value); }
+
 bool ovalidaddr(word p) {
   bool z = ((p & 1u) == 0u && ORamBegin < p && p < ORamEnd);
 #if CAREFUL
