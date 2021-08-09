@@ -1,5 +1,5 @@
-# lex.py -- lexical tokenizer.
-
+# compile_pyth09.py -- tokenizer, parser, and code generator for Pythonine.
+#
 import re, sys
 import _generated_proto as T  # Tags.
 import py_pb as P  # Protocol buffers.
@@ -93,7 +93,7 @@ class Lexer(object):
         return z
 
     def Next(self):
-        """Next only returns L_BOL (with the indent #) and L_BOL 
+        """Next only returns L_BOL (with the indent #) and L_BOL
            as framing tokens.  Parser::Advance changes L_BOL to
            P_EOL and P_INDENT and P_DEDENT tokens."""
         c = self.GetC()
@@ -159,6 +159,25 @@ class Lexer(object):
         return ShowLex(L_PUNC, c)
 
 
+# Python Precedence:
+# await x
+# x**...
+# +x, -x, ~x
+# ...**x
+# * @ / // %
+# + -
+# << >>
+# &
+# ^
+# |
+# in, not in, is, is not, <, <=, >, >=, !=, ==
+# not x
+# and
+# or
+# if ... else
+# lambda
+# assignment
+
 class Parser(object):
     def __init__(self, program):
         self.program = program
@@ -173,7 +192,7 @@ class Parser(object):
         print >>E, 'Advance', '::', self.t, '::', repr(self.x), '::', repr(self.lex.program[:self.lex.i])
 
     def Advance9(self):
-        """Lexer::Next only returns L_BOL (with the indent column) and L_BOL 
+        """Lexer::Next only returns L_BOL (with the indent column) and L_BOL
            as framing tokens.  Advance changes L_BOL to P_EOL
            P_INDENT and P_DEDENT tokens."""
         if self.pending_indent:
@@ -965,8 +984,6 @@ class Compiler(object):
         self.ops.append('LocalGet')
         self.ops.append(self.localVars.index(t.iterTemp))
         TStr('StopIter').visit(self)
-        #self.ops.append('GlobalGet')
-        #self.ops.append(self.PatchIntern('next', len(self.ops)))
         self.ops.append('NE')
 
         self.ops.append('BranchIfFalse')
