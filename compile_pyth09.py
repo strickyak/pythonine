@@ -27,6 +27,14 @@ P_DEDENT = 8
 P_EOL = 9
 
 BytecodeNumbers = {}
+serialCounter = [0]
+
+
+def SerialName():
+    n = serialCounter[0]
+    n += 1
+    serialCounter[0] = n
+    return '_%d' % n
 
 
 def LexKind(a):
@@ -371,8 +379,19 @@ class Parser(object):
 
     def ParseVarList(self):
         vlist = []
-        while self.t == L_IDENTIFIER:
-            vlist.append(self.ParseIdentifier().x)
+        while True:
+            if self.x == '(':
+                self.Advance()
+                sublist = self.ParseVarList()
+                vlist.append(sublist)
+                self.ConsumeX(')')
+            elif self.x == 'in':
+                break
+            elif self.t == L_IDENTIFIER:
+                var = self.ParseIdentifier().x
+                vlist.append(var)
+            else:
+                break
             if self.x == ',':
                 self.Advance()
         return vlist
@@ -403,6 +422,19 @@ class Parser(object):
             except_var = self.ParseIdentifier()
         catch_block = self.ColonBlock()
         return TTry(try_block, except_var, catch_block)
+
+    def ParseFor(self):
+        iterVar = self.ParseVarList()
+        # TODO proper TDest; recursive.
+        if len(iterVar) == 1:
+            dest = TIdent(iterVar[0])
+        else:
+            dest = [TIdent(s) for s in iterVar]
+        self.ConsumeX('in')
+        coll = self.ParseSingle()
+        block = self.ColonBlock()
+        iterTemp = SerialName()
+        return TFor(dest, coll, TIdent(iterTemp), block)
 
     def ParseIf(self):
         plist = [self.ParseSingle()]
@@ -491,6 +523,9 @@ class Parser(object):
             elif self.x == 'try':
                 self.Advance()
                 p = self.ParseTry()
+            elif self.x == 'for':
+                self.Advance()
+                p = self.ParseFor()
             elif self.x == 'while':
                 self.Advance()
                 p = self.ParseWhile()
@@ -659,6 +694,16 @@ class TWhile(TBase):
 
     def visit(self, a):
         return a.visitWhile(self)
+
+class TFor(TBase):
+    def __init__(self, iterVar, coll, iterTemp, block):
+        self.iterVar = iterVar
+        self.coll = coll
+        self.iterTemp = iterTemp
+        self.block = block
+
+    def visit(self, a):
+        return a.visitFor(self)
 
 class TTry(TBase):
     def __init__(self, try_block, except_var, catch_block):
@@ -885,10 +930,60 @@ class Compiler(object):
             fc.ops.append('RetSelf' if fc.isDunderInit else 'RetNone')
         func_dict[t.name] = fc
 
+    def visitFor(self, t):
+        coll = t.coll.visit(self)
+        self.ops.append('CallMeth')
+        isn = self.PatchIntern('__iter__', len(self.ops))
+        self.ops.append(isn)
+        self.ops.append(1)  # one arg (self) to `__iter__`
+        self.ops.append('LocalPut')
+        self.ops.append(self.localVars.index(t.iterTemp))
+
+        self.ops.append('Try')
+        patch_try = len(self.ops)
+        self.ops.append(0)  # to the Catch.
+
+        while_top = len(self.ops)
+        self.ops.append('LocalGet')
+        self.ops.append(self.localVars.index(t.iterTemp))
+        self.ops.append('CallMeth')
+        isn = self.PatchIntern('next', len(self.ops))
+        self.ops.append(isn)
+        self.ops.append(1)  # one arg (self) to `next`
+
+        self.assignTo(t.iterVar)
+        t.block.visit(self)
+        self.ops.append('Branch')
+        self.ops.append(while_top)
+
+        self.ops[patch_try] = len(self.ops)
+        self.ops.append('Catch')
+        patch_catch = len(self.ops)
+        self.ops.append(0)  # to the end.
+        self.ops.append(self.localVars.index(t.iterTemp))
+
+        self.ops.append('LocalGet')
+        self.ops.append(self.localVars.index(t.iterTemp))
+        TStr('StopIter').visit(self)
+        #self.ops.append('GlobalGet')
+        #self.ops.append(self.PatchIntern('next', len(self.ops)))
+        self.ops.append('NE')
+
+        self.ops.append('BranchIfFalse')
+        patch_branch = len(self.ops)
+        self.ops.append(0)  # to the end.
+
+        self.ops.append('LocalGet')
+        self.ops.append(self.localVars.index(t.iterTemp))
+        self.ops.append('Raise')
+
+        self.ops[patch_catch] = len(self.ops)
+        self.ops[patch_branch] = len(self.ops)
+
     def visitTry(self, t):
         self.ops.append('Try')
         patch_try = len(self.ops)
-        self.ops.append(0)  # to the end.
+        self.ops.append(0)  # to the Catch.
 
         t.try_block.visit(self)
         self.ops[patch_try] = len(self.ops)
@@ -896,8 +991,7 @@ class Compiler(object):
         self.ops.append('Catch')
         patch_catch = len(self.ops)
         self.ops.append(0)  # to the end.
-        if t.except_var:
-            self.ops.append(self.localVars.index(t.except_var.x))
+        self.ops.append(self.localVars.index(t.except_var.x))
 
         t.catch_block.visit(self)
         self.ops[patch_catch] = len(self.ops)
@@ -1144,6 +1238,10 @@ class AssignmentVisitor(object):
     def visitExprAndDrop(self, t):
         pass
 
+    def visitFor(self, t):
+        self.visitAssign(t.iterVar)
+        self.localVars.add(t.iterTemp)
+
     def visitAssign(self, t):
         if type(t.x) is TIdent:
             self.localVars.add(t.x.x)
@@ -1153,7 +1251,12 @@ class AssignmentVisitor(object):
         elif type(t.x) is TMember and type(t.x.x) is TIdent:
             pass  # Foreign member.
         elif type(t.x) is TGetItem:
-            pass  # puts at.
+            pass
+        elif type(t.x) is list:  # TODO proper TDest
+            for e in t.x:
+                self.visitAssign(e)
+        elif type(t.x) is str:  # TODO proper TDest
+            self.localVars.add(t.x)
         else:
             raise Exception('visitAssign: bad lhs: %s' % t.x)
 
