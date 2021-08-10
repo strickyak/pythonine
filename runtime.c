@@ -677,10 +677,10 @@ void RuntimeInit() {
       word message = ChainGetNth(MessageList, p[1]);
       ChainAppend(meth_list, message);
       ChainAppend(meth_list, FROM_INT(i));
-      printf(
-          "PRIMS: %d %d -> cls %d meth_list %d message %d i %d FROM_INT(i) "
-          "%d\n",
-          p[0], p[1], cls, meth_list, message, i, FROM_INT(i));
+      //printf(
+          //"PRIMS: %d %d -> cls %d meth_list %d message %d i %d FROM_INT(i) "
+          //"%d\n",
+          //p[0], p[1], cls, meth_list, message, i, FROM_INT(i));
     }
   }
 
