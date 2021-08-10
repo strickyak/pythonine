@@ -16,4 +16,12 @@ def stuff(x):
 assert 200 == stuff(100)
 assert 13 == stuff(7)
 assert 42 == stuff(0)
-stuff(99)
+
+def try_99():
+    try:
+        stuff(99)
+    except:
+        return 1
+    return 0
+
+assert try_99()

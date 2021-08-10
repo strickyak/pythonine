@@ -158,7 +158,6 @@ code  GlobalGet
   in
   out z
   [
-    SayObj(GlobalDict, 3);
     word addr = ChainAddrOfNth(GlobalDict, nth);
     assert(addr);
     z = GetW(addr);
@@ -402,6 +401,18 @@ code Explode
   arg len
 [
   Explode(len);
+]
+code Range
+  in n_
+  out list
+[
+  int n = TO_INT(n_);
+  word z = NewList();
+  for (int i=0; i<n; i++) {
+    ListAppend(z, FROM_INT(i));
+    SayObj(z, 3);
+  }
+  list = z;
 ]
 prim Str __str__
   in self

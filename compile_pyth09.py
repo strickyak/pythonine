@@ -27,14 +27,15 @@ P_DEDENT = 8
 P_EOL = 9
 
 BytecodeNumbers = {}
-serialCounter = [0]
+SerialCounter = [0]
+Stoppers = [']', '}', ')', ';']
 
 
 def SerialName():
-    n = serialCounter[0]
+    n = SerialCounter[0]
     n += 1
-    serialCounter[0] = n
-    return '_%d' % n
+    SerialCounter[0] = n
+    return '__%d' % n
 
 
 def LexKind(a):
@@ -239,7 +240,10 @@ class Parser(object):
         if self.x == '{':  # '}'
             return self.ParseDict()
         if self.x == '(':  # ')'
-            return self.ParseParen()
+            self.ConsumeX('(')
+            x = self.ParseCommaList(False)
+            self.ConsumeX(')')
+            return x
         raise Exception('bad prim: %s %s' % (self.t, val))
 
     def ParseDict(self):
@@ -256,22 +260,6 @@ class Parser(object):
                 raise Exception('expected `,` or `}` after dict item')
         self.Advance()
         return TDict(dic)
-
-    def ParseParen(self):
-        vec = []
-        self.ConsumeX('(')
-        while self.x != ')':
-            a = self.ParseSingle()
-            vec.append(a)
-            if self.x == ',':
-                self.Advance()
-            elif self.x != ')':
-                raise Exception('expected `,` or `)` after paren item')
-        self.Advance()
-        if len(vec)==1:
-            return vec[0]
-        else:
-            return TTuple(vec)
 
     def ParseList(self):
         vec = []
@@ -291,12 +279,12 @@ class Parser(object):
         while True:
             if self.x == '(':  # FunCall
                 self.Advance()
-                xlist = self.ParseXList()
+                xlist = self.ParseCommaList(True).vec
                 self.ConsumeX(')')
                 a = TFunCall(a, xlist)
             elif self.x == '[':  # GetItem
                 self.Advance()
-                key = self.ParseSingle()
+                key = self.ParseCommaList(False)
                 self.ConsumeX(']')
                 a = TGetItem(a, key)
             elif self.x == '.':  # Member
@@ -311,7 +299,10 @@ class Parser(object):
         return a
 
     def ParseIdentifier(self):
-        return TIdent(self.ConsumeT(L_IDENTIFIER))
+        var = self.ConsumeT(L_IDENTIFIER)
+        if var=='in' or var=='if':
+            raise Exception('bad var: %s', var)
+        return TIdent(var)
 
     def ParseProduct(self):
         p = self.ParsePrimEtc()
@@ -355,28 +346,23 @@ class Parser(object):
     def ParseSingle(self):
         return self.ParseOrOp()
 
-    def ParseCommaList(self):
+    def ParseCommaList(self, force_tuple=False):
+        """Without the parens. Should be used in lots of places."""
         vec = []
         while True:
-            vec.append(self.ParseSingle())
-            if self.x != ',':
+            if self.t == P_EOL or (self.x in Stoppers):
                 break
-            self.Advance()
-        if len(vec) < 1:
-            raise Exception('how < 1')
-        elif len(vec) == 1:
-            return vec[0]
-        else:
-            return TTuple(vec)
-
-    def ParseXList(self):
-        vec = []
-        while self.x != ')':
-            vec.append(self.ParseSingle())
-            assert self.x == ',' or self.x == ')'
+            a = self.ParseSingle()
+            vec.append(a)
             if self.x == ',':
+                force_tuple = True
                 self.Advance()
-        return vec
+            else:
+                break
+        if force_tuple or len(vec) != 1:
+            return TTuple(vec)
+        else:
+            return vec[0]
 
     def ParseClass(self):
         name = self.ParseIdentifier().x
@@ -391,7 +377,11 @@ class Parser(object):
     def ParseDef(self):
         name = self.ParseIdentifier().x
         self.ConsumeX('(')
-        arglist = self.ParseVarList()
+        vec = self.ParseCommaList(True).vec
+        arglist = []
+        for e in vec:
+            assert type(e) == TIdent, 'formal param not identifier: %s' % e
+            arglist.append(e.x)
         self.ConsumeX(')')
         block = self.ColonBlock()
         return TDef(name, arglist, block)
@@ -436,21 +426,17 @@ class Parser(object):
         self.ConsumeX('except')
         if self.x == 'as':
             self.ConsumeX('as')
-        except_var = None
         if self.t == L_IDENTIFIER:
             except_var = self.ParseIdentifier()
+        else:
+            except_var = TIdent('_')
         catch_block = self.ColonBlock()
         return TTry(try_block, except_var, catch_block)
 
     def ParseFor(self):
-        iterVar = self.ParseVarList()
-        # TODO proper TDest; recursive.
-        if len(iterVar) == 1:
-            dest = TIdent(iterVar[0])
-        else:
-            dest = [TIdent(s) for s in iterVar]
+        dest = self.ParseCommaList()
         self.ConsumeX('in')
-        coll = self.ParseSingle()
+        coll = self.ParseCommaList()
         block = self.ColonBlock()
         iterTemp = SerialName()
         return TFor(dest, coll, TIdent(iterTemp), block)
@@ -513,65 +499,76 @@ class Parser(object):
         if self.x != ':':
             raise Exception('missing colon')
         self.Advance()
+
         if self.t != P_EOL:
-            raise Exception('missing EOL after colon')
-        self.Advance()
+            # stmt on same line after colon.
+            z = self.ParseStatement()
+            while self.t == P_EOL:
+                self.Advance()
+            # z can be null, if stmt is `pass`.
+            return TBlock([z]) if z else TBlock([])
+        self.Advance()  # consume eol
+
         if self.t != P_INDENT:
             raise Exception('missing indent after colon')
         self.Advance()
         z = self.ParseBlock()
         if self.t != P_DEDENT and self.t != L_EOF:
-            raise Exception('missing newline and dedent after block')
+            raise Exception('missing dedent after block')
         self.Advance()
         return z
 
     def ParseBlock(self):
         vec = []
         while self.t != P_DEDENT and self.t != L_EOF:
-            if self.x == 'print':
+            if self.t == P_EOL:
                 self.Advance()
-                a = self.ParseRelop()
-                p = TPrint(a)
-            elif self.x == 'assert':
-                self.Advance()
-                a = self.ParseRelop()
-                p = TAssert(a)
-            elif self.x == 'if':
-                self.Advance()
-                p = self.ParseIf()
-            elif self.x == 'try':
-                self.Advance()
-                p = self.ParseTry()
-            elif self.x == 'for':
-                self.Advance()
-                p = self.ParseFor()
-            elif self.x == 'while':
-                self.Advance()
-                p = self.ParseWhile()
-            elif self.x == 'raise':
-                self.Advance()
-                p = self.ParseRaise()
-            elif self.x == 'return':
-                self.Advance()
-                p = self.ParseReturn()
-            elif self.x == 'def':
-                self.Advance()
-                p = self.ParseDef()
-            elif self.x == 'class':
-                self.Advance()
-                p = self.ParseClass()
-            elif self.x == 'pass':
-                self.Advance()
-                p = None
             else:
-                p = self.ParseAssign()
-            if p:
-                vec.append(p)
-
-            while self.t == P_EOL:
-                self.Advance()
+                stmt = self.ParseStatement()
+                if stmt:
+                    vec.append(stmt)
 
         return TBlock(vec)
+
+    def ParseStatement(self):
+        if self.x == 'print':
+            self.Advance()
+            a = self.ParseRelop()
+            p = TPrint(a)
+        elif self.x == 'assert':
+            self.Advance()
+            a = self.ParseRelop()
+            p = TAssert(a)
+        elif self.x == 'if':
+            self.Advance()
+            p = self.ParseIf()
+        elif self.x == 'try':
+            self.Advance()
+            p = self.ParseTry()
+        elif self.x == 'for':
+            self.Advance()
+            p = self.ParseFor()
+        elif self.x == 'while':
+            self.Advance()
+            p = self.ParseWhile()
+        elif self.x == 'raise':
+            self.Advance()
+            p = self.ParseRaise()
+        elif self.x == 'return':
+            self.Advance()
+            p = self.ParseReturn()
+        elif self.x == 'def':
+            self.Advance()
+            p = self.ParseDef()
+        elif self.x == 'class':
+            self.Advance()
+            p = self.ParseClass()
+        elif self.x == 'pass':
+            self.Advance()
+            p = None
+        else:
+            p = self.ParseAssign()
+        return p
 
 
 class TBase(object):
@@ -715,8 +712,8 @@ class TWhile(TBase):
         return a.visitWhile(self)
 
 class TFor(TBase):
-    def __init__(self, iterVar, coll, iterTemp, block):
-        self.iterVar = iterVar
+    def __init__(self, dest, coll, iterTemp, block):
+        self.dest = dest
         self.coll = coll
         self.iterTemp = iterTemp
         self.block = block
@@ -906,6 +903,8 @@ class Compiler(object):
             self.ops.append('Chr')
         elif type(t.fn) == TIdent and t.fn.x == 'ord' and len(t.xlist) == 1:
             self.ops.append('Ord')
+        elif type(t.fn) == TIdent and t.fn.x == 'range' and len(t.xlist) == 1:
+            self.ops.append('Range')
         else:
             t.fn.visit(self)
             self.ops.append('Call')
@@ -970,7 +969,7 @@ class Compiler(object):
         self.ops.append(isn)
         self.ops.append(1)  # one arg (self) to `next`
 
-        self.assignTo(t.iterVar)
+        self.assignTo(t.dest)
         t.block.visit(self)
         self.ops.append('Branch')
         self.ops.append(while_top)
@@ -1256,7 +1255,7 @@ class AssignmentVisitor(object):
         pass
 
     def visitFor(self, t):
-        self.visitAssign(t.iterVar)
+        self.visitAssign(t.dest)
         self.localVars.add(t.iterTemp)
 
     def visitAssign(self, t):

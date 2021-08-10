@@ -5,7 +5,7 @@ C=42
 all: _build _runpy
 # all: _build _octet_test _chain_test _runpy
 
-test: 1 2 3 4 5 fib 6 7 8 101 102 103 104 105 106 107
+test: 1 2 3 4 5 fib 6 7 8 101 102 103 104 105 106 107 108
 	echo
 
 1:
@@ -40,6 +40,8 @@ fib:
 	make T=106 _build _runpy emu
 107:
 	make T=107 _build _runpy emu
+108:
+	make T=108 _build _runpy emu
 
 
 _build:
@@ -96,6 +98,7 @@ emu: __always__
 	(echo "runpy #128"; echo "dir /d1") | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
 	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
+	ls -l runpy
 
 
 temu: __always__
@@ -110,6 +113,7 @@ temu: __always__
 	(echo "runpy #128"; echo "dir /d1") | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
 	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2,trace gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
+	ls -l runpy
 
 
 mooh:
@@ -126,6 +130,7 @@ mooh:
 	sync
 	test -b /dev/sdb && sudo dd bs=1024k if=/tmp/_img of=/dev/sdb
 	sync; sync; sync
+	ls -l runpy
 
 
 __always__:

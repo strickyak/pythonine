@@ -1,16 +1,17 @@
-def one(a):
-    return a
-
-def two(a, b):
-    return a+b
+def identity_(a): return a
+def add_(a, b): return a+b
+def sum_(vec):
+    z = 0
+    for e in vec: z = add_(z, identity_(e))
+    return z
 
 def work():
-    x = 0
     try:
-        x = one(100, 200)
+        return sum_([10, 20, 30])
     except as ex:
-        x = ex
-    return x
+        return 'BOGUS'
+    return 'BOTTOM'
 
-z = work()
-print z
+class Foo: def bar(self, x): return x+work()
+
+assert Foo().bar(3) == 63
