@@ -97,7 +97,7 @@ void Call(byte nargs, word fn);
 void CallMeth(byte meth_isn, byte nargs);
 void Return(word retval);
 void DoTry(byte catch_loc);
-void DoCatch(byte end_catch_loc);
+void DoEndTry(byte end_catch_loc);
 void SetJmp(word a);
 void Implode(byte len, word chain);
 byte Len(word o);

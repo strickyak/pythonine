@@ -867,9 +867,8 @@ void DoTry(byte catch_loc) {
   Try_next_Put(try, next);
   Frame_tries_Put(fp, try);
 }
-void DoCatch(byte end_catch_loc) {
+void DoEndTry(byte end_catch_loc) {
   // Called at the end of a try.
-  // Consulted on a Catch, which starts at the next opcode.
 
   // Remove one Try block from the `tries` chain.
   word try = Frame_tries(fp);
@@ -902,12 +901,9 @@ void Raise(word ex) {
       // Set execution state to Catch clause.
       function = Frame_function(fp);
       sp = fp + ocap(fp);  // empty stack.
-      // catch_loc is the 3-byte "Catch" instruction,
-      // which we do not want to execute,
-      // but we do want the last byte, the local var num.
-      ip = function + Try_catch_loc(try) + 3;
-      byte local_var_num = ogetb(ip - 1);
-      Frame_flex_AtPut(fp, local_var_num, ex);
+      PushSp(ex);
+
+      ip = function + Try_catch_loc(try);
       Break("LONGJMP");
       olongjmp(run_loop_jmp_buf, CONTINUE);
     }

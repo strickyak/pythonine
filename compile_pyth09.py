@@ -426,8 +426,7 @@ class Parser(object):
         self.ConsumeX('except')
         if self.x == 'as':
             self.ConsumeX('as')
-        if self.t == L_IDENTIFIER:
-            except_var = self.ParseIdentifier()
+            except_var = self.ParseCommaList()
         else:
             except_var = TIdent('_')
         catch_block = self.ColonBlock()
@@ -855,7 +854,9 @@ class Compiler(object):
     def assignTo(self, a):
         if type(a) is TIdent:
             var = a.x
-            if var in self.argVars:
+            if var=='_':
+                self.ops.append('Drop')
+            elif var in self.argVars:
                 self.ops.append('ArgPut')
                 self.ops.append(self.argVars.index(var))
             elif var in self.localVars:
@@ -974,11 +975,13 @@ class Compiler(object):
         self.ops.append('Branch')
         self.ops.append(while_top)
 
-        self.ops[patch_try] = len(self.ops)
-        self.ops.append('Catch')
+        self.ops.append('EndTry')
         patch_catch = len(self.ops)
         self.ops.append(0)  # to the end.
-        self.ops.append(self.localVars.index(t.iterTemp))
+
+        self.ops[patch_try] = len(self.ops)
+        self.ops.append('Catch')
+        self.assignTo(t.iterTemp)  # assigns exception object to right var.
 
         self.ops.append('LocalGet')
         self.ops.append(self.localVars.index(t.iterTemp))
@@ -1002,12 +1005,14 @@ class Compiler(object):
         self.ops.append(0)  # to the Catch.
 
         t.try_block.visit(self)
-        self.ops[patch_try] = len(self.ops)
 
-        self.ops.append('Catch')
+        self.ops.append('EndTry')
         patch_catch = len(self.ops)
         self.ops.append(0)  # to the end.
-        self.ops.append(self.localVars.index(t.except_var.x))
+
+        self.ops[patch_try] = len(self.ops)
+        self.ops.append('Catch')
+        self.assignTo(t.except_var)  # assigns exception object to right var.
 
         t.catch_block.visit(self)
         self.ops[patch_catch] = len(self.ops)

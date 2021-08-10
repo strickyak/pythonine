@@ -385,13 +385,20 @@ code Try
 [
   DoTry(catch_loc);
 ]
-code Catch
-  arg end_catch_loc catch_var
+code EndTry
+  arg end_catch_loc
 [
-  // This actually is used for ending the Try block.
-  // Catching starts immediately after this instruction. 
-  (void) catch_var; // used when catching.
-  DoCatch(end_catch_loc);
+  // Pop the `tries` entry and branch to after the Catch block.
+  // The Catch instruction always follows.
+  DoEndTry(end_catch_loc);
+]
+code Catch
+[
+  // A no-op just to make bytecode traces more readable.
+  // This is the landing point afer a Raise in a Try block.
+  // Once we arrive here, the exception object is on the stack,
+  // and the exception is considered handled, from the point
+  // of view of the bytecode engine.
 ]
 code Raise
 [

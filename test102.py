@@ -2,9 +2,9 @@ def nando():
     try:
         try:
             raise 3
-        except ex:
+        except as ex:
             raise ex+30
-    except ex:
+    except as ex:
         return ex+300
     return 0
 
