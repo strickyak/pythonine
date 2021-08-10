@@ -406,7 +406,7 @@ class Parser(object):
         return vlist
 
     def ParseRaise(self):
-        ex = self.ParseSingle()
+        ex = self.ParseCommaList()
         return TRaise(ex)
 
     def ParseReturn(self):
@@ -981,23 +981,20 @@ class Compiler(object):
 
         self.ops[patch_try] = len(self.ops)
         self.ops.append('Catch')
-        self.assignTo(t.iterTemp)  # assigns exception object to right var.
+        self.ops.append('Dup')  # create an extra copy
 
-        self.ops.append('LocalGet')
-        self.ops.append(self.localVars.index(t.iterTemp))
         TStr('StopIter').visit(self)
-        self.ops.append('NE')
+        self.ops.append('NE')  # cool if it is StopIter
 
-        self.ops.append('BranchIfFalse')
+        self.ops.append('BranchIfFalse') # continue at the final Drop.
         patch_branch = len(self.ops)
         self.ops.append(0)  # to the end.
 
-        self.ops.append('LocalGet')
-        self.ops.append(self.localVars.index(t.iterTemp))
-        self.ops.append('Raise')
+        self.ops.append('Raise') # not StopIter: raise that extra copy
 
-        self.ops[patch_catch] = len(self.ops)
         self.ops[patch_branch] = len(self.ops)
+        self.ops.append('Drop')  # drop the extra copy.
+        self.ops[patch_catch] = len(self.ops)
 
     def visitTry(self, t):
         self.ops.append('Try')
@@ -1264,22 +1261,28 @@ class AssignmentVisitor(object):
         self.localVars.add(t.iterTemp)
 
     def visitAssign(self, t):
-        if type(t.x) is TIdent:
-            self.localVars.add(t.x.x)
-        elif type(t.x) is TMember and type(
-                t.x.x) is TIdent and t.x.x.x == 'self':
-            self.selfFields.add(t.x.member)
-        elif type(t.x) is TMember and type(t.x.x) is TIdent:
-            pass  # Foreign member.
-        elif type(t.x) is TGetItem:
-            pass
-        elif type(t.x) is list:  # TODO proper TDest
-            for e in t.x:
-                self.visitAssign(e)
-        elif type(t.x) is str:  # TODO proper TDest
+        self.assignTo(t.x)
+
+    def assignTo(self, t):
+        if type(t) is TIdent:
             self.localVars.add(t.x)
+        elif type(t) is TMember and type(
+                t.x) is TIdent and t.x.x == 'self':
+            self.selfFields.add(t.member)
+        elif type(t) is TMember and type(t.x) is TIdent:
+            pass  # Foreign member.
+        elif type(t) is TGetItem:
+            pass
+        elif type(t) is TTuple:
+            for e in t.vec:
+                self.assignTo(e)
+        elif type(t) is list: # TODO does this still occur?
+            for e in t:
+                self.assignTo(e)
+        elif type(t) is str:  # TODO does this still occur?
+            self.localVars.add(t)
         else:
-            raise Exception('visitAssign: bad lhs: %s' % t.x)
+            raise Exception('bad target: %s' % t)
 
     def visitClass(self, t):
         Abort()  # No nested classes.
@@ -1290,8 +1293,7 @@ class AssignmentVisitor(object):
     def visitTry(self, t):
         t.try_block.visit(self)
         t.catch_block.visit(self)
-        if t.except_var:
-            self.localVars.add(t.except_var.x)
+        self.assignTo(t.except_var)
 
     def visitWhile(self, t):
         t.block.visit(self)

@@ -9,3 +9,11 @@ def nando():
     return 0
 
 assert nando() == 333
+
+def frodo():
+    try:
+        raise (4, 6), 100
+    except as (aa, bb), cc:
+        return aa * bb + cc
+
+assert frodo() == 124
