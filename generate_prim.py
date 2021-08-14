@@ -290,5 +290,12 @@ def CompileCore(core_contents):
     print
     print '// THIS FILE IS GENERATED'
 
+    return code_enums
 
-CompileCore(sys.stdin.read())
+Bytecode_enums = CompileCore(sys.stdin.read())
+
+with open('_bytecode_enums.const', 'w') as w:
+    i = 0
+    for e in Bytecode_enums:
+        print >>w, "'%s'=%s" % (e[3:], i)
+        i += 1

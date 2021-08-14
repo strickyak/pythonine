@@ -53,6 +53,19 @@ _build:
 	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test$T.dump | tee ,dump
 	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c osetjmp.c defs.c pb2.c octet.c
 
+_build_ev:
+	python2 compile_proto.py < bc.proto -c > _generated_proto.h
+	python2 compile_proto.py < bc.proto -p > _generated_proto.py
+	python2 compile_proto.py < bc.proto -k > _generated_proto.const
+	python2 generate_prim.py < prim.txt > _generated_prim.h
+	rm -f _ev.py
+	sed -n '/((( eval9 (((/,/))) eval9 )))/p' py_pb.py compile_pyth09.py | sed 's/\<P\>[.]//g' | python2 replace_constants.py *.const > _ev.py
+	chmod -w _ev.py
+	python2 _ev.py < test$T.py > test$T.bc
+	cp test$T.bc bc
+	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test$T.dump | tee ,dump
+	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c osetjmp.c defs.c pb2.c octet.c
+
 _runpy:
 	./runpy.bin
 

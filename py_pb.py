@@ -1,3 +1,4 @@
+# ((( eval9 (((
 KIND_TAG = 0
 KIND_INT = 1
 KIND_STR = 2
@@ -48,3 +49,4 @@ def bytevec2str(v):
         assert 0 <= x <= 255, x
         s += chr(x)
     return s
+# ))) eval9 )))

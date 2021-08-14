@@ -77,7 +77,9 @@ class EasyProtoParser(object):
 
 
 if __name__ == '__main__':
-    lang = 'py' if (sys.argv[-1] == '-p') else 'c'
+    lang = 'c'
+    if '-p' in sys.argv: lang = 'py'
+    if '-k' in sys.argv: lang = 'const'
 
     lines = [line for line in sys.stdin]
     messages = EasyProtoParser().DoLines(lines).messages
@@ -94,3 +96,5 @@ if __name__ == '__main__':
                                                      f.tag, 'repeated'
                                                      if f.rep else '', f.type,
                                                      f.num)
+            elif lang == 'const':
+                print 'T.%s_%s=%d' % (name, f.name, f.tag)

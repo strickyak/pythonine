@@ -1,13 +1,17 @@
 # compile_pyth09.py -- tokenizer, parser, and code generator for Pythonine.
 
+# ((( eval9 (((
 import re, sys
+E = sys.stderr
+# ))) eval9 )))
+
 import _generated_proto as T  # Tags.
 import py_pb as P  # Protocol buffers.
+
 #@ from _generated_proto import *  # Tags.
 #@ from py_pb import *  # Protocol buffers.
-E = sys.stderr
 
-# ((( eval (((
+# ((( eval9 (((
 
 # const::yes
 BC_NUM_ARGS = 0
@@ -34,7 +38,7 @@ P_EOL = 9
 
 STOPPERS = [']', '}', ')', ';']
 
-# ))) eval )))
+# ))) eval9 )))
 
 BytecodeNumbers = {}
 SerialCounter = [0]
@@ -55,7 +59,7 @@ def GetBytecodeNumbers():
                 BytecodeNumbers[m.group(1)] = int(m.group(2))
 
 
-# ((( eval (((
+# ((( eval9 (((
 
 def LexKind(a):
     if a == L_EOF: return 'L_EOF'
@@ -188,7 +192,9 @@ class Lexer(object):
 # lambda
 # assignment
 
-# ))) eval )))
+# ))) eval9 )))
+
+# ((( eval9 (((
 
 class Parser(object):
     def __init__(self, program):
@@ -1385,7 +1391,10 @@ class AppendWriter(object):
 
 
 if __name__ == '__main__':  # test
+    # ))) eval9 )))
     GetBytecodeNumbers()
+    # ((( eval9 (((
+
     p = Parser(sys.stdin.read())
     block = p.ParseBlock()
     compiler = Compiler(None, None, None, None, False)
@@ -1393,3 +1402,6 @@ if __name__ == '__main__':  # test
     compiler.ops.append('RetNone')
 
     compiler.OutputCodePack(AppendWriter(sys.stdout))
+
+pass
+# ))) eval9 )))
