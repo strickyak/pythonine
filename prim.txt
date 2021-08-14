@@ -139,11 +139,7 @@ code  Print
     // make it more obvious
     printf("\n@@@@@ PRINT @@@@@ ");
 #endif
-    if (a&1) {
-      printf("%d ", N(a));
-    } else {
-      printf("[$%x] ", a);
-    }
+    SimplePrint(a);
     fflush(stdout);
   ]
 code  Assert

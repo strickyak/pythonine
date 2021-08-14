@@ -55,5 +55,8 @@ TestOr3()
 TestAnd2()
 TestAnd3()
 
-assert 1 == 1 or 0 and 0 or 1
-assert 1 == not 0 or 0 and 0 or not 0
+assert 1 == (1 or 0 and 0 or 1)
+pass
+assert 1 == (not 0 or 0 and 0 or not 0)
+pass
+print "Done."

@@ -108,6 +108,7 @@ void Raise(word ex);
 void RaiseC(const char* err);
 word PopSp();
 void PushSp(word a);
+void SimplePrint(word p);
 
 #define FOR_EACH(I, ITEM, X)                           \
   {                                                    \

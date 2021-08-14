@@ -53,6 +53,20 @@ void SayChain(word p) {
   fflush(stdout);
 #endif
 }
+void SimplePrint(word p) {
+  if (p & 1) {
+    printf("%d ", TO_INT(p));
+  } else if (ocls(p) == C_Str) {
+    for (byte i = 0; i < Str_len(p); i++) {
+      byte ch = Bytes_flex_At(Str_bytes(p), Str_offset(p) + i);
+      printf("%c", ch);
+    }
+    printf(" ");
+  } else {
+    printf("$%04x:%d%d$ ", p, ocap(p), ocls(p));
+  }
+  fflush(stdout);
+}
 void SayStr(word p) {
 #if unix
   assert(ocls(p) == C_Str);
