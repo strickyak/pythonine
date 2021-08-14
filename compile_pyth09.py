@@ -437,6 +437,12 @@ class Parser(object):
             retval = self.ParseSingle()
             return TReturn(retval)
 
+    def ParseBreak(self):
+        assert self.t == P_EOL
+        return TBreak()
+    def ParseContinue(self):
+        assert self.t == P_EOL
+        return TContinue()
     def ParseWhile(self):
         cond = self.ParseSingle()
         block = self.ColonBlock()
@@ -568,6 +574,12 @@ class Parser(object):
         elif self.x == 'for':
             self.Advance()
             p = self.ParseFor()
+        elif self.x == 'continue':
+            self.Advance()
+            p = self.ParseContinue()
+        elif self.x == 'break':
+            self.Advance()
+            p = self.ParseBreak()
         elif self.x == 'while':
             self.Advance()
             p = self.ParseWhile()
@@ -726,6 +738,20 @@ class TClass(TBase):
         return a.visitClass(self)
 
 
+class TBreak(TBase):
+    def __init__(self):
+        pass
+
+    def visit(self, a):
+        return a.visitBreak(self)
+
+class TContinue(TBase):
+    def __init__(self):
+        pass
+
+    def visit(self, a):
+        return a.visitContinue(self)
+
 class TWhile(TBase):
     def __init__(self, cond, block):
         self.cond = cond
@@ -828,6 +854,8 @@ class Compiler(object):
         self.classes = {}
         self.funcs = {}
         self.tempVars = []  # not used yet
+        self.continue_to = None
+        self.break_patches = None
 
     def AddIntern(self, s):
         # self.interns :: s -> (i, patches)
@@ -1003,12 +1031,15 @@ class Compiler(object):
         self.ops.append(1)  # one arg (self) to `next`
 
         self.assignTo(t.dest)
+        prev_continue_to = self.continue_to
+        self.continue_to = while_top
+        self.break_patches = []
         t.block.visit(self)
         self.ops.append('Branch')
         self.ops.append(while_top)
 
-        self.ops.append('EndTry')
-        patch_catch = len(self.ops)
+        self.ops.append('EndTry')  # NOT REACHED.
+        patch_end_try = len(self.ops)  # NOT USED.
         self.ops.append(0)  # to the end.
 
         self.ops[patch_try] = len(self.ops)
@@ -1026,7 +1057,10 @@ class Compiler(object):
 
         self.ops[patch_branch] = len(self.ops)
         self.ops.append('Drop')  # drop the extra copy.
-        self.ops[patch_catch] = len(self.ops)
+
+        self.ops[patch_end_try] = len(self.ops)  # to the end.
+        for bp in self.break_patches:
+            self.ops[bp] = len(self.ops)  # to the end.
 
     def visitTry(self, t):
         self.ops.append('Try')
@@ -1047,20 +1081,41 @@ class Compiler(object):
         self.ops[patch_catch] = len(self.ops)
 
 
+    def visitBreak(self, t):
+        if self.break_patches is None:
+            raise Exception('bad_break')
+        self.ops.append('Branch')
+        self.break_patches.append(len(self.ops))
+        self.ops.append(0)
+
+    def visitContinue(self, t):
+        if self.continue_to is None:
+            raise Exception('bad_continue')
+        self.ops.append('Branch')
+        self.ops.append(self.continue_to)
+
     def visitWhile(self, t):
         start = len(self.ops)
+
         t.cond.visit(self)
 
         self.ops.append('BranchIfFalse')
         patch = len(self.ops)
         self.ops.append(0)  # to the end.
 
+        prev_continue_to = self.continue_to
+        self.continue_to = start
+        self.break_patches = []
         t.block.visit(self)
 
         self.ops.append('Branch')
         self.ops.append(start)
 
         self.ops[patch] = len(self.ops)  # to the end.
+        for bp in self.break_patches:
+            self.ops[bp] = len(self.ops)  # to the end.
+
+        self.continue_to = prev_continue_to
 
     def visitRaise(self, t):
         t.ex.visit(self)
@@ -1341,6 +1396,10 @@ class AssignmentVisitor(object):
         t.catch_block.visit(self)
         self.assignTo(t.except_var)
 
+    def visitBreak(self, t):
+        pass
+    def visitContinue(self, t):
+        pass
     def visitWhile(self, t):
         t.block.visit(self)
 
