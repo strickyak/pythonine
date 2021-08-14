@@ -327,7 +327,7 @@ class Parser(object):
         while op == '*':
             self.Advance()
             p2 = self.ParsePrimEtc()
-            p = TBin(p, op, p2)
+            p = TBinaryOp(p, op, p2)
             op = self.x
         return p
 
@@ -337,7 +337,7 @@ class Parser(object):
         while op == '+' or op == '-':
             self.Advance()
             p2 = self.ParseProduct()
-            p = TBin(p, op, p2)
+            p = TBinaryOp(p, op, p2)
             op = self.x
         return p
 
@@ -347,18 +347,37 @@ class Parser(object):
         while op == '==' or op == '!=' or op == '<' or op == '>' or op == '<=' or op == '>=':
             self.Advance()
             p2 = self.ParseSum()
-            p = TBin(p, op, p2)
+            p = TBinaryOp(p, op, p2)
             op = self.x
         return p
 
     def ParseNotOp(self):
+        if self.x == 'not':
+            self.Advance()
+            return TUnaryOp(self.ParseNotOp(), 'not')
         return self.ParseRelop()
 
     def ParseAndOp(self):
-        return self.ParseNotOp()
+        a = self.ParseNotOp()
+        if self.x == 'and':
+            vec = [a]
+            while self.x == 'and':
+                self.Advance()
+                vec.append(self.ParseNotOp())
+            return TAndOr(vec, 'and')
+        else:
+            return a
 
     def ParseOrOp(self):
-        return self.ParseAndOp()
+        a = self.ParseAndOp()
+        if self.x == 'or':
+            vec = [a]
+            while self.x == 'or':
+                self.Advance()
+                vec.append(self.ParseAndOp())
+            return TAndOr(vec, 'or')
+        else:
+            return a
 
     def ParseSingle(self):
         return self.ParseOrOp()
@@ -680,14 +699,32 @@ class TMember(TBase):
         return a.visitMember(self)
 
 
-class TBin(TBase):
+class TAndOr(TBase):
+    def __init__(self, vec, op):
+        self.vec = vec
+        self.op = op
+
+    def visit(self, a):
+        return a.visitAndOr(self)
+
+
+class TUnaryOp(TBase):
+    def __init__(self, x, op):
+        self.x = x
+        self.op = op
+
+    def visit(self, a):
+        return a.visitUnaryOp(self)
+
+
+class TBinaryOp(TBase):
     def __init__(self, x, op, y):
         self.x = x
         self.op = op
         self.y = y
 
     def visit(self, a):
-        return a.visitBin(self)
+        return a.visitBinaryOp(self)
 
 
 class TExprAndDrop(TBase):
@@ -1160,7 +1197,30 @@ class Compiler(object):
         for m in endmarks:
             self.ops[m] = end
 
-    def visitBin(self, t):
+    def visitAndOr(self, t):
+        patches = []
+        # Push the short-circuit value: True for or, False for and.
+        self.ops.append('LitInt')
+        self.ops.append(1 if t.op=='or' else 0)
+        for e in t.vec:
+            e.visit(self)
+            self.ops.append('BranchIfTrue' if t.op=='or' else 'BranchIfFalse')
+            patches.append(len(self.ops))  # request patching.
+            self.ops.append(0)  # to be patched.
+        # Invert the short-circuit value, if we reach the end.
+        self.ops.append('Not')
+        # Patch short-circuit branches to here at the end.
+        for p in patches:
+            self.ops[p] = len(self.ops)
+
+    def visitUnaryOp(self, t):
+        t.x.visit(self)
+        if t.op == 'not':
+            self.ops.append('Not')
+        else:
+            raise t.op
+
+    def visitBinaryOp(self, t):
         t.x.visit(self)
         t.y.visit(self)
         if t.op == '+':
@@ -1182,7 +1242,7 @@ class Compiler(object):
         elif t.op == '>=':
             self.ops.append('GE')
         else:
-            raise Exception('visitBin: bad %s' % t.op)
+            raise Exception('visitBinaryOp: bad %s' % t.op)
 
     def visitMember(self, t):
         # HACK for sys.stdin
@@ -1409,7 +1469,9 @@ class AssignmentVisitor(object):
         if t.belse:
             t.belse.visit(self)
 
-    def visitBin(self, t):
+    def visitUnaryOp(self, t):
+        pass
+    def visitBinaryOp(self, t):
         pass
 
     def visitIdent(self, t):

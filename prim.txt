@@ -190,6 +190,20 @@ code  BranchIfFalse
   [
         if (!Truth(pred)) ip = function + whither;
   ]
+code  BranchIfTrue
+  arg whither
+  in pred
+  out
+  [
+        if (Truth(pred)) ip = function + whither;
+  ]
+code Not
+  in a
+  out z
+[
+  byte x = (byte) !Truth(a);
+  z = FROM_INT(x);
+]
 code  EQ
   in a b
   out z
