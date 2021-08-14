@@ -95,7 +95,7 @@ emu: __always__
 	os9 copy -r runpy /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
 	os9 attr -per /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
 	:
-	(echo "runpy #128"; echo "dir /d1") | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
+	(echo 'runpy #128'; echo 'dir /d1') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
 	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
 	ls -l runpy
@@ -110,9 +110,9 @@ temu: __always__
 	os9 copy -r runpy /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
 	os9 attr -per /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
 	:
-	(echo "runpy #128"; echo "dir /d1") | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
+	(echo 'runpy #128'; echo 'dir /d1') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
-	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2,trace gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
+	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2,trace gomar.go -t=12000000 -vv=a --trigger_os9='(?i:fork.*runpy)' -borges=/home/strick/go/src/github.com/strickyak/doing_os9/borges/ -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
 	ls -l runpy
 
 
@@ -122,6 +122,8 @@ mooh:
 	os9 copy -r test$T.bc /tmp/_drive,bc
 	os9 copy -r runpy /tmp/_drive,CMDS/runpy
 	os9 attr -per /tmp/_drive,CMDS/runpy
+	:
+	(echo 'echo nando'; echo 'tmode .1 pau=0'; echo 'runpy #128') | os9 copy -l -r /dev/stdin  /tmp/_drive,STARTUP
 	:
 	os9 copy -r ~/go/src/github.com/strickyak/doing_os9/picol/ncl.bin /tmp/_drive,CMDS/ncl
 	os9 attr -per /tmp/_drive,CMDS/ncl

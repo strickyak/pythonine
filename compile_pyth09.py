@@ -1,10 +1,15 @@
 # compile_pyth09.py -- tokenizer, parser, and code generator for Pythonine.
-#
+
 import re, sys
 import _generated_proto as T  # Tags.
 import py_pb as P  # Protocol buffers.
+#@ from _generated_proto import *  # Tags.
+#@ from py_pb import *  # Protocol buffers.
 E = sys.stderr
 
+# ((( eval (((
+
+# const::yes
 BC_NUM_ARGS = 0
 BC_NUM_LOCALS = 1
 BC_NUM_TEMPS = 2
@@ -25,11 +30,14 @@ L_BOL = 6
 P_INDENT = 7
 P_DEDENT = 8
 P_EOL = 9
+# const::no
+
+STOPPERS = [']', '}', ')', ';']
+
+# ))) eval )))
 
 BytecodeNumbers = {}
 SerialCounter = [0]
-Stoppers = [']', '}', ')', ';']
-
 
 def SerialName():
     n = SerialCounter[0]
@@ -37,6 +45,17 @@ def SerialName():
     SerialCounter[0] = n
     return '__%d' % n
 
+def GetBytecodeNumbers():
+    # Demo: BC_Print = 7,
+    regexp = re.compile('BC_([A-Za-z0-9_]+) = ([0-9]+),')
+    with open('_generated_prim.h') as fd:
+        for line in fd:
+            m = regexp.match(line.strip())
+            if m:
+                BytecodeNumbers[m.group(1)] = int(m.group(2))
+
+
+# ((( eval (((
 
 def LexKind(a):
     if a == L_EOF: return 'L_EOF'
@@ -50,16 +69,6 @@ def LexKind(a):
     elif a == P_DEDENT: return 'P_DEDENT'
     elif a == P_EOL: return 'P_EOL'
     else: return 'L_???'
-
-
-def GetBytecodeNumbers():
-    # Demo: BC_Print = 7,
-    regexp = re.compile('BC_([A-Za-z0-9_]+) = ([0-9]+),')
-    with open('_generated_prim.h') as fd:
-        for line in fd:
-            m = regexp.match(line.strip())
-            if m:
-                BytecodeNumbers[m.group(1)] = int(m.group(2))
 
 
 def IsDigit(c):
@@ -178,6 +187,8 @@ class Lexer(object):
 # if ... else
 # lambda
 # assignment
+
+# ))) eval )))
 
 class Parser(object):
     def __init__(self, program):
@@ -346,11 +357,11 @@ class Parser(object):
     def ParseSingle(self):
         return self.ParseOrOp()
 
-    def ParseCommaList(self, force_tuple=False):
+    def ParseCommaList(self, force_tuple):
         """Without the parens. Should be used in lots of places."""
         vec = []
         while True:
-            if self.t == P_EOL or (self.x in Stoppers):
+            if self.t == P_EOL or (self.x in STOPPERS):
                 break
             a = self.ParseSingle()
             vec.append(a)
@@ -405,8 +416,12 @@ class Parser(object):
                 self.Advance()
         return vlist
 
+    def ParseImport(self):
+        tup = self.ParseCommaList(True)
+        return TImport(tup.vec)
+
     def ParseRaise(self):
-        ex = self.ParseCommaList()
+        ex = self.ParseCommaList(False)
         return TRaise(ex)
 
     def ParseReturn(self):
@@ -426,16 +441,16 @@ class Parser(object):
         self.ConsumeX('except')
         if self.x == 'as':
             self.ConsumeX('as')
-            except_var = self.ParseCommaList()
+            except_var = self.ParseCommaList(False)
         else:
             except_var = TIdent('_')
         catch_block = self.ColonBlock()
         return TTry(try_block, except_var, catch_block)
 
     def ParseFor(self):
-        dest = self.ParseCommaList()
+        dest = self.ParseCommaList(False)
         self.ConsumeX('in')
-        coll = self.ParseCommaList()
+        coll = self.ParseCommaList(False)
         block = self.ColonBlock()
         iterTemp = SerialName()
         return TFor(dest, coll, TIdent(iterTemp), block)
@@ -464,12 +479,12 @@ class Parser(object):
         return z
 
     def ParseAssign(self):
-        p = self.ParseCommaList()
+        p = self.ParseCommaList(False)
         op = self.x
         if op == '=':
             while op == '=':
                 self.Advance()
-                p2 = self.ParseCommaList()
+                p2 = self.ParseCommaList(False)
                 if type(p) is TIdent or type(p) is TMember or type(p) is TGetItem or type(p) is TTuple: # TODO nested
                     p = TAssign(p, op, p2)
                     op = self.x
@@ -562,6 +577,9 @@ class Parser(object):
         elif self.x == 'class':
             self.Advance()
             p = self.ParseClass()
+        elif self.x == 'import':
+            self.Advance()
+            p = self.ParseImport()
         elif self.x == 'pass':
             self.Advance()
             p = None
@@ -737,6 +755,14 @@ class TIf(TBase):
 
     def visit(self, a):
         return a.visitIf(self)
+
+
+class TImport(TBase):
+    def __init__(self, vec):
+        self.vec = vec
+
+    def visit(self, a):
+        return a.visitImport(self)
 
 
 class TRaise(TBase):
@@ -1008,8 +1034,8 @@ class Compiler(object):
         self.ops.append(0)  # to the end.
 
         self.ops[patch_try] = len(self.ops)
-        self.ops.append('Catch')
-        self.assignTo(t.except_var)  # assigns exception object to right var.
+        self.ops.append('Catch')     # Catch is a courtesy no-op.
+        self.assignTo(t.except_var)  # Assigns exception object to right var.
 
         t.catch_block.visit(self)
         self.ops[patch_catch] = len(self.ops)
@@ -1033,6 +1059,14 @@ class Compiler(object):
     def visitRaise(self, t):
         t.ex.visit(self)
         self.ops.append('Raise')
+
+    def visitImport(self, t):
+        for e in t.vec:
+            assert type(e) is TIdent
+            TStr(e.x).visit(self)
+            # XXX unimplemented (Import does nothing but drop).
+            self.ops.append('Import')
+
 
     def visitReturn(self, t):
         rv = t.retval
@@ -1090,6 +1124,12 @@ class Compiler(object):
             raise Exception('visitBin: bad %s' % t.op)
 
     def visitMember(self, t):
+        # HACK for sys.stdin
+        if type(t.x) is TIdent and t.x.x == 'sys':
+            if t.member == 'stdin':
+                self.ops.append('Stdin')
+                return
+
         if type(t.x) is TIdent and t.x.x == 'self' and self.tclass:
             self.ops.append('SelfMemberGet')
             self.ops.append(sorted(self.tclass.fields).index(t.member)*2)

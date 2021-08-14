@@ -5,6 +5,19 @@
 #include "chain.h"
 #include "octet.h"
 
+word Stdin;
+word Stdout;
+word Stderr;
+
+void InitData() {
+  Stdin = oalloc(File_Size, C_File);
+  File_fd_Put(Stdin, FROM_INT(0));
+  Stdout = oalloc(File_Size, C_File);
+  File_fd_Put(Stdout, FROM_INT(1));
+  Stderr = oalloc(File_Size, C_File);
+  File_fd_Put(Stderr, FROM_INT(2));
+}
+
 // Buf
 // Buf uses a single object of 254 Bytes.
 // The first is the amount used.
@@ -118,4 +131,125 @@ word DictIterNext(word it) {
   word key = ListIterNext(it);  // key
   (void)ListIterNext(it);       // value
   return key;
+}
+
+byte StrGet(word str, byte i) {
+  CHECK(ocls(str) == C_Str, "not_str");
+  CHECK(i < Str_len(str), "str_ix");
+  word p = Str_bytes(str) + Str_offset(str) + i;
+  return ogetb(p);
+}
+
+void SetHighBitTermination(word str) {
+  CHECK(ocls(str) == C_Str, "not_str");
+  CHECK(Str_len(str), "not_len");
+  word p = Str_bytes(str) + Str_offset(str) + Str_len(str) - 1;
+  byte last = ogetb(p);
+  oputb(p, 0x80 | last);
+}
+void ClearHighBitTermination(word str) {
+  CHECK(ocls(str) == C_Str, "not_str");
+  CHECK(Str_len(str), "not_len");
+  word p = Str_bytes(str) + Str_offset(str) + Str_len(str) - 1;
+  byte last = ogetb(p);
+  oputb(p, 0x7F & last);
+}
+
+#if unix
+FILE* FileHandles[100];
+int NextFileHandle;
+#endif
+
+byte OpenFileForReadFD(const char* filename) {
+  byte fd;
+#if unix
+  char unixname[250];
+  for (int i = 0; filename[i]; i++) {
+    unixname[i] = filename[i] & 127;
+    if (filename[i] & 128) break;
+  }
+  FILE* f = fopen(unixname, "r");
+  FileHandles[NextFileHandle] = f;
+  fd = (byte)NextFileHandle++;
+  assert(fd < 100);
+#else
+  asm {
+    lda #1 ; read mode
+    ldx filename
+    SWI2
+    FCB $84 ; I$Open
+    BCC Good.1
+
+    lda #$FF ; INF
+
+Good.1
+    sta fd
+  }
+#endif
+  return fd;
+}
+
+word PyOpenFile(word name_str, word mode_str) {
+  byte mode_c = StrGet(mode_str, 0);
+  byte fd = INF;
+
+  word p = Str_bytes(name_str) + Str_offset(name_str);
+  SetHighBitTermination(name_str);
+  switch (mode_c) {
+    case 'r':
+      fd = OpenFileForReadFD((const char*)olea(p));
+      break;
+    case 'w':
+      RaiseC("todo_w");
+    default:
+      RaiseC("bad_mode");
+  }
+  ClearHighBitTermination(name_str);
+  CHECK(fd != INF, "cant_open");
+
+  word file = oalloc(File_Size, C_File);
+  File_fd_Put(file, fd);
+  return file;
+}
+
+word FileReadLineToBuf(word file) {
+  byte fd = (byte)File_fd(file);
+  word buf = NewBuf();
+  word ptr = buf + 1;
+  byte err = 0;
+  word len = 0;
+#if unix
+  char* zz = fgets((char*)olea(ptr), 250, FileHandles[fd]);
+  if (!zz)
+    err = 1;
+  else
+    len = (word)strlen(zz);
+#else
+  asm {
+      pshs y,u
+      lda fd
+      ldx ptr
+      ldy #250
+      SWI2
+      FCB $8B ; I$ReadLn
+      BCC Good.2
+
+      stb err
+Good.2
+      sty len
+      puls y,u
+  }
+#endif
+  if (err || !len) {
+    ofree(buf);
+    return None;
+  }
+  byte last = ogetb(buf + len /*+1-1*/);
+  if (0 < last && last < 32) {
+    oputb(buf + len /*+1-1*/, 0);  // replace CR/LF with NUL.
+    --len;
+  }
+  oputb(buf, len);                      // len goes in slot 0.
+  printf("BUF: %d: $s\n", ogetb(buf));  // $ DIS: olea(buf+1)
+  return buf;
 }

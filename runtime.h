@@ -121,11 +121,9 @@ void PushSp(word a);
   }          \
   }
 
-#define CHECK(PRED, ERR)             \
-  if (!(PRED)) {                     \
-    bool err = NewStrCopyFromC(ERR); \
-    RaiseC(ERR);                     \
-    return;                          \
+#define CHECK(PRED, ERR) \
+  if (!(PRED)) {         \
+    RaiseC(ERR);         \
   }
 
 #endif  // PYTH09__RUNTIME_H_

@@ -685,6 +685,25 @@ void RuntimeInit() {
   }
 
   DumpStats();
+
+  {
+    printf("################ Read (((\n");
+    word file = PyOpenFile(
+#if unix
+        NewStrCopyFromC("/etc/fstab"),
+#else
+        NewStrCopyFromC("STARTUP"),
+#endif
+        NewStrCopyFromC("r"));
+    assert(file);
+    osay(file);
+    while (1) {
+      word s = FileReadLineToBuf(file);
+      osay(s);
+      if (!s) break;
+    }
+    printf("################ Done )))\n");
+  }
 }
 
 void Break(const char* why) {
@@ -727,7 +746,8 @@ byte FieldOffset(word obj, byte member_name_isn) {
 
 word MemberGet(word obj, byte member_name_isn) {
   byte off = FieldOffset(obj, member_name_isn);
-  assert(off != INF);
+  if (off == INF) RaiseC("bad_member_get");
+
   word addr = obj + off;
   word z = ogetw(addr);
   VERB("addr %d MemberGet->%d\n", addr, z);
@@ -736,7 +756,8 @@ word MemberGet(word obj, byte member_name_isn) {
 
 void MemberPut(word obj, byte member_name_isn, word value) {
   byte off = FieldOffset(obj, member_name_isn);
-  assert(off != INF);
+  if (off == INF) RaiseC("bad_member_put");
+
   word addr = obj + off;
   VERB("addr %d MemberPut<-%d\n", addr, value);
   oputw(addr, value);

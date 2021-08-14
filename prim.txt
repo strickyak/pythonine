@@ -26,6 +26,9 @@ class Tuple # just like List.
 class Dict # a chain for a dict.
   oop root
   small len2
+class Module # a Module is made from a Dict.
+  oop root
+  small len2
 class Str
   oop bytes
   small len
@@ -62,6 +65,8 @@ class StrIter
   oop p
   small i
   small len
+class File
+  small fd
 
 # Opcodes.
 code  Abort  # Abort comes first, so 00 means abort.
@@ -421,6 +426,31 @@ code Range
   }
   list = z;
 ]
+code Import
+  in name
+[
+  (void) name; // TODO: Imports.
+]
+code Directory
+[
+  Directory();  // A demo/debugging opcode.
+]
+code Stdin
+  out file
+[
+  file = Stdin;
+]
+code Stdout
+  out file
+[
+  file = Stdout;
+]
+code Stderr
+  out file
+[
+  file = Stderr;
+]
+
 prim Str __str__
   in self
   out z
@@ -457,6 +487,14 @@ prim Tuple __iter__
   z = NewListIter(self);
 ]
 
+prim Module __iter__
+  in self
+  out z
+[
+  // Dict iter works for Module.
+  z = NewDictIter(self);
+]
+
 prim Dict __iter__
   in self
   out z
@@ -469,4 +507,12 @@ prim DictIter next
   out z
 [
   z = DictIterNext(self);
+]
+
+prim Module __getattr__
+  in self key
+  out z
+[
+  // TODO: Should we use __getattr__ or hardwire Module?
+  z = DictGet(self, key);
 ]

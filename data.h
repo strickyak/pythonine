@@ -4,6 +4,12 @@
 #include "chain.h"
 #include "octet.h"
 
+extern word Stdin;
+extern word Stdout;
+extern word Stderr;
+
+void InitData();
+
 // Buf
 
 word NewBuf();
@@ -35,5 +41,13 @@ word DictGet(word chain, word key);
 void DictPut(word chain, word key, word value);
 word NewDictIter(word base);
 word DictIterNext(word it);
+
+// Str
+byte StrGet(word str, byte i);
+
+// File
+byte OpenFileForReadFD(const char* filename);
+word PyOpenFile(word name_str, word mode_str);
+word FileReadLineToBuf(word file);
 
 #endif
