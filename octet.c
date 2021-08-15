@@ -247,11 +247,6 @@ void ofree(word addr) {
 
 void omark(word addr) {
   if (!ovalidaddr(addr)) return;
-#if 0
-  if (addr || addr & 1 || addr < ORamBegin || addr >= ORamEnd) {
-    return;
-  }
-#endif
 
   byte cls = ogetb(addr - DCLS);
   if (!cls) opanic(OE_ZERO_CLASS);
@@ -272,7 +267,7 @@ void omark(word addr) {
       if (ovalidaddr(q)) {
         // Looks like q is an object pointer.
         // See if it is marked yet.
-        byte qmark = 0x80 & ogetb(q - 2);
+        byte qmark = 0x80 & ogetb(q - DCAP);
         // If not, recurse to mark and visit the object.
         if (!qmark) omark(q);
       }
@@ -293,12 +288,14 @@ void ogc() {
 
   word p = ORamBegin + DHDR;
   while (p < ORamUsed) {
+    // printf("%x ", p);
 #if GUARD
     ocheckguards(p);
 #endif
     byte cls = ocls(p);
     byte cap = ocap(p);
     byte mark_bit = 0x80 & ogetb(p - DCAP);
+    // printf("%d:%d:%d ", cap, cls, !!mark_bit);
     // If it's unused (its class is 0 or mark bit is not set):
     // TODO: !cls doesn't mean anything.
     if (!cls || !mark_bit) {
@@ -313,7 +310,7 @@ void ogc() {
     } else {
       oputb(p - DCAP, ogetb(p - DCAP) & 0x7F);  // clear the mark bit.
     }
-    p += cap + DHDR;
+    p += (word)cap + (word)DHDR;
   }
   printf("} ");
 }
@@ -397,7 +394,7 @@ void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
       bytes_skip += cap;
       V_DUMP("skip: %04x [%d.]\n", p, cap);
     }
-    p += cap + DHDR;
+    p += (word)cap + (word)DHDR;
   }
   V_DUMP("count: used=%d + skip=%d = total=%d.\n", count_used, count_skip,
          count_used + count_skip);
