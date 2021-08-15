@@ -3,9 +3,11 @@
 #include "octet.h"
 #include "readbuf.h"
 #include "runtime.h"
+#include "data.h"
 
 int main(int argc, char* argv[]) {
   defs_init(MarkRoots);
+  InitData();
   RuntimeInit();
 
   struct ReadBuf read_buf;
@@ -17,5 +19,8 @@ int main(int argc, char* argv[]) {
 
   EvalCodes(main_bytecodes);
   printf("\n[[[ FINISHED ]]]\n");
+  DumpStats();
+  ogc();
+  DumpStats();
   return 0;
 }

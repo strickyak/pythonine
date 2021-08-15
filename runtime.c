@@ -62,6 +62,12 @@ void SimplePrint(word p) {
       printf("%c", ch);
     }
     printf(" ");
+  } else if (ocls(p) == C_Buf) {
+    for (byte i = 0; i < ogetb(p); i++) {
+      byte ch = ogetb(p+1+i);
+      printf("%c", ch);
+    }
+    printf(" ");
   } else {
     printf("$%04x:%d%d$ ", p, ocap(p), ocls(p));
   }
@@ -335,6 +341,15 @@ void RunLoop() {
   if (message == FINISH) return;
 
 RUN_LOOP:
+  // DumpStats();
+  // ogc();
+
+  // Redundant with CAREFUL.
+  assert(sp >= fp + Frame_Size - 2);
+  assert(sp <= fp + ocap(fp));
+  assert(ip >= function + BC_HEADER_SIZE);
+  assert(ip < function + INF);
+
 #ifdef CAREFUL
   VERB("\n");
   assert(sp >= fp + Frame_Size - 2);
@@ -344,20 +359,23 @@ RUN_LOOP:
   assert(ip < function + INF);
 #endif
   byte opcode = ogetb(ip);
+  // printf(" <%d:", opcode);
+  assert(opcode < CodeNames_SIZE);
+  // printf("%s> ", CodeNames[opcode]);
 #ifdef CAREFUL
   assert(opcode < CodeNames_SIZE);
   VERB("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
        function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
        ogetb(ip + 2), fp, (sp - fp) >> 1);
 
-  // SWITCH:
+#endif
   assert(fp);
   assert(function);
   assert(sp > fp);
   assert(ip > function);
   assert(sp <= fp + ocap(fp));
   assert(ip < function + ocap(function));
-#endif
+
   ip++;
   switch (opcode) {
 #define PRIM_PART 3
@@ -468,16 +486,16 @@ void SlurpFuncPack(struct ReadBuf* bp, word ilist, word dict) {
         // Get the i_numth interned string.
         name_str = ChainGetNth(InternList, i_num);
         assert(name_str);
-        printf("SLURPING FUNC: <<<");
-        SayObj(name_str, 2);
-        printf(">>>\n");
+        //printf("SLURPING FUNC: <<<");
+        //SayObj(name_str, 2);
+        //printf(">>>\n");
       } break;
       case FuncPack_pack: {
         word bc;
         pb_next(bp);
         SlurpCodePack(bp, &bc);
         DictPut(dict, name_str, bc);
-        osaylabel(bc, "FuncPack_name_i", ith);
+        // osaylabel(bc, "FuncPack_name_i", ith);
       } break;
       default:
         opanic(97);
@@ -700,6 +718,7 @@ void RuntimeInit() {
 
   DumpStats();
 
+#if 0
   {
     printf("################ Read (((\n");
     word file = PyOpenFile(
@@ -712,12 +731,13 @@ void RuntimeInit() {
     assert(file);
     osay(file);
     while (1) {
-      word s = FileReadLineToBuf(file);
+      word s = FileReadLineToNewBuf(file);
       osay(s);
       if (!s) break;
     }
     printf("################ Done )))\n");
   }
+#endif
 }
 
 void Break(const char* why) {
@@ -733,6 +753,8 @@ void Break(const char* why) {
     osay(p);
   }
   printf("\n@ Break )))\n");
+#else
+  printf(" <%s> ", why);
 #endif
 }
 

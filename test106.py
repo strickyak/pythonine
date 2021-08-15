@@ -10,7 +10,7 @@ def Run():
         while 1:
             total = total + it.next()
     except as ex:
-        assert ex == 'StopIter'
+        assert ex == 'StopIteration'
         return total
 
 

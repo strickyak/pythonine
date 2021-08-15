@@ -67,6 +67,8 @@ class StrIter
   small len
 class File
   small fd
+class FileIter
+  small fd
 
 # Opcodes.
 code  Abort  # Abort comes first, so 00 means abort.
@@ -460,6 +462,22 @@ code Stderr
 [
   file = Stderr;
 ]
+code Open
+  in mode filename
+  out file
+[
+  // Notice `in` arguments look backwards from C.
+  file = PyOpenFile(filename, mode);
+#if 0
+  // TODO: use mode for "w"
+  SetHighBitTermination(filename);
+  byte fd = OpenFileForReadFD(filename);
+  ClearHighBitTermination(filename);
+  if (fd == INF) RaiseC("cannot_open")
+  file = oalloc(File_Size, C_File);
+  File_fd_Put(file, fd);
+#endif
+]
 
 prim Str __str__
   in self
@@ -497,14 +515,6 @@ prim Tuple __iter__
   z = NewListIter(self);
 ]
 
-prim Module __iter__
-  in self
-  out z
-[
-  // Dict iter works for Module.
-  z = NewDictIter(self);
-]
-
 prim Dict __iter__
   in self
   out z
@@ -519,10 +529,39 @@ prim DictIter next
   z = DictIterNext(self);
 ]
 
+prim Module __iter__
+  in self
+  out z
+[
+  // Dict iter works for Module.
+  z = NewDictIter(self);
+]
+
 prim Module __getattr__
   in self key
   out z
 [
   // TODO: Should we use __getattr__ or hardwire Module?
   z = DictGet(self, key);
+]
+
+prim File __iter__
+  in self
+  out z
+[
+  z = oalloc(FileIter_Size, C_FileIter);
+  FileIter_fd_Put(z, File_fd(self));
+]
+
+prim FileIter next
+  in self
+  out z
+[
+  z = FileReadLineToNewBuf(self);
+  if (!z) RaiseC("StopIteration");
+]
+prim File close
+  in self
+[
+  RaiseC("unimp");
 ]

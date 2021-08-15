@@ -12,4 +12,4 @@ def Run():
         return ex
     return 9999
 x = Run()
-assert x == 'StopIter'
+assert x == 'StopIteration'
