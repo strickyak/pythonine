@@ -1,6 +1,11 @@
 # compile_pyth09.py -- tokenizer, parser, and code generator for Pythonine.
 
 # ((( eval9 (((
+Eval9 = True
+# ))) eval9 )))
+Eval9 = False
+
+# ((( eval9 (((
 import re, sys
 E = sys.stderr
 # ))) eval9 )))
@@ -317,8 +322,10 @@ class Parser(object):
 
     def ParseIdentifier(self):
         var = self.ConsumeT(L_IDENTIFIER)
-        if var=='in' or var=='if':
+        if var=='in' or var=='if' or var=='is':
             raise Exception('bad var: %s', var)
+        if var=='True' or var=='False' or var=='None':
+            return TSpecial(var)
         return TIdent(var)
 
     def ParseProduct(self):
@@ -344,7 +351,7 @@ class Parser(object):
     def ParseRelop(self):
         p = self.ParseSum()
         op = self.x
-        while op == '==' or op == '!=' or op == '<' or op == '>' or op == '<=' or op == '>=':
+        while op == '==' or op == '!=' or op == '<' or op == '>' or op == '<=' or op == '>=' or op=='is':
             self.Advance()
             p2 = self.ParseSum()
             p = TBinaryOp(p, op, p2)
@@ -631,6 +638,14 @@ class TBase(object):
 
     def __repr__(self):
         return self.__str__()
+
+
+class TSpecial(TBase):
+    def __init__(self, x):
+        self.x = x
+
+    def visit(self, a):
+        return a.visitSpecial(self)
 
 
 class TInt(TBase):
@@ -1243,6 +1258,8 @@ class Compiler(object):
             self.ops.append('LE')
         elif t.op == '>=':
             self.ops.append('GE')
+        elif t.op == 'is':
+            self.ops.append('Is')
         else:
             raise Exception('visitBinaryOp: bad %s' % t.op)
 
@@ -1308,6 +1325,15 @@ class Compiler(object):
         isn = self.PatchIntern(t.x, len(self.ops))
         self.ops.append(isn)
 
+    def visitSpecial(self, t):
+        if t.x=='True':
+            self.ops.append('SpecialTrue')
+        elif t.x=='False':
+            self.ops.append('SpecialFalse')
+        elif t.x=='None':
+            self.ops.append('SpecialNone')
+        else:
+            raise t
     def visitInt(self, t):
         if 0 <= t.x and t.x <= 255:
             self.ops.append('LitInt')
@@ -1487,6 +1513,8 @@ class AssignmentVisitor(object):
         else:
             raise Exception('visitIdent: bad var: %s %s' % (type(t.x), t.x))
 
+    def visitSpecial(self, t):
+        pass
     def visitStr(self, t):
         pass
 
@@ -1519,10 +1547,18 @@ if __name__ == '__main__':  # test
     # ((( eval9 (((
 
     p = Parser(sys.stdin.read())
-    block = p.ParseBlock()
     compiler = Compiler(None, None, None, None, False)
-    compiler.visitBlock(block)
-    compiler.ops.append('RetNone')
+    if Eval9:
+        single = p.ParseSingle()
+        single.visit(compiler)
+        compiler.ops.append('Return')
+    else:
+        # ))) eval9 )))
+        block = p.ParseBlock()
+        compiler.visitBlock(block)
+        compiler.ops.append('RetNone')
+        # ((( eval9 (((
+        pass
 
     compiler.OutputCodePack(AppendWriter(sys.stdout))
 

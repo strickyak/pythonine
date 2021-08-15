@@ -202,6 +202,13 @@ code Not
   byte x = (byte) !Truth(a);
   z = FROM_INT(x);
 ]
+code Is
+  in a b
+  out z
+[
+  byte x = (a == b);
+  z = FROM_INT(x);
+]
 code  EQ
   in a b
   out z
@@ -477,6 +484,21 @@ code Open
   file = oalloc(File_Size, C_File);
   File_fd_Put(file, fd);
 #endif
+]
+code SpecialTrue
+  out z
+[
+  z = FROM_INT(true);
+]
+code SpecialFalse
+  out z
+[
+  z = FROM_INT(false);
+]
+code SpecialNone
+  out z
+[
+  z = None;
 ]
 
 prim Str __str__
