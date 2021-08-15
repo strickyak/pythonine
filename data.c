@@ -8,6 +8,10 @@
 word Stdin;
 word Stdout;
 word Stderr;
+#if unix
+FILE* FileHandles[100];
+int NextFileHandle;
+#endif
 
 void InitData() {
   Stdin = oalloc(File_Size, C_File);
@@ -16,6 +20,12 @@ void InitData() {
   File_fd_Put(Stdout, FROM_INT(1));
   Stderr = oalloc(File_Size, C_File);
   File_fd_Put(Stderr, FROM_INT(2));
+#if unix
+  FileHandles[0] = stdin;
+  FileHandles[1] = stdout;
+  FileHandles[2] = stderr;
+  NextFileHandle = 3;
+#endif
 }
 
 // Buf
@@ -102,15 +112,13 @@ word ListIterNext(word it) {
   int len2 = ListIter_len2(it);
   if (!len2) {
     // Stop the iteration with an exception.
-    RaiseC("StopIter");
+    RaiseC("StopIteration");
   }
   ListIter_len2_Put(it, len2 - 1);
 
   word p = ListIter_p(it);
   int i = ListIter_i(it);
   word z = ogetw(p + i);
-  // printf("ListIterNext: len2=%d p=%d cap=%d i=%d z=%d\n", len2, p, ocap(p),
-  // i, z);
   i += 2;
 
   byte cap = ocap(p);
@@ -155,23 +163,23 @@ void ClearHighBitTermination(word str) {
   oputb(p, 0x7F & last);
 }
 
-#if unix
-FILE* FileHandles[100];
-int NextFileHandle;
-#endif
-
 byte OpenFileForReadFD(const char* filename) {
   byte fd;
 #if unix
   char unixname[250];
+  memset(unixname, 0, sizeof unixname);
   for (int i = 0; filename[i]; i++) {
     unixname[i] = filename[i] & 127;
-    if (filename[i] & 128) break;
+    if (filename[i] & 128) {
+      break;
+    }
   }
   FILE* f = fopen(unixname, "r");
+  if (!f) RaiseC("cant_open");
   FileHandles[NextFileHandle] = f;
-  fd = (byte)NextFileHandle++;
+  fd = (byte)NextFileHandle;
   assert(fd < 100);
+  ++NextFileHandle;
 #else
   asm {
     lda #1 ; read mode
@@ -212,7 +220,7 @@ word PyOpenFile(word name_str, word mode_str) {
   return file;
 }
 
-word FileReadLineToBuf(word file) {
+word FileReadLineToNewBuf(word file) {
   byte fd = (byte)File_fd(file);
   word buf = NewBuf();
   word ptr = buf + 1;
@@ -250,6 +258,6 @@ Good.2
     --len;
   }
   oputb(buf, len);                      // len goes in slot 0.
-  printf("BUF: %d: $s\n", ogetb(buf));  // $ DIS: olea(buf+1)
+  // printf("BUF: %d: $s\n", ogetb(buf));  // $ DIS: olea(buf+1)
   return buf;
 }

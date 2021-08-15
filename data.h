@@ -48,6 +48,8 @@ byte StrGet(word str, byte i);
 // File
 byte OpenFileForReadFD(const char* filename);
 word PyOpenFile(word name_str, word mode_str);
-word FileReadLineToBuf(word file);
+word FileReadLineToNewBuf(word file);
+void SetHighBitTermination(word str);
+void ClearHighBitTermination(word str);
 
 #endif
