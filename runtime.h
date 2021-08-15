@@ -15,22 +15,12 @@ enum { FINISH = 1, CONTINUE = 2 };
 #define PutB(addr, x) oputb(addr, x)
 #define PutW(addr, x) oputw(addr, x)
 
-#if 0
-extern byte GetB(word a);
-extern void PutB(word a, byte x);
-extern word GetW(word a);
-extern void PutW(word a, word x);
-#endif
-
-#if 0
-extern word NewBuf(); // unused for now
-#endif
 extern word NewStr(word obj, byte off, byte len);
-extern word NewStrCopyFrom(word s, byte len);
-extern word NewStrCopyFromC(const char* s);
+extern word StrFromC(const char* s);
+
 extern void EvalCodes(word code);
 extern void RunLoop();
-extern bool StrEq(word a, word b);
+extern bool StrEqual(word a, word b);
 bool Truth(word a);
 
 void RuntimeInit();

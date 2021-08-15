@@ -141,9 +141,9 @@ word DictIterNext(word it) {
   return key;
 }
 
-byte StrGet(word str, byte i) {
+byte StrGetOrZero(word str, byte i) {
   CHECK(ocls(str) == C_Str, "not_str");
-  CHECK(i < Str_len(str), "str_ix");
+  if(i >= Str_len(str)) return 0;
   word p = Str_bytes(str) + Str_offset(str) + i;
   return ogetb(p);
 }
@@ -198,7 +198,7 @@ Good.1
 }
 
 word PyOpenFile(word name_str, word mode_str) {
-  byte mode_c = StrGet(mode_str, 0);
+  byte mode_c = StrGetOrZero(mode_str, 0);
   byte fd = INF;
 
   word p = Str_bytes(name_str) + Str_offset(name_str);

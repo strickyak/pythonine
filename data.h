@@ -43,7 +43,7 @@ word NewDictIter(word base);
 word DictIterNext(word it);
 
 // Str
-byte StrGet(word str, byte i);
+byte StrGetOrZero(word str, byte i);
 
 // File
 byte OpenFileForReadFD(const char* filename);

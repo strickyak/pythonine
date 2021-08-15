@@ -73,8 +73,7 @@ void SimplePrint(word p) {
   }
   fflush(stdout);
 }
-void SayStr(word p) {
-#if unix
+void ShowStr(word p) {
   assert(ocls(p) == C_Str);
   printf("'");
   for (byte i = 0; i < Str_len(p); i++) {
@@ -87,10 +86,13 @@ void SayStr(word p) {
   }
   printf("'");
   fflush(stdout);
+}
+void SayStr(word p) {
+#if unix
+  ShowStr(p);
 #endif
 }
-void SayObj(word p, byte level) {
-#if unix
+void ShowL(word p, byte level) {
   printf("{ <$%x=%d.> ", (int)p, (int)p);
   if (level < 1) return;
 
@@ -103,7 +105,7 @@ void SayObj(word p, byte level) {
     const char* clsname = "?";
     byte cls = ocls(p);
     if (cls == C_Str) {
-      SayStr(p);
+      ShowStr(p);
     } else {
       if (cls < ClassNames_SIZE) {
         clsname = ClassNames[cls];
@@ -117,7 +119,7 @@ void SayObj(word p, byte level) {
           for (byte i = 0; ChainIterMore(p, &it); ++i) {
             word e = ChainIterNext(p, &it);
             printf("\n  [%d]: ", i);
-            SayObj(e, level - 1);
+            ShowL(e, level - 1);
           }
           printf("\n");
         } else if (cls == C_Dict) {
@@ -128,9 +130,9 @@ void SayObj(word p, byte level) {
             word k = ChainIterNext(p, &it);
             word v = ChainIterNext(p, &it);
             printf("\n  [[[");
-            SayObj(k, level - 1);
+            ShowL(k, level - 1);
             printf("]]] = ");
-            SayObj(v, level - 1);
+            ShowL(v, level - 1);
           }
           printf("\n");
         }
@@ -138,7 +140,7 @@ void SayObj(word p, byte level) {
         word clsobj = ChainGetNth(ClassList, cls);
         if (clsobj) {
           printf("cls=");
-          SayStr(Class_className(clsobj));
+          ShowStr(Class_className(clsobj));
           printf(" cap=%d", ocap(p));
         } else {
           printf(" unknown:cls=%d", cls);
@@ -152,6 +154,13 @@ void SayObj(word p, byte level) {
   }
   printf("}");
   fflush(stdout);
+}
+void Show(word p) {
+  ShowL(p, 2);
+}
+void SayObj(word p, byte level) {
+#if unix
+  ShowL(p, level);
 #endif
 }
 
@@ -185,17 +194,7 @@ word NewStr(word obj, byte offset, byte len) {
   Str_offset_Put(z, offset);
   return z;
 }
-#if 0
-word NewStrCopyFrom(word s, byte len) {
-  assert(len <= 254);
-  word obj = oalloc(len, C_Bytes);
-  for (word i = 0; i < len; i++) {
-    PutB(obj + i, GetB(s + i));
-  }
-  return NewStr(obj, 0, len);
-}
-#endif
-word NewStrCopyFromC(const char* s) {
+word StrFromC(const char* s) {
   int slen = strlen(s);
   assert(slen <= 254);
   byte len = (byte)slen;
@@ -206,35 +205,6 @@ word NewStrCopyFromC(const char* s) {
   return NewStr(obj, 0, len);
 }
 
-/////////////
-#if 0
-char* ShowStr(word a) {
-  if (ocls(a) == C_Str) {
-    word guts_a = GetW(a);
-    word addr_a = guts_a + GetW(a + 2);
-
-    byte len_a = GetW(a + 4);
-    char* s = malloc(4 * len_a + 32);
-    char* t = s;
-    *t++ = '"';
-    for (byte i = 0; i < len_a; i++) {
-      byte b = GetB(addr_a + i);
-      if (32 <= b && b <= 126) {
-        *t++ = b;
-      } else {
-        *t++ = '\\';
-        *t++ = Hex(b >> 4);
-        *t++ = Hex(b);
-      }
-    }
-    *t++ = '"';
-    *t++ = 0;
-    return s;
-  } else {
-    assert1(0, "ShowStr but got cls %d", (int)ocls(a));
-  }
-}
-#endif
 bool Truth(word a) {
   if (ovalidaddr(a)) {
     switch (ocls(a)) {
@@ -677,7 +647,7 @@ void RuntimeInit() {
   ClassList = NewList();
   MessageList = NewList();
 
-  DunderInitIsn = InternString(NewStrCopyFromC("__init__"));
+  DunderInitIsn = InternString(StrFromC("__init__"));
   DunderInitStr = ChainGetNth(InternList, DunderInitIsn);
 
   // Reserve builtin class slots, with None.
@@ -687,7 +657,7 @@ void RuntimeInit() {
     word cls = oalloc(Class_Size, C_Class);
     Class_classNum_Put(cls, i);
     const char* cstr = ClassNames[i];
-    word name = NewStrCopyFromC(cstr);
+    word name = StrFromC(cstr);
     word name_isn = InternString(name);
     name = ChainGetNth(InternList, name_isn);
     Class_className_Put(cls, name);
@@ -696,7 +666,7 @@ void RuntimeInit() {
     ChainAppend(ClassList, cls);
   }
   for (byte i = 0; i < MessageNames_SIZE; i++) {
-    word name = NewStrCopyFromC(MessageNames[i]);
+    word name = StrFromC(MessageNames[i]);
     word name_isn = InternString(name);
     ChainAppend(MessageList, ChainGetNth(InternList, name_isn));
   }
@@ -723,11 +693,11 @@ void RuntimeInit() {
     printf("################ Read (((\n");
     word file = PyOpenFile(
 #if unix
-        NewStrCopyFromC("/etc/fstab"),
+        StrFromC("/etc/fstab"),
 #else
-        NewStrCopyFromC("STARTUP"),
+        StrFromC("STARTUP"),
 #endif
-        NewStrCopyFromC("r"));
+        StrFromC("r"));
     assert(file);
     osay(file);
     while (1) {
@@ -936,7 +906,7 @@ void DoEndTry(byte end_catch_loc) {
 }
 void RaiseC(const char* msg) {
   printf("\nRaiseC: %s\n", msg);
-  Raise(NewStrCopyFromC(msg));
+  Raise(StrFromC(msg));
 }
 void Raise(word ex) {
   if (!fp) {

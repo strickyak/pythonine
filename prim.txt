@@ -448,42 +448,32 @@ code Range
 code Import
   in name
 [
-  (void) name; // TODO: Imports.
+  RaiseC("todo_import");
 ]
 code Directory
 [
   Directory();  // A demo/debugging opcode.
 ]
-code Stdin
-  out file
+code SpecialStdin
+  out z
 [
-  file = Stdin;
+  z = Stdin;
 ]
-code Stdout
-  out file
+code SpecialStdout
+  out z
 [
-  file = Stdout;
+  z = Stdout;
 ]
-code Stderr
-  out file
+code SpecialStderr
+  out z
 [
-  file = Stderr;
+  z = Stderr;
 ]
 code Open
   in mode filename
-  out file
+  out z
 [
-  // Notice `in` arguments look backwards from C.
-  file = PyOpenFile(filename, mode);
-#if 0
-  // TODO: use mode for "w"
-  SetHighBitTermination(filename);
-  byte fd = OpenFileForReadFD(filename);
-  ClearHighBitTermination(filename);
-  if (fd == INF) RaiseC("cannot_open")
-  file = oalloc(File_Size, C_File);
-  File_fd_Put(file, fd);
-#endif
+  z = PyOpenFile(filename, mode);
 ]
 code SpecialTrue
   out z

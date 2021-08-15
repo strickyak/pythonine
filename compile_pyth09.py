@@ -5,20 +5,19 @@ Eval9 = True
 # ))) eval9 )))
 Eval9 = False
 
+import re
+import sys
+Stdin = sys.stdin
+Stdout = sys.stdout
+Stderr = sys.stderr
 # ((( eval9 (((
-import re, sys
-E = sys.stderr
+E = Stderr
 # ))) eval9 )))
 
 import _generated_proto as T  # Tags.
 import py_pb as P  # Protocol buffers.
 
-#@ from _generated_proto import *  # Tags.
-#@ from py_pb import *  # Protocol buffers.
-
 # ((( eval9 (((
-
-# const::yes
 BC_NUM_ARGS = 0
 BC_NUM_LOCALS = 1
 BC_NUM_TEMPS = 2
@@ -50,7 +49,7 @@ SerialCounter = [0]
 
 def SerialName():
     n = SerialCounter[0]
-    n += 1
+    n = n + 1
     SerialCounter[0] = n
     return '__%d' % n
 
@@ -108,7 +107,7 @@ class Lexer(object):
         if self.i >= len(self.program):
             return None
         z = self.program[self.i]
-        self.i += 1
+        self.i = self.i + 1
         return z
 
     def Next(self):
@@ -130,7 +129,7 @@ class Lexer(object):
                 if c == '\t':
                     col = ((col + 4) >> 2) << 2
                 else:
-                    col += 1
+                    col = col + 1
             c = self.GetC()
 
         if not c: return ShowLex(L_EOF, None)
@@ -142,7 +141,7 @@ class Lexer(object):
             s = ''
             c = self.GetC()  # after the initial "
             while c != '"':
-                s += c
+                s = s + c
                 c = self.GetC()
             return ShowLex(L_STR, s)
 
@@ -150,7 +149,7 @@ class Lexer(object):
             s = ''
             c = self.GetC()  # after the initial '
             while c != "'":
-                s += c
+                s = s + c
                 c = self.GetC()
             return ShowLex(L_STR, s)
 
@@ -164,7 +163,7 @@ class Lexer(object):
         if IsAlfa(c):
             x = ''
             while IsAlfa(c) or IsDigit(c):
-                x += c
+                x = x + c
                 c = self.GetC()
             self.UnGetC()
             return ShowLex(L_IDENTIFIER, x)
@@ -240,7 +239,7 @@ class Parser(object):
                                                            self.indents))
                 self.pending_dedents = 1
                 while self.indents[-1] != self.x:
-                    self.pending_dedents += 1
+                    self.pending_dedents = self.pending_dedents + 1
                     self.indents.pop()
                 self.t, self.x = P_EOL, None
                 return
@@ -325,6 +324,8 @@ class Parser(object):
         if var=='in' or var=='if' or var=='is':
             raise Exception('bad var: %s', var)
         if var=='True' or var=='False' or var=='None':
+            return TSpecial(var)
+        if var=='Stdin' or var=='Stdout' or var=='Stderr':
             return TSpecial(var)
         return TIdent(var)
 
@@ -1264,12 +1265,6 @@ class Compiler(object):
             raise Exception('visitBinaryOp: bad %s' % t.op)
 
     def visitMember(self, t):
-        # HACK for sys.stdin
-        if type(t.x) is TIdent and t.x.x == 'sys':
-            if t.member == 'stdin':
-                self.ops.append('Stdin')
-                return
-
         if type(t.x) is TIdent and t.x.x == 'self' and self.tclass:
             self.ops.append('SelfMemberGet')
             self.ops.append(sorted(self.tclass.fields).index(t.member)*2)
@@ -1332,6 +1327,12 @@ class Compiler(object):
             self.ops.append('SpecialFalse')
         elif t.x=='None':
             self.ops.append('SpecialNone')
+        elif t.x=='Stdin':
+            self.ops.append('SpecialStdin')
+        elif t.x=='Stdout':
+            self.ops.append('SpecialStdout')
+        elif t.x=='Stderr':
+            self.ops.append('SpecialStderr')
         else:
             raise t
     def visitInt(self, t):
@@ -1546,7 +1547,7 @@ if __name__ == '__main__':  # test
     GetBytecodeNumbers()
     # ((( eval9 (((
 
-    p = Parser(sys.stdin.read())
+    p = Parser(Stdin.read())
     compiler = Compiler(None, None, None, None, False)
     if Eval9:
         single = p.ParseSingle()
@@ -1560,7 +1561,7 @@ if __name__ == '__main__':  # test
         # ((( eval9 (((
         pass
 
-    compiler.OutputCodePack(AppendWriter(sys.stdout))
+    compiler.OutputCodePack(AppendWriter(Stdout))
 
 pass
 # ))) eval9 )))
