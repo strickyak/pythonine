@@ -852,12 +852,13 @@ void Construct(byte cls_num, byte nargs /*less self */) {
 }
 
 void Call(byte nargs, word fn) {
-  Break("CALL");
   if (fn & 1) {  // If odd, is an integer.
     byte i = (byte)TO_INT(fn);
+    Break("PRIM");
     RunBuiltin(i);
     return;
   }
+  Break("CALL");
   CHECK(ocls(fn) == C_Bytecodes, "bad_fn_cls");
 
   word old_fp = fp;
