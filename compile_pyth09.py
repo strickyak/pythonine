@@ -1003,6 +1003,8 @@ class Compiler(object):
             self.ops.append('Ord')
         elif type(t.fn) == TIdent and t.fn.x == 'range' and len(t.xlist) == 1:
             self.ops.append('Range')
+        elif type(t.fn) == TIdent and t.fn.x == 'open' and len(t.xlist) == 2:
+            self.ops.append('Open')
         else:
             t.fn.visit(self)
             self.ops.append('Call')
@@ -1083,14 +1085,14 @@ class Compiler(object):
         self.ops.append('Catch')
         self.ops.append('Dup')  # create an extra copy
 
-        TStr('StopIter').visit(self)
-        self.ops.append('NE')  # cool if it is StopIter
+        TStr('StopIteration').visit(self)
+        self.ops.append('NE')  # cool if it is StopIteration
 
         self.ops.append('BranchIfFalse') # continue at the final Drop.
         patch_branch = len(self.ops)
         self.ops.append(0)  # to the end.
 
-        self.ops.append('Raise') # not StopIter: raise that extra copy
+        self.ops.append('Raise') # not StopIteration: raise that extra copy
 
         self.ops[patch_branch] = len(self.ops)
         self.ops.append('Drop')  # drop the extra copy.
