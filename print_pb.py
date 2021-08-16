@@ -22,7 +22,7 @@ class MessagePrinter:
         while True:
             a = self.v[self.i]
             self.i += 1
-            z += ((a & 127) >> shift)
+            z += ((a & 127) << shift)
             shift += 7
             if not (a & 128):
                 return z
@@ -76,21 +76,24 @@ class BytecodePrinter(object):
                 self.bc[int(opnum)] = (op, arg)
 
     def Render(self, codes, pre):
-        i = 6
-        codes = codes[6:]
-        while codes:
-            offset = i
-            c, i = codes.pop(0), i + 1
-            op, arg = self.bc[c]
-            if arg:
-                args = []
-                for label in arg.split(','):
-                    a, i = codes.pop(0), i + 1
-                    args.append(a)
-                print '%s  [%2d] %2d  %s %s' % (pre, offset, c, op, ' '.join(
-                    str(e) for e in args))
-            else:
-                print '%s  [%2d] %2d  %s' % (pre, offset, c, op)
+        try:
+            i = 6
+            codes = codes[6:]
+            while codes:
+                offset = i
+                c, i = codes.pop(0), i + 1
+                op, arg = self.bc[c]
+                if arg:
+                    args = []
+                    for label in arg.split(','):
+                        a, i = codes.pop(0), i + 1
+                        args.append(a)
+                    print '%s  [%2d] %2d  %s %s' % (pre, offset, c, op, ' '.join(
+                        str(e) for e in args))
+                else:
+                    print '%s  [%2d] %2d  %s' % (pre, offset, c, op)
+        except IndexError as ex:
+            print '%s  EXCEPTION while rendering bytecodes: %s' % (pre, ex)
 
 
 if __name__ == '__main__':
