@@ -1,9 +1,9 @@
 // runpy: Pythonine main bytecode interpreter.
 
+#include "data.h"
 #include "octet.h"
 #include "readbuf.h"
 #include "runtime.h"
-#include "data.h"
 
 int main(int argc, char* argv[]) {
   defs_init(MarkRoots);

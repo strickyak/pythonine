@@ -64,7 +64,7 @@ void SimplePrint(word p) {
     printf(" ");
   } else if (ocls(p) == C_Buf) {
     for (byte i = 0; i < ogetb(p); i++) {
-      byte ch = ogetb(p+1+i);
+      byte ch = ogetb(p + 1 + i);
       printf("%c", ch);
     }
     printf(" ");
@@ -155,9 +155,7 @@ void ShowL(word p, byte level) {
   printf("}");
   fflush(stdout);
 }
-void Show(word p) {
-  ShowL(p, 2);
-}
+void Show(word p) { ShowL(p, 2); }
 void SayObj(word p, byte level) {
 #if unix
   ShowL(p, level);
@@ -456,9 +454,9 @@ void SlurpFuncPack(struct ReadBuf* bp, word ilist, word dict) {
         // Get the i_numth interned string.
         name_str = ChainGetNth(InternList, i_num);
         assert(name_str);
-        //printf("SLURPING FUNC: <<<");
-        //SayObj(name_str, 2);
-        //printf(">>>\n");
+        // printf("SLURPING FUNC: <<<");
+        // SayObj(name_str, 2);
+        // printf(">>>\n");
       } break;
       case FuncPack_pack: {
         word bc;
@@ -776,6 +774,12 @@ word ArgGet(byte i) {
   word z = ogetw(addr);
   return z;
 }
+void ArgPut(byte i, word a) {
+  word old_fp = Frame_prev_frame(fp);
+  int old_sp = old_fp + Frame_prev_sp(fp);
+  word addr = old_sp + i + i;
+  oputw(addr, a);
+}
 
 word FindMethForObjOrNull(word obj, byte meth_isn) {
   word cls = ChainGetNth(ClassList, ocls(obj));
@@ -869,6 +873,12 @@ void Return(word retval) {
   if (!old_fp) {
     // Stop when no previous frame.
     printf("\n[[[ Returning from urframe ]]]\n");
+    if (retval) {
+      printf("RESULT: ");
+      SimplePrint(retval);
+      printf("\n");
+    }
+
     olongjmp(run_loop_jmp_buf, FINISH);
   }
 

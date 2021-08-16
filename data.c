@@ -143,7 +143,7 @@ word DictIterNext(word it) {
 
 byte StrGetOrZero(word str, byte i) {
   CHECK(ocls(str) == C_Str, "not_str");
-  if(i >= Str_len(str)) return 0;
+  if (i >= Str_len(str)) return 0;
   word p = Str_bytes(str) + Str_offset(str) + i;
   return ogetb(p);
 }
@@ -257,7 +257,7 @@ Good.2
     oputb(buf + len /*+1-1*/, 0);  // replace CR/LF with NUL.
     --len;
   }
-  oputb(buf, len);                      // len goes in slot 0.
+  oputb(buf, len);  // len goes in slot 0.
   // printf("BUF: %d: $s\n", ogetb(buf));  // $ DIS: olea(buf+1)
   return buf;
 }

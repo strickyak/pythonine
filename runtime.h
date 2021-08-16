@@ -77,6 +77,7 @@ void SayObj(word p, byte level);
 word MemberGet(word obj, byte isn);
 void MemberPut(word obj, byte isn, word value);
 word ArgGet(byte i);
+void ArgPut(byte i, word a);
 word FindMethForObjOrNull(word obj, byte meth_isn);
 word SingletonStr(byte ch);
 void RunBuiltin(byte builtin_num);

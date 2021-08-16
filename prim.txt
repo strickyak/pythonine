@@ -132,7 +132,7 @@ code  Times
     int bb = N(b);
     z = ( Q(aa * bb) );
   ]
-code  Print
+code  SimplePrint
   in a
   out
   [
@@ -209,6 +209,46 @@ code Is
   byte x = (a == b);
   z = FROM_INT(x);
 ]
+code ShiftLeft
+  in a b
+  out z
+[
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa << bb) );
+]
+code ShiftRight
+  in a b
+  out z
+[
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa >> bb) );
+]
+code BitAnd
+  in a b
+  out z
+[
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa & bb) );
+]
+code BitOr
+  in a b
+  out z
+[
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa | bb) );
+]
+code BitXor
+  in a b
+  out z
+[
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa ^ bb) );
+]
 code  EQ
   in a b
   out z
@@ -265,6 +305,12 @@ code ArgGet
   out z
   [
     z = ArgGet(i);
+  ]
+code ArgPut
+  arg i
+  in a
+  [
+    ArgPut(i, a);
   ]
 
 code LocalGet
@@ -489,6 +535,19 @@ code SpecialNone
   out z
 [
   z = None;
+]
+code Percent
+  in b a
+  out z
+[
+  z = StrFromC("todo_formatted");
+]
+code Negate
+  in a
+  out z
+[
+  int x = - TO_INT(a);
+  z = FROM_INT(x);
 ]
 
 prim Str __str__

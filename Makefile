@@ -54,23 +54,45 @@ _build:
 	python2 compile_proto.py < bc.proto -c > _generated_proto.h
 	python2 compile_proto.py < bc.proto -p > _generated_proto.py
 	python2 generate_prim.py < prim.txt > _generated_prim.h
-	python2 compile_pyth09.py < test$T.py > test$T.bc
+	cpp -DBIG -DUNIX compile_pyth09.py | python2 replace_constants.py *.const | grep -v '^#' > _big_unix.py
+	python2 _big_unix.py < test$T.py > test$T.bc
 	cp test$T.bc bc
 	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test$T.dump | tee ,dump
 	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c osetjmp.c defs.c pb2.c octet.c
 
-_build_ev:
+small_unix:
 	python2 compile_proto.py < bc.proto -c > _generated_proto.h
 	python2 compile_proto.py < bc.proto -p > _generated_proto.py
 	python2 compile_proto.py < bc.proto -k > _generated_proto.const
 	python2 generate_prim.py < prim.txt > _generated_prim.h
-	rm -f _ev.py
-	sed -n '/((( eval9 (((/,/))) eval9 )))/p' py_pb.py compile_pyth09.py | sed 's/\<P\>[.]//g' | python2 replace_constants.py *.const > _ev.py
-	chmod -w _ev.py
-	python2 _ev.py < test$T.py > test$T.bc
-	cp test$T.bc bc
-	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test$T.dump | tee ,dump
+	rm -f _small_unix.py
+	# cpp -DSMALL -DUNIX compile_pyth09.py | sed 's/\<P\>[.]//g' | python2 replace_constants.py *.const > _big.py
+	cpp -DSMALL -DUNIX compile_pyth09.py | grep -v '^#' | python2 replace_constants.py *.const > _small_unix.py
+	chmod -w _small_unix.py
+	python2 _small_unix.py < test1.py > test1.bc
+	cp test1.bc bc
+	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test1.dump | tee ,dump
 	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c osetjmp.c defs.c pb2.c octet.c
+	./runpy.bin
+
+small_coco:
+	python2 compile_proto.py < bc.proto -c > _generated_proto.h
+	python2 compile_proto.py < bc.proto -p > _generated_proto.py
+	python2 compile_proto.py < bc.proto -k > _generated_proto.const
+	python2 generate_prim.py < prim.txt > _generated_prim.h
+	rm -f _small_coco.py
+	# cpp -DSMALL -DNORMAL compile_pyth09.py | sed 's/\<P\>[.]//g' | python2 replace_constants.py *.const > _small_coco.py
+	cpp -DSMALL -DCOCO compile_pyth09.py | grep -v '^#' | python2 replace_constants.py *.const > _small_coco.py
+	chmod -w _small_coco.py
+	#
+	#
+	#
+	python2 _big_unix.py < _small_coco.py > _small_coco.bc
+	cp _small_coco.bc bc
+	python2 print_pb.py bc.proto _generated_prim.h < bc | tee _small_coco.dump | tee ,dump
+	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c osetjmp.c defs.c pb2.c octet.c
+	:
+	./runpy.bin < test1.py > test1.by_small_coco.bc
 
 _runpy:
 	./runpy.bin
