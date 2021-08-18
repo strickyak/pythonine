@@ -55,8 +55,7 @@ class XBinary:
         self.b = b
 
     def __str__(self):
-        # return '(' + str(self.a) + str(self.op) + str(self.b) + ')'
-        return '(' + self.op + ')'
+        return "(" + str(self.a) + str(self.op) + str(self.b) + ")"
 
     def eval(self):
         a = self.a.eval()
