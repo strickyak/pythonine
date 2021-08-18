@@ -89,7 +89,7 @@ word ChainIterNextAddr(word chain, struct ChainIterator *iter) {
   // This does not advance iter->count.
   if (iter->offset >= CHAIN_CHUNK_SLOTS) {
     word linkaddr = iter->obj + CHAIN_CHUNK_SIZE - 2;
-    word p = GetW(linkaddr);
+    word p = ogetw(linkaddr);
     iter->obj = p;
     iter->offset = 0;
   }
@@ -102,7 +102,7 @@ word ChainIterNextAddr(word chain, struct ChainIterator *iter) {
 word ChainIterNext(word chain, struct ChainIterator *iter) {
   word addr = ChainIterNextAddr(chain, iter);
   assert(addr);
-  return GetW(addr);
+  return ogetw(addr);
 }
 bool ChainIterMore(word chain, struct ChainIterator *iter) {
   return iter->count < iter->length;
@@ -125,18 +125,18 @@ word ChainGetNth(word chain, byte nth) {
   VERB("   Get@@ nth=%d chain=%x ", nth, chain);
   word addr = ChainAddrOfNth(chain, nth);
   assert(addr);
-  return GetW(addr);
+  return ogetw(addr);
 }
 void ChainPutNth(word chain, byte nth, word value) {
   VERB("   Put@@ nth=%d chain=%x ", nth, chain);
   word addr = ChainAddrOfNth(chain, nth);
   assert(addr);
-  PutW(addr, value);
+  oputw(addr, value);
 }
 void ChainAppend(word chain, word value) {
   word addr = ChainAddrOfAppend(chain);
   assert(addr);
-  PutW(addr, value);
+  oputw(addr, value);
 }
 
 byte ChainMapWhatNth(word chain, word key) {
@@ -178,17 +178,17 @@ word ChainMapGet(word chain, word key) {
   SAY("key", key);
   word addr = ChainMapAddr(chain, key);
   if (!addr) return NIL;
-  SAY("FOUND; value", GetW(addr));
-  return GetW(addr);
+  SAY("FOUND; value", ogetw(addr));
+  return ogetw(addr);
 }
 void ChainMapPut(word chain, word key, word value) {
   word addr = ChainMapAddr(chain, key);
   if (!addr) {
     addr = ChainAddrOfAppend(chain);
     assert(addr);
-    PutW(addr, key);
+    oputw(addr, key);
     addr = ChainAddrOfAppend(chain);
     assert(addr);
   }
-  PutW(addr, value);
+  oputw(addr, value);
 }
