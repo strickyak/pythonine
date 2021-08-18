@@ -169,7 +169,7 @@ class Lexer(object):
 
         if c == '"':
             s = ''
-            c = self.GetC()  # after the initial "
+            c = self.GetC()  # after the initial '"'
             while c != '"':
                 s = s + c
                 c = self.GetC()
@@ -177,7 +177,7 @@ class Lexer(object):
 
         if c == "'":
             s = ''
-            c = self.GetC()  # after the initial '
+            c = self.GetC()  # after the initial "'"
             while c != "'":
                 s = s + c
                 c = self.GetC()
@@ -1013,8 +1013,8 @@ class Compiler(object):
         self.parentCompiler = parentCompiler
         self.tclass = tclass
         self.isDunderInit = isDunderInit
-        # argVars = [] if argVars is None else argVars
-        # localVars = set() if localVars is None else localVars
+        ## argVars = [] if argVars is None else argVars
+        ## localVars = set() if localVars is None else localVars
         self.argVars = argVars
         self.localVars = sorted(localVars - set(argVars) - set(globalOverrides))
         print >> E, 'Compiler init:', 'parent', parentCompiler, 'argVars', self.argVars, 'localVars', self.localVars, 'globalOverrides', globalOverrides, 'tclass', tclass, 'isDunderInit', isDunderInit
