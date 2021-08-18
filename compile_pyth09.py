@@ -354,8 +354,8 @@ class Parser(object):
             raise Exception('bad var: %s', var)
         if var=='True' or var=='False' or var=='None':
             return TSpecial(var)
-        if var=='Stdin' or var=='Stdout' or var=='Stderr':
-            return TSpecial(var)
+        ## if var=='Stdin' or var=='Stdout' or var=='Stderr':
+        ##     return TSpecial(var)
         return TIdent(var)
 
     def ParseUnary(self):
@@ -531,17 +531,22 @@ class Parser(object):
 
     def ParseImport(self):
         tup = self.ParseCommaList(True)
-        return TImport(tup.vec)
+        return None # TODO
+        ## return TImport(tup.vec)
 
     def ParseRaise(self):
         ex = self.ParseCommaList(False)
         return TRaise(ex)
 
+    def ParseGlobal(self):
+        var = self.ParseIdentifier()
+        return TGlobal(var)
+
     def ParseReturn(self):
         if self.t == P_EOL:
             return TReturn(None)
         else:
-            retval = self.ParseSingle()
+            retval = self.ParseCommaList(False)
             return TReturn(retval)
 
     def ParseBreak(self):
@@ -558,8 +563,10 @@ class Parser(object):
     def ParseTry(self):
         try_block = self.ColonBlock()
         self.ConsumeX('except')
+        if self.x == 'Exception':
+            self.Advance()
         if self.x == 'as':
-            self.ConsumeX('as')
+            self.Advance()
             except_var = self.ParseCommaList(False)
         else:
             except_var = TIdent('_')
@@ -701,6 +708,9 @@ class Parser(object):
         elif self.x == 'return':
             self.Advance()
             p = self.ParseReturn()
+        elif self.x == 'global':
+            self.Advance()
+            p = self.ParseGlobal()
         elif self.x == 'def':
             self.Advance()
             p = self.ParseDef()
@@ -939,12 +949,12 @@ class TIf(object):
         return a.visitIf(self)
 
 
-class TImport(object):
-    def __init__(self, vec):
-        self.vec = vec
-
-    def visit(self, a):
-        return a.visitImport(self)
+## class TImport(object):
+##     def __init__(self, vec):
+##         self.vec = vec
+## 
+##     def visit(self, a):
+##         return a.visitImport(self)
 
 
 class TRaise(object):
@@ -953,6 +963,14 @@ class TRaise(object):
 
     def visit(self, a):
         return a.visitRaise(self)
+
+
+class TGlobal(object):
+    def __init__(self, var):
+        self.var = var
+
+    def visit(self, a):
+        return a.visitGlobal(self)
 
 
 class TReturn(object):
@@ -991,15 +1009,15 @@ class TBlock(object):
 #endif
 
 class Compiler(object):
-    def __init__(self, parentCompiler, argVars, localVars, tclass, isDunderInit):
+    def __init__(self, parentCompiler, argVars, localVars, globalOverrides, tclass, isDunderInit):
         self.parentCompiler = parentCompiler
         self.tclass = tclass
         self.isDunderInit = isDunderInit
-        argVars = [] if argVars is None else argVars
-        localVars = set() if localVars is None else localVars
+        # argVars = [] if argVars is None else argVars
+        # localVars = set() if localVars is None else localVars
         self.argVars = argVars
-        self.localVars = sorted(localVars - set(argVars))
-        print >> E, 'Compiler init:', 'parent', parentCompiler, 'argVars', self.argVars, 'localVars', self.localVars, 'tclass', tclass, 'isDunderInit', isDunderInit
+        self.localVars = sorted(localVars - set(argVars) - set(globalOverrides))
+        print >> E, 'Compiler init:', 'parent', parentCompiler, 'argVars', self.argVars, 'localVars', self.localVars, 'globalOverrides', globalOverrides, 'tclass', tclass, 'isDunderInit', isDunderInit
 
         self.ops = [0, 0, 0, 255, 255, 255]
         self.interns = {}
@@ -1225,7 +1243,18 @@ class Compiler(object):
             raise Exception('visitBinaryOp: bad %s' % t.op)
 
     def visitMember(self, t):
-        if type(t.x) is TIdent and t.x.x == 'self' and self.tclass:
+        if type(t.x) is TIdent and t.x.x == 'sys':
+            if t.member == 'stdin':
+                self.ops.append('SpecialStdin')
+            elif t.member == 'stdout':
+                self.ops.append('SpecialStdout')
+            elif t.member == 'stderr':
+                self.ops.append('SpecialStderr')
+            else:
+                raise Exception('bad_sys')
+        elif type(t.x) is TIdent and t.x.x == 'self' and self.tclass:
+            print >>E, 'C FF', self.tclass.fields
+            print >>E, 'M', t.member
             self.ops.append('SelfMemberGet')
             self.ops.append(sorted(self.tclass.fields).index(t.member)*2)
         else:
@@ -1287,12 +1316,12 @@ class Compiler(object):
             self.ops.append('SpecialFalse')
         elif t.x=='None':
             self.ops.append('SpecialNone')
-        elif t.x=='Stdin':
-            self.ops.append('SpecialStdin')
-        elif t.x=='Stdout':
-            self.ops.append('SpecialStdout')
-        elif t.x=='Stderr':
-            self.ops.append('SpecialStderr')
+        ## elif t.x=='Stdin':
+        ##     self.ops.append('SpecialStdin')
+        ## elif t.x=='Stdout':
+        ##     self.ops.append('SpecialStdout')
+        ## elif t.x=='Stderr':
+        ##     self.ops.append('SpecialStderr')
         else:
             raise t
     def visitInt(self, t):
@@ -1470,8 +1499,8 @@ class Compiler(object):
         lg.visitBlock(t.block)
         print >>E, 'visitDef: ++ lg.localVars:', lg.localVars
 
-        ##// def __init__(self, parentCompiler, argVars, localVars, tclass, isDunderInit):
-        fc = Compiler(self, t.arglist, lg.localVars, tclass, t.name == '__init__')
+        ##// def __init__(self, parentCompiler, argVars, localVars, globalOverrides, tclass, isDunderInit):
+        fc = Compiler(self, t.arglist, lg.localVars, lg.globalOverrides, tclass, t.name == '__init__')
         fc.visitBlock(t.block)
         if not len(fc.ops) or (fc.ops[-1] != 'Return' and fc.ops[-1] != 'RetNone' and fc.ops[-1] != 'RetSelf'):
             fc.ops.append('RetSelf' if fc.isDunderInit else 'RetNone')
@@ -1585,16 +1614,19 @@ class Compiler(object):
 
         self.continue_to = prev_continue_to
 
+    def visitGlobal(self, t):
+        pass
+
     def visitRaise(self, t):
         t.ex.visit(self)
         self.ops.append('Raise')
 
-    def visitImport(self, t):
-        for e in t.vec:
-            assert type(e) is TIdent
-            TStr(e.x).visit(self)
-            ## XXX unimplemented (Import does nothing but drop).
-            self.ops.append('Import')
+    ## def visitImport(self, t):
+    ##     for e in t.vec:
+    ##         assert type(e) is TIdent
+    ##         TStr(e.x).visit(self)
+    ##         ## XXX unimplemented (Import does nothing but drop).
+    ##         self.ops.append('Import')
 
 
     def visitReturn(self, t):
@@ -1614,7 +1646,12 @@ class Compiler(object):
 class AssignmentVisitor(object):
     def __init__(self):
         self.localVars = set()  # Others are global.
+        self.globalOverrides = set()  # Overrides localVars
         self.selfFields = set()
+
+    def visitGlobal(self, t):
+        self.globalOverrides.add(t.var)
+        print >>E, 'visitGlobal: self.globalVars:', Inside(self.globalOverrides)
 
     def visitBlock(self, t):
         for e in t.vec:
@@ -1749,7 +1786,7 @@ if __name__ == '__main__':  # test
 #endif
 
     p = Parser(Stdin.read())
-    compiler = Compiler(None, None, None, None, False)
+    compiler = Compiler(None, [], set(), set(), None, False)
 
 #if SMALL
     single = p.ParseSingle()
