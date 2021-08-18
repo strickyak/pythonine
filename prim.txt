@@ -6,7 +6,7 @@ class SmallInt # 1: Inside OOP with the low bit set.
   # no contents
 class Bytes # 2: arbitrary bytes (of varying length).
   byte[] flex
-class Buf # 3: byte buffer
+class Ztr # 3: string and/or byte buffer
   byte[] flex  # first byte is len.
 class Bytecodes # 4: Python bytecodes (of varying length).
   byte[] flex
@@ -29,11 +29,6 @@ class Dict # a chain for a dict.
 class Module # a Module is made from a Dict.
   oop root
   small len2
-class Str
-  oop bytes
-  small len
-  small offset
-  small single  # If a single-char string, you can use this target.
 class Frame
   oop prev_frame
   oop function
@@ -60,7 +55,7 @@ class DictIter
   oop p
   small i
   small len4
-class StrIter
+class ZtrIter
   oop base
   oop p
   small i
@@ -175,7 +170,7 @@ code  GlobalGet
   [
     word addr = ChainAddrOfNth(GlobalDict, nth);
     assert(addr);
-    z = GetW(addr);
+    z = ogetw(addr);
   ]
 code  GlobalPut
   arg nth
@@ -184,7 +179,7 @@ code  GlobalPut
   [
     word addr = ChainAddrOfNth(GlobalDict, nth);
     assert(addr);
-    PutW(addr, a);
+    oputw(addr, a);
   ]
 code  Branch
   arg whither
@@ -450,9 +445,9 @@ code Ord
   out z
   [
     word s = x;
-    assert(ocls(s) == C_Str);
-    word addr = Str_bytes(s) + Str_offset(s);
-    byte ch = ogetb(addr);
+    CHECK(ocls(s) == C_Ztr, "ord");
+    CHECK(ZtrLen(x), "ord");
+    byte ch = ZtrAt(x, 0);
     z = FROM_INT(ch);
   ]
 code Chr
@@ -460,7 +455,9 @@ code Chr
   out z
   [
     word n = TO_INT(x);
-    z = SingletonStr((byte)n);
+    CHECK(n>=0, "chr");
+    CHECK(n<=255, "chr");
+    z = SingletonZtr((byte)n);
   ]
 code Try
   arg catch_loc
@@ -552,7 +549,7 @@ code Percent
   in b a
   out z
 [
-  z = StrFromC("todo_formatted");
+  z = ZtrFromC("todo_formatted");
 ]
 code Negate
   in a
@@ -562,7 +559,7 @@ code Negate
   z = FROM_INT(x);
 ]
 
-prim Str __str__
+prim Ztr __str__
   in self
   out z
 [

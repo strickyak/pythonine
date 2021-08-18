@@ -33,42 +33,42 @@ void InitData() {
 // The first is the amount used.
 // The rest are the contents.
 
-word NewBuf() { return oalloc(254, C_Buf); }
+word NewBuf() { return oalloc(254, C_Ztr); }
 
 byte BufLen(word buf) { return ogetb(buf); }
 
 void BufAppendByte(word buf, byte b) {
   byte n = ogetb(buf);
   n++;
-  assert(n < 254);
+  assert(n < 253);
   oputb(buf, n);
   oputb(buf + n, b);
+  oputb(buf + n + 1, 0); // NUL termination.
 }
 
-void BufAppendStr(word buf, word str) {
-  byte s_len = (byte)Str_len(str);
-  word newlen = BufLen(buf) + s_len;
-  assert(newlen < 254);
+void BufAppendZtr(word buf, word ztr) {
+  byte z_len = ZtrLen(ztr);
+  word newlen = BufLen(buf) + z_len;
+  assert(newlen < 253);
   oputb(buf, (byte)newlen);
 
-  word src =
-      Str_bytes(str) + (byte)Str_offset(str) - 1;  // -1 for for preincrement.
-  word dest = buf;                                 // for preincrement
+  word src = ztr;  // for preincrement
+  word dest = buf;     // for preincrement
 
-  for (byte i = 0; i < s_len; i++) {
+  for (byte i = 0; i < z_len; i++) {
     oputb(++dest, ogetb(++src));
   }
+  oputb(dest, 0);  // NUL termination.
 }
 
-word BufGetStr(word buf) {
+// BufGetZtr makes a smaller copy of a bigger buf.
+word BufGetZtr(word buf) {
   byte n = ogetb(buf);
-  word guts = oalloc(n, C_Bytes);
-  omemcpy(guts, buf + 1, n);
-  word str = oalloc(Str_Size, C_Str);
-  Str_bytes_Put(str, guts);
-  Str_len_Put(str, n);
-  Str_offset_Put(str, 0);
-  return str;
+  word ztr = oalloc(n+2, C_Ztr); // 2 = 1(len) + 1(NUL)
+  oputb(ztr, n);  // len
+  omemcpy(ztr+1, buf + 1, n);
+  oputb(ztr + 1 + n, 0);  // NUL termination.
+  return ztr;
 }
 
 // Tuple
@@ -141,24 +141,35 @@ word DictIterNext(word it) {
   return key;
 }
 
-byte StrGetOrZero(word str, byte i) {
-  CHECK(ocls(str) == C_Str, "not_str");
-  if (i >= Str_len(str)) return 0;
-  word p = Str_bytes(str) + Str_offset(str) + i;
-  return ogetb(p);
+byte ZtrLen(word ztr) {
+  CHECK(ocls(ztr) == C_Ztr, "not_ztr");
+  return ogetb(ztr);  // ztrlen is in first byte.
+}
+byte ZtrAt(word ztr, byte i) {
+  CHECK(ocls(ztr) == C_Ztr, "not_ztr");
+  if (i >= ZtrLen(ztr)) RaiseC("ztr_ix_oob");
+  return ogetb(ztr+1+i);
 }
 
-void SetHighBitTermination(word str) {
-  CHECK(ocls(str) == C_Str, "not_str");
-  CHECK(Str_len(str), "not_len");
-  word p = Str_bytes(str) + Str_offset(str) + Str_len(str) - 1;
+byte ZtrAtOrZero(word ztr, byte i) {
+  CHECK(ocls(ztr) == C_Ztr, "not_ztr");
+  if (i >= ZtrLen(ztr)) return 0;
+  return ogetb(ztr+1+i);
+}
+
+void SetHighBitTermination(word ztr) {
+  CHECK(ocls(ztr) == C_Ztr, "not_ztr");
+  byte n = ZtrLen(ztr);
+  CHECK(n, "not_len");
+  word p = ztr + n;
   byte last = ogetb(p);
   oputb(p, 0x80 | last);
 }
-void ClearHighBitTermination(word str) {
-  CHECK(ocls(str) == C_Str, "not_str");
-  CHECK(Str_len(str), "not_len");
-  word p = Str_bytes(str) + Str_offset(str) + Str_len(str) - 1;
+void ClearHighBitTermination(word ztr) {
+  CHECK(ocls(ztr) == C_Ztr, "not_ztr");
+  byte n = ZtrLen(ztr);
+  CHECK(n, "not_len");
+  word p = ztr + n;
   byte last = ogetb(p);
   oputb(p, 0x7F & last);
 }
@@ -197,12 +208,12 @@ Good.1
   return fd;
 }
 
-word PyOpenFile(word name_str, word mode_str) {
-  byte mode_c = StrGetOrZero(mode_str, 0);
+word PyOpenFile(word name_ztr, word mode_ztr) {
+  byte mode_c = ZtrAtOrZero(mode_ztr, 0);
   byte fd = INF;
 
-  word p = Str_bytes(name_str) + Str_offset(name_str);
-  SetHighBitTermination(name_str);
+  word p = name_ztr + 1;
+  SetHighBitTermination(name_ztr);
   switch (mode_c) {
     case 'r':
       fd = OpenFileForReadFD((const char*)olea(p));
@@ -212,7 +223,7 @@ word PyOpenFile(word name_str, word mode_str) {
     default:
       RaiseC("bad_mode");
   }
-  ClearHighBitTermination(name_str);
+  ClearHighBitTermination(name_ztr);
   CHECK(fd != INF, "cant_open");
 
   word file = oalloc(File_Size, C_File);
@@ -248,6 +259,8 @@ Good.2
       puls y,u
   }
 #endif
+  assert(len >= 0);
+  assert(len <= 250);
   if (err || !len) {
     ofree(buf);
     return None;

@@ -18,7 +18,7 @@ word GlobalDict;  // todo: Modules.
 word InternList;
 word ClassList;
 word MessageList;
-word DunderInitStr;
+word DunderInitZtr;
 byte DunderInitIsn;
 
 byte* codes;     // ????
@@ -56,16 +56,10 @@ void SayChain(word p) {
 void SimplePrint(word p) {
   if (p & 1) {
     printf("%d ", TO_INT(p));
-  } else if (ocls(p) == C_Str) {
-    for (byte i = 0; i < Str_len(p); i++) {
-      byte ch = Bytes_flex_At(Str_bytes(p), Str_offset(p) + i);
-      printf("%c", ch);
-    }
-    printf(" ");
-  } else if (ocls(p) == C_Buf) {
-    for (byte i = 0; i < ogetb(p); i++) {
-      byte ch = ogetb(p + 1 + i);
-      printf("%c", ch);
+  } else if (ocls(p) == C_Ztr) {
+    byte n = ZtrLen(p);
+    for (byte i = 0; i < n; i++) {
+      printf("%c", ZtrAt(p, i));
     }
     printf(" ");
   } else {
@@ -73,11 +67,12 @@ void SimplePrint(word p) {
   }
   fflush(stdout);
 }
-void ShowStr(word p) {
-  assert(ocls(p) == C_Str);
+void ShowZtr(word p) {
+  assert(ocls(p) == C_Ztr);
   printf("'");
-  for (byte i = 0; i < Str_len(p); i++) {
-    byte ch = Bytes_flex_At(Str_bytes(p), Str_offset(p) + i);
+  byte n = ZtrLen(p);
+  for (byte i = 0; i < n; i++) {
+    byte ch = ZtrAt(p, i);
     if (' ' <= ch && ch <= '~') {
       printf("%c", ch);
     } else {
@@ -87,9 +82,9 @@ void ShowStr(word p) {
   printf("'");
   fflush(stdout);
 }
-void SayStr(word p) {
+void SayZtr(word p) {
 #if unix
-  ShowStr(p);
+  ShowZtr(p);
 #endif
 }
 void ShowL(word p, byte level) {
@@ -104,8 +99,8 @@ void ShowL(word p, byte level) {
   } else if (ovalidaddr(p)) {
     const char* clsname = "?";
     byte cls = ocls(p);
-    if (cls == C_Str) {
-      ShowStr(p);
+    if (cls == C_Ztr) {
+      ShowZtr(p);
     } else {
       if (cls < ClassNames_SIZE) {
         clsname = ClassNames[cls];
@@ -140,7 +135,7 @@ void ShowL(word p, byte level) {
         word clsobj = ChainGetNth(ClassList, cls);
         if (clsobj) {
           printf("cls=");
-          ShowStr(Class_className(clsobj));
+          ShowZtr(Class_className(clsobj));
           printf(" cap=%d", ocap(p));
         } else {
           printf(" unknown:cls=%d", cls);
@@ -185,22 +180,17 @@ word NewBuf() {
   return buf;
 }
 #endif
-word NewStr(word obj, byte offset, byte len) {
-  word z = oalloc(Str_Size, C_Str);
-  Str_bytes_Put(z, obj);
-  Str_len_Put(z, len);
-  Str_offset_Put(z, offset);
-  return z;
-}
-word StrFromC(const char* s) {
-  int slen = strlen(s);
-  assert(slen <= 254);
-  byte len = (byte)slen;
-  word obj = oalloc(len, C_Bytes);
+word ZtrFromC(const char* s) {
+  int s_len = strlen(s);
+  assert(s_len <= 253);
+  byte len = (byte)s_len;
+  word ztr = oalloc(len+2, C_Ztr);  // 2 = 1(len) + 1(NUL)
+  oputb(ztr, len); // len
   for (byte i = 0; i < len; i++) {
-    PutB(obj + i, s[i]);
+    oputb(ztr + 1 + i, s[i]);
   }
-  return NewStr(obj, 0, len);
+  oputb(ztr + 1 + len, 0); // NUL termination.
+  return ztr;
 }
 
 bool Truth(word a) {
@@ -210,8 +200,8 @@ bool Truth(word a) {
       case C_List:
       case C_Dict:
         return (Chain_len2(a) > 0);
-      case C_Str:
-        return (Str_len(a) > 0);
+      case C_Ztr:
+        return (ZtrLen(a) > 0);
     }
   } else {
     if (a == 0) return false;       // None
@@ -220,29 +210,17 @@ bool Truth(word a) {
   return true;
 }
 
-bool StrEqual(word a, word b) {
-  int len_a = Str_len(a);
-  int len_b = Str_len(b);
-  if (len_a != len_b) {
-    goto FALSE;
-  }
-  word guts_a = Str_bytes(a);
-  word guts_b = Str_bytes(b);
-  word addr_a = guts_a + (word)Str_offset(a);
-  word addr_b = guts_b + (word)Str_offset(b);
+bool ZtrEqual(word a, word b) {
+  byte len_a = ZtrLen(a);
+  assert(0 <= len_a && len_a <= 253);
 
-  assert(0 <= len_a && len_a <= 254);
-  byte n = (byte)len_a;
-
-  for (byte i = 0; i < n; i++) {
-    if (GetB(addr_a + i) != GetB(addr_b + i)) {
-      goto FALSE;
+  // i iterates the length, then the contents.
+  for (byte i = 0; i <= len_a; i++) {
+    if (ogetb(a + i) != ogetb(b + i)) {
+      return false;
     }
   }
   return true;
-
-FALSE:
-  return false;
 }
 
 bool Equal(word a, word b) {
@@ -252,9 +230,8 @@ bool Equal(word a, word b) {
   if ((byte)a & 1) return false;
   if ((byte)b & 1) return false;
   if (ovalidaddr(a) && ovalidaddr(b)) {
-    if (ocls(a) == C_Str && ocls(b) == C_Str) {
-      // Strings.
-      return StrEqual(a, b);
+    if (ocls(a) == C_Ztr && ocls(b) == C_Ztr) {
+      return ZtrEqual(a, b);
     }
     return false;
   }
@@ -365,17 +342,17 @@ void RunBuiltin(byte builtin_num) {
   }  // end switch
 }
 
-byte InternString(word str) {
-  assert(ocls(str) == C_Str);
+byte InternZtring(word ztr) {
+  assert(ocls(ztr) == C_Ztr);
   struct ChainIterator it;
   ChainIterStart(InternList, &it);
   byte i = 0;
   while (ChainIterMore(InternList, &it)) {
     word s = ChainIterNext(InternList, &it);
-    if (StrEqual(s, str)) return i;
+    if (ZtrEqual(s, ztr)) return i;
     ++i;
   }
-  ChainAppend(InternList, str);
+  ChainAppend(InternList, ztr);
   return i;
 }
 
@@ -387,8 +364,13 @@ void SlurpIntern(struct ReadBuf* bp, word bc, word ilist) {
         byte bytes_len;
         word bytes = pb_str(bp, C_Bytes, &bytes_len);
         assert(bytes_len < INF);
-        word str = NewStr(bytes, 0, bytes_len);
-        i_num = InternString(str);
+
+        word ztr = oalloc(bytes_len+2, C_Ztr);
+        oputb(ztr, bytes_len); // len
+        omemcpy(ztr+1, bytes, bytes_len);  // guts
+        oputb(ztr+1+bytes_len, 0);  // NUL
+
+        i_num = InternZtring(ztr);
         assert(i_num < INF);
         ChainAppend(ilist, Q(i_num));
       } break;
@@ -396,7 +378,7 @@ void SlurpIntern(struct ReadBuf* bp, word bc, word ilist) {
         word offset = pb_int(bp);
         assert(offset < ocap(bc));
         assert(i_num < INF);
-        PutB(bc + offset, i_num);
+        oputb(bc + offset, i_num);
       } break;
       default:
         opanic(94);
@@ -429,7 +411,7 @@ void SlurpGlobal(struct ReadBuf* bp, word bc, word ilist) {
       case GlobalPack_patch: {
         word offset = pb_int(bp);
         assert(offset < ocap(bc));
-        PutB(bc + offset, g_num);
+        oputb(bc + offset, g_num);
       } break;
       default:
         opanic(98);
@@ -520,7 +502,7 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
 
   {
     // Find the __init__ method, for creating the ctor.
-    word init_meth = DictGet(meth_dict, DunderInitStr);
+    word init_meth = DictGet(meth_dict, DunderInitZtr);
 
     // Default ctors take no args.
     byte num_args_to_ctor = 0;
@@ -645,8 +627,8 @@ void RuntimeInit() {
   ClassList = NewList();
   MessageList = NewList();
 
-  DunderInitIsn = InternString(StrFromC("__init__"));
-  DunderInitStr = ChainGetNth(InternList, DunderInitIsn);
+  DunderInitIsn = InternZtring(ZtrFromC("__init__"));
+  DunderInitZtr = ChainGetNth(InternList, DunderInitIsn);
 
   // Reserve builtin class slots, with None.
   ChainAppend(ClassList, None);  // unused 0.
@@ -655,8 +637,8 @@ void RuntimeInit() {
     word cls = oalloc(Class_Size, C_Class);
     Class_classNum_Put(cls, i);
     const char* cstr = ClassNames[i];
-    word name = StrFromC(cstr);
-    word name_isn = InternString(name);
+    word name = ZtrFromC(cstr);
+    word name_isn = InternZtring(name);
     name = ChainGetNth(InternList, name_isn);
     Class_className_Put(cls, name);
     word d = NewDict();
@@ -664,8 +646,8 @@ void RuntimeInit() {
     ChainAppend(ClassList, cls);
   }
   for (byte i = 0; i < MessageNames_SIZE; i++) {
-    word name = StrFromC(MessageNames[i]);
-    word name_isn = InternString(name);
+    word name = ZtrFromC(MessageNames[i]);
+    word name_isn = InternZtring(name);
     ChainAppend(MessageList, ChainGetNth(InternList, name_isn));
   }
   {
@@ -691,11 +673,11 @@ void RuntimeInit() {
     printf("################ Read (((\n");
     word file = PyOpenFile(
 #if unix
-        StrFromC("/etc/fstab"),
+        ZtrFromC("/etc/fstab"),
 #else
-        StrFromC("STARTUP"),
+        ZtrFromC("STARTUP"),
 #endif
-        StrFromC("r"));
+        ZtrFromC("r"));
     assert(file);
     osay(file);
     while (1) {
@@ -731,7 +713,7 @@ byte FieldOffset(word obj, byte member_name_isn) {
   if (!cls) return INF;
   word member_name = ChainGetNth(InternList, member_name_isn);
   VERB("Field Offset of ");
-  SayStr(member_name);
+  SayZtr(member_name);
   word p = Class_fieldList(cls);
 
   struct ChainIterator iter;
@@ -783,18 +765,19 @@ void ArgPut(byte i, word a) {
 
 word FindMethForObjOrNull(word obj, byte meth_isn) {
   word cls = ChainGetNth(ClassList, ocls(obj));
-  SayStr(Class_className(cls));
+  SayZtr(Class_className(cls));
   word dict = Class_methDict(cls);
   word meth_name = ChainGetNth(InternList, meth_isn);
-  SayStr(meth_name);
+  SayZtr(meth_name);
   word meth = DictGet(dict, meth_name);
   return meth;
 }
-word SingletonStr(byte ch) {
-  word x = NewStr(0, 6, 1);
-  Str_bytes_Put(x, x);
-  Str_single_Put(x, (word)ch << 7);
-  return x;
+word SingletonZtr(byte ch) {
+  word ztr = oalloc(3, C_Ztr);
+  oputb(ztr, 1); // len
+  oputb(ztr+1, ch); // guts
+  oputb(ztr+2, 0); // NUL
+  return ztr;
 }
 
 void Construct(byte cls_num, byte nargs /*less self */) {
@@ -916,7 +899,7 @@ void DoEndTry(byte end_catch_loc) {
 }
 void RaiseC(const char* msg) {
   printf("\nRaiseC: %s\n", msg);
-  Raise(StrFromC(msg));
+  Raise(ZtrFromC(msg));
 }
 void Raise(word ex) {
   if (!fp) {
@@ -961,11 +944,8 @@ void Implode(byte len, word chain) {
 byte Len(word o) {
   byte n;
   switch (ocls(o)) {
-    case C_Str:
-      n = Str_len(o);
-      break;
-    case C_Buf:
-      n = BufLen(o);
+    case C_Ztr:
+      n = ZtrLen(o);
       break;
     case C_Tuple:
     case C_List:
@@ -997,13 +977,17 @@ void Explode(byte len) {
 word GetItem(word coll, word key) {
   word value;
   switch (ocls(coll)) {
-    case C_Str: {
-      word addr = Str_bytes(coll) + Str_offset(coll) + TO_INT(key);
-      value = SingletonStr(ogetb(addr));
+    case C_Ztr: {
+      int i = TO_INT(key);
+      assert(i>=0);
+      assert(i<253);
+      value = SingletonZtr(ZtrAt(coll, i));
     } break;
     case C_Tuple:
     case C_List: {
       int i = TO_INT(key);
+      assert(i>=0);
+      assert(i<254);
       value = ChainGetNth(coll, i);
     } break;
     case C_Dict:
