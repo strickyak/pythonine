@@ -243,6 +243,9 @@ void ofree(word addr) {
   // Link the freed cell into the bucket chain.
   oputw(addr, OBucket[buck]);  // In first 2 bytes of cell.
   OBucket[buck] = addr;
+  // Don't leave Grace pointing to freed block.
+  if (OGrace1 == addr) OGrace1=0;
+  if (OGrace2 == addr) OGrace2=0;
 }
 
 void omark(word addr) {
