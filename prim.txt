@@ -108,6 +108,18 @@ code  LitStr
   [
     z = ( ChainGetNth(InternList, nth) );
   ]
+code  LitStr2
+  arg hi lo
+  in
+  out z
+  [
+#if 0
+    word nth = ((word)hi << 8) | (word)lo;
+    z = ( LongChainGetNth(InternList, nth) );
+#else
+    RaiseC("not_imp");
+#endif
+  ]
 code  Plus
   in a b
   out z
