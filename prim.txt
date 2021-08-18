@@ -569,13 +569,6 @@ prim Str __str__
   z = self;
 ]
 
-prim Str __foo__
-  in self
-  out z
-[
-  z = DunderInitStr;
-]
-
 prim List __iter__
   in self
   out z

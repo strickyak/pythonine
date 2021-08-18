@@ -519,13 +519,13 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
   }
 
   {
-    SayObj(DunderInitStr, 3);
-    osay(DunderInitStr);
+    // Find the __init__ method, for creating the ctor.
     word init_meth = DictGet(meth_dict, DunderInitStr);
-    SayObj(init_meth, 3);
-    osay(init_meth);
+
+    // Default ctors take no args.
     byte num_args_to_ctor = 0;
     if (init_meth) {
+      // Find out how many args the ctor needs from __init__.
       assert(ocls(init_meth) == C_Bytecodes);
       num_args_to_ctor = ogetb(init_meth + BC_NUM_ARGS) - 1;
     }
