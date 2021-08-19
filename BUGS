@@ -1,0 +1,32 @@
+Sorting backwards.
+
+Integer relops broken.
+
+global quit working.
+
+/etc/fstab disabled, because of "disk full" errors from unix os9 command.
+
+add dict::get(key, default)
+
+smart sizes for Frame objects.
+
+the sys.stdin.readline() in BASIC cannot distinguish EOF from empty line.
+
+dirty buffers, to speed up.
+
+divide and modulo.
+
+string format.
+
+expand intern table?  for python eval.
+
+python eval used the wrong "import sys" hack.
+
+need fork shell from python.
+
+BASIC:
+* Load and Save
+* FOR .. NEXT
+* GOSUB .. RETURN
+* Strings
+* PEEK(Hi,Lo) & POKE HI, LO, BYTE

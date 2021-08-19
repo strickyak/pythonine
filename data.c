@@ -15,11 +15,11 @@ int NextFileHandle;
 
 void InitData() {
   Stdin = oalloc(File_Size, C_File);
-  File_fd_Put(Stdin, FROM_INT(0));
+  File_fd_Put(Stdin, 0);
   Stdout = oalloc(File_Size, C_File);
-  File_fd_Put(Stdout, FROM_INT(1));
+  File_fd_Put(Stdout, 1);
   Stderr = oalloc(File_Size, C_File);
-  File_fd_Put(Stderr, FROM_INT(2));
+  File_fd_Put(Stderr, 2);
 #if unix
   FileHandles[0] = stdin;
   FileHandles[1] = stdout;
@@ -156,28 +156,30 @@ byte ZtrAtOrZero(word ztr, byte i) {
   if (i >= ZtrLen(ztr)) return 0;
   return ogetb(ztr+1+i);
 }
-
-void SetHighBitTermination(word ztr) {
-  CHECK(ocls(ztr) == C_Ztr, "not_ztr");
-  byte n = ZtrLen(ztr);
-  CHECK(n, "not_len");
-  word p = ztr + n;
-  byte last = ogetb(p);
-  oputb(p, 0x80 | last);
+word ZtrRStrip(word ztr) {
+  // TODO -- does not seem to be a problem in OS9.
+  return ztr;
 }
-void ClearHighBitTermination(word ztr) {
-  CHECK(ocls(ztr) == C_Ztr, "not_ztr");
-  byte n = ZtrLen(ztr);
-  CHECK(n, "not_len");
-  word p = ztr + n;
-  byte last = ogetb(p);
-  oputb(p, 0x7F & last);
+word ZtrUpper(word a) {
+  byte n = ZtrLen(a);
+  word z = oalloc(n + 2, C_Ztr);
+  oputb(z, n);
+  oputb(z+1+n, 0);
+  for (byte i = 0; i < n; i++) {
+    byte c = ogetb(a+1+i);
+    if ('a' <= c && c <= 'z') {
+      oputb(z+1+i, c-32);
+    } else {
+      oputb(z+1+i, c);
+    }
+  }
+  return z;
 }
 
 byte OpenFileForReadFD(const char* filename) {
   byte fd;
 #if unix
-  char unixname[250];
+  char unixname[252];
   memset(unixname, 0, sizeof unixname);
   for (int i = 0; filename[i]; i++) {
     unixname[i] = filename[i] & 127;
@@ -213,7 +215,6 @@ word PyOpenFile(word name_ztr, word mode_ztr) {
   byte fd = INF;
 
   word p = name_ztr + 1;
-  SetHighBitTermination(name_ztr);
   switch (mode_c) {
     case 'r':
       fd = OpenFileForReadFD((const char*)olea(p));
@@ -223,7 +224,6 @@ word PyOpenFile(word name_ztr, word mode_ztr) {
     default:
       RaiseC("bad_mode");
   }
-  ClearHighBitTermination(name_ztr);
   CHECK(fd != INF, "cant_open");
 
   word file = oalloc(File_Size, C_File);
@@ -231,14 +231,59 @@ word PyOpenFile(word name_ztr, word mode_ztr) {
   return file;
 }
 
+void OsWriteText(int fd, const char* p, byte n) {
+  byte err = 0;
+#if unix
+  int ok = fputs(p, FileHandles[fd]);
+  if (ok < 0) {
+    RaiseC("bad_fputs");
+  }
+#else
+  asm {
+      PSHS Y,U
+
+      CLRA
+      LDB n
+      TFR D,Y  # number bytes
+
+      LDA fd
+      LDX p    # pointer
+
+      SWI2
+      FCB 0x8C  # I$WritLn
+      BCC OWT_ok
+
+      STB err
+
+OWT_ok
+      PULS Y,U
+  }
+#endif
+  if (err) RaiseC("bad_wr");
+}
+
+void FileWriteLine(word file, word ztr) {
+  assert(ocls(file) == C_File);
+  byte fd = (byte)File_fd(file);
+  // HACK -- change 10 to 13 *in place*, altering ztr.
+  byte n = ZtrLen(ztr);
+  for (byte i = 0; i < n; i++) {
+    if (ogetb(ztr+1+i) == 10) {
+      oputb(ztr+1+i, 13);
+    }
+  }
+  OsWriteText(fd, (const char*) olea(ztr+1), n);
+}
 word FileReadLineToNewBuf(word file) {
+  assert(ocls(file) == C_File);
   byte fd = (byte)File_fd(file);
   word buf = NewBuf();
   word ptr = buf + 1;
   byte err = 0;
   word len = 0;
+  // printf("FRL fd=%d buf=%d\n", fd, buf);
 #if unix
-  char* zz = fgets((char*)olea(ptr), 250, FileHandles[fd]);
+  char* zz = fgets((char*)olea(ptr), 252, FileHandles[fd]);
   if (!zz)
     err = 1;
   else
@@ -248,7 +293,7 @@ word FileReadLineToNewBuf(word file) {
       pshs y,u
       lda fd
       ldx ptr
-      ldy #250
+      ldy #252
       SWI2
       FCB $8B ; I$ReadLn
       BCC Good.2
@@ -259,8 +304,9 @@ Good.2
       puls y,u
   }
 #endif
+  // printf("FRL len=%d err=%d\n", len, (int)err);
   assert(len >= 0);
-  assert(len <= 250);
+  assert(len <= 252);
   if (err || !len) {
     ofree(buf);
     return None;
@@ -271,6 +317,174 @@ Good.2
     --len;
   }
   oputb(buf, len);  // len goes in slot 0.
-  // printf("BUF: %d: $s\n", ogetb(buf));  // $ DIS: olea(buf+1)
   return buf;
+}
+
+word BuiltinInt(word a) {
+  word z;
+  int x;
+  if (a&1) {
+    z = a;
+  } else {
+    switch(ocls(a)) {
+    case C_Ztr:
+      x = atoi((const char*)olea(a+1));
+      z = FROM_INT(x);
+      break;
+    default:
+      RaiseC("bad_b_int");
+    }
+  }
+  return z;
+}
+
+word ZtrFromInt(int x) {
+  char buf[8];
+  bool neg=0;
+  if (x<0) {
+    neg=1; x = -x;
+  }
+  if (x<0) RaiseC("2neg");
+  int d0 = x % 10;
+  x = x / 10;
+  int d1 = x % 10;
+  x = x / 10;
+  int d2 = x % 10;
+  x = x / 10;
+  int d3 = x % 10;
+  x = x / 10;
+  int d4 = x % 10;
+
+  char* p = buf;
+  if (neg) *p++ = '-';
+  if (d4) *p++ = d4 + '0';
+  if (d3) *p++ = d3 + '0';
+  if (d2) *p++ = d2 + '0';
+  if (d1) *p++ = d1 + '0';
+  *p++ = d0 + '0';
+  *p = 0;
+
+  return ZtrFromC(buf);
+}
+
+word BuiltinStr(word a) {
+  word z;
+  byte isn;
+
+  if (a&1) {
+    // char buf[10];
+    // sprintf(buf, "%d", TO_INT(a));
+    // z = ZtrFromC(buf);
+    z = ZtrFromInt(TO_INT(a));
+  } else {
+    switch(ocls(a)) {
+    case C_Ztr:
+      z = a;
+      break;
+    default:
+      RaiseC("broken_b_str");
+      isn = InternZtring(ZtrFromC("__str__"));
+      PleaseCallMeth0(isn, a);
+      z = None;  // special return.
+    }
+  }
+  return z;
+}
+
+word SortedList(word a) {
+  byte n = List_len2(a);
+  word z = NewList();
+
+  for (byte i = 0; i<n; i++) {
+    ListAppend(z, ListGetNth(a, i));
+  }
+  if (n<2) return z;
+
+  byte m = n-1;
+  for (byte i = 0; i<m; i++) {
+    for (byte j = 0; j<m; j++) {
+      word u = ListGetNth(z, j);
+      word v = ListGetNth(z, j+1);
+      if (v < u) {
+        ListPutNth(z, j, v);
+        ListPutNth(z, j+1, u);
+      }
+    }
+  }
+  return z;
+}
+word BuiltinSorted(word a) {
+  word z;
+  if (a&1) {
+      RaiseC("bad_b_sorted");
+  } else {
+    switch(ocls(a)) {
+    case C_List:
+      z = SortedList(a);
+      break;
+    default:
+      RaiseC("bad_b_sorted");
+    }
+  }
+  return z;
+}
+
+int ZtrCmp(word a, word b) {
+  byte na = ZtrLen(a);
+  byte nb = ZtrLen(b);
+  byte n = (na < nb) ? na : nb;
+
+  for (byte i = 0; i<n; i++) {
+    byte ca = ZtrAt(a, i);
+    byte cb = ZtrAt(b, i);
+    if (ca < cb) return -1;
+    if (ca > cb) return 1;
+  }
+  if (na > nb) return 1;
+  if (na < nb) return -1;
+  return 0;
+}
+
+bool LessThan(word a, word b) {
+  if ((a&1) && (b&1)) {
+    return TO_INT(a) < TO_INT(b);
+  }
+  if (ocls(a)==C_Ztr && ocls(b)==C_Ztr) {
+    return ZtrCmp(a,b) < 0;
+  }
+  return a < b;
+}
+
+word ZtrCat2(word a, word b) {
+  byte na = ZtrLen(a);
+  byte nb = ZtrLen(b);
+  int nn = na + nb;
+  CHECK(nn<253, "ztrcat2_too_big");
+  byte n = (byte)nn;
+  word z = oalloc(n+2, C_Ztr);
+  oputb(z, n);
+  oputb(z+1+n, 0);
+  for (int i=0; i<na; i++) {
+    oputb(z+1+i, ogetb(a+1+i));
+  }
+  for (int i=0; i<nb; i++) {
+    oputb(z+1+na+i, ogetb(b+1+i));
+  }
+  return z;
+}
+
+word DictItems(word a) {
+  word z = NewList();
+  struct ChainIterator it;
+
+  ChainIterStart(a, &it);
+  while (ChainIterMore(a, &it)) {
+    word key = ChainIterNext(a, &it);
+    word val = ChainIterNext(a, &it);
+    word tup = NewTuple();
+    TupleAppend(tup, key);
+    TupleAppend(tup, val);
+    ListAppend(z, tup);
+  }
+  return z;
 }

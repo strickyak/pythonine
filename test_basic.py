@@ -1,22 +1,13 @@
 import sys
 E = sys.stderr
 
-def Say(x):
-    # print >>E, 'Say:', x
-    return x
-
-# Expressions
-
 def Add(a, b): return a+b
 def Sub(a, b): return a-b
 def Mul(a, b): return a*b
-# def Div(a, b): return a/b
-# def Mod(a, b): return a%b
 def EQ(a, b): return a==b
 def LT(a, b): return a<b
 def GT(a, b): return a>b
 
-# BinaryOps = { '+': Add, '-': Sub, '*': Mul, '=': EQ, '<': LT, '>': GT }
 BinaryOps = {}
 def initBinaryOps():
   BinaryOps['+'] = Add
@@ -26,6 +17,8 @@ def initBinaryOps():
   BinaryOps['<'] = LT
   BinaryOps['>'] = GT
 initBinaryOps()
+
+# Expressions
 
 class XInt:
     def __init__(self, num):
@@ -45,7 +38,10 @@ class XVar:
         return self.var
 
     def eval(self):
-        return Vars.get(self.var, 0)
+        try:
+            return Vars[self.var]
+        except:
+            return 0
 
 
 class XBinary:
@@ -55,14 +51,13 @@ class XBinary:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + str(self.op) + str(self.b) + ")"
+        return "(" + self.a.__str__() + self.op + self.b.__str__() + ")"
 
     def eval(self):
         a = self.a.eval()
         b = self.b.eval()
         fn = BinaryOps[self.op]
         z = fn(a, b)
-        # print >>E, 'Binary', self, ' :: ', a, self.op, b, '->', z
         return z
 
 
@@ -79,33 +74,34 @@ class XCall:
 
 
 def List():
+    print chr(13)
     for (num, stmt) in sorted(Program.items()):
         if stmt:
-            print num, str(stmt)
+            print num, stmt.__str__(), chr(13)
 
 def Run():
-    global LineNum
-    LineNum = 1
+    LineNum[0] = 1
     i = 0
     while True:
         i = i + 1
         if i > 10000:
             raise Exception('timeout')
-        x, y = Nearest(LineNum)
+        x, y = Nearest(LineNum[0])
         if x <= 0:
             break
-        print '[', x, ']',
-        LineNum = x + 1
+        # print '[', x, ']',
+        LineNum[0] = x + 1
         y.execute()
     print '[STOP]'
 
 def Nearest(n):
-    x, y = 15000, None
+    x, y = 15000, 0
     for (num, stmt) in Program.items():
         if num >= n and num < x:
             x, y = num, stmt
     if x == 15000:
         x = 0
+    # print '(Nearest', n, x, y, ')'
     return x, y
 
 
@@ -126,7 +122,6 @@ class Parser(object):
 
     def Lex(self):
         self.Lex_1()
-        # print >>E, 'Lex: ', self.t, self.x, (self.i, self.n, self.line)
 
     def Lex_1(self):
         while True:
@@ -315,7 +310,7 @@ class LET:
         self.expr = expr
 
     def __str__(self):
-        return 'LET ' + self.var + ' = ' + str(self.expr)
+        return 'LET ' + self.var + ' = ' + self.expr.__str__()
 
     def execute(self):
         Vars[self.var] = self.expr.eval()
@@ -326,7 +321,7 @@ class PRINT:
         self.tail = tail
 
     def __str__(self):
-        return 'PRINT ' + str(self.expr)
+        return 'PRINT ' + self.expr.__str__()
 
     def execute(self):
         print '@@', self.expr.eval(),
@@ -339,11 +334,10 @@ class GOTO:
         self.expr = expr
 
     def __str__(self):
-        return 'GOTO ' + str(self.expr)
+        return 'GOTO ' + self.expr.__str__()
 
     def execute(self):
-        global LineNum
-        LineNum = self.expr.eval()
+        LineNum[0] = self.expr.eval()
 
 
 class IF:
@@ -352,15 +346,15 @@ class IF:
         self.target = target
 
     def __str__(self):
-        return 'IF ' + str(self.pred) + ' THEN ' + str(self.target)
+        return 'IF ' + self.pred.__str__() + ' THEN ' + self.target.__str__()
 
     def execute(self):
-        global LineNum
         if self.pred.eval():
-            LineNum = self.target.eval()
+            LineNum[0] = self.target.eval()
 
 Vars = {}
 Program = {}
+LineNum = [1]
 
 def Command(line):
     try:
@@ -382,12 +376,14 @@ def Command(line):
 
 def Loop():
     while True:
-        print "\n>",
+        ogc()
+        print "  -->",
         line = sys.stdin.readline()
         if not line: break
+
         line = line.rstrip().upper()
-        print 'you entered: ', repr(line)
-        if line == "B" or line == "BYE": break
+        ## print 'you entered: ', repr(line)
+        if line == "Q" or line == "B" or line == "BYE": break
         elif line == "L" or line == "LIST": List()
         elif line == "R" or line == "RUN": Run()
         else: Command(line)

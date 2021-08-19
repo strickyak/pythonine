@@ -63,7 +63,7 @@ void SimplePrint(word p) {
     }
     printf(" ");
   } else {
-    printf("$%04x:%d%d$ ", p, ocap(p), ocls(p));
+    printf("$%04x:%d:%d$ ", p, ocap(p), ocls(p));
   }
   fflush(stdout);
 }
@@ -164,7 +164,7 @@ void SayStack() {
   for (word p = sp; p < fp + cap; p += 2) {
     word x = ogetw(p);
     printf(":::::  [%d]  ", p);
-    SayObj(x, 2);
+    Show(x);
     printf("\n");
     ++i;
   }
@@ -279,10 +279,10 @@ void EvalCodes(word fn) {
 ojmp_buf run_loop_jmp_buf;
 void RunLoop() {
   byte message = osetjmp(run_loop_jmp_buf);
-  if (message) {
-    printf("osetjmp: %d\n", message);
-    fflush(stdout);
-  }
+  // if (message) {
+    // printf("osetjmp: %d\n", message);
+    // fflush(stdout);
+  // }
   if (message == FINISH) return;
 
 RUN_LOOP:
@@ -295,7 +295,7 @@ RUN_LOOP:
   assert(ip >= function + BC_HEADER_SIZE);
   assert(ip < function + INF);
 
-#ifdef CAREFUL
+#if CAREFUL
   VERB("\n");
   assert(sp >= fp + Frame_Size - 2);
   assert(sp <= fp + ocap(fp));
@@ -304,12 +304,12 @@ RUN_LOOP:
   assert(ip < function + INF);
 #endif
   byte opcode = ogetb(ip);
-  // printf(" <%d:", opcode);
+  VERB(" <%d:", opcode);
   assert(opcode < CodeNames_SIZE);
-  // printf("%s> ", CodeNames[opcode]);
-#ifdef CAREFUL
+  VERB("%s> ", CodeNames[opcode]);
+#if CAREFUL
   assert(opcode < CodeNames_SIZE);
-  VERB("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
+  printf("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
        function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
        ogetb(ip + 2), fp, (sp - fp) >> 1);
 
@@ -425,6 +425,7 @@ void SlurpCodePack(struct ReadBuf* bp, word* bc_out) {
 }
 
 void SlurpFuncPack(struct ReadBuf* bp, word ilist, word dict) {
+  printf("f");
   word name_str;
   word ith;
   for (byte tag = pb_current(bp); tag; tag = pb_current(bp)) {
@@ -454,6 +455,7 @@ void SlurpFuncPack(struct ReadBuf* bp, word ilist, word dict) {
   pb_next(bp);  // consume the 0 tag.
 }
 void SlurpClassPack(struct ReadBuf* bp, word ilist) {
+  printf("c");
   word class_num = List_len2(ClassList);
   word name_str;
   word ith;
@@ -475,9 +477,9 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
         // Get the i_numth interned string.
         name_str = ChainGetNth(InternList, i_num);
         assert(name_str);
-        printf("SLURPING CLASS: <<<");
+        // printf("SLURPING CLASS: <<<");
         SayObj(name_str, 2);
-        printf(">>>\n");
+        // printf(">>>\n");
         Class_className_Put(cls, name_str);
       } break;
       case ClassPack_field_i: {  // For a field.
@@ -486,9 +488,9 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
         assert(field_i_num < INF);
         word field_str = ChainGetNth(InternList, field_i_num);
         assert(field_str);
-        printf("SLURPING FIELD <<<");
+        // printf("SLURPING FIELD <<<");
         SayObj(field_str, 2);
-        printf(">>>\n");
+        // printf(">>>\n");
         ChainAppend(field_list, field_str);
       } break;
       case ClassPack_meth: {  // For a method.
@@ -534,6 +536,7 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
 }
 
 void SlurpModule(struct ReadBuf* bp, word* bc_out) {
+  printf("m");
   word bc;
   word ilist = NewList();
   for (byte tag = pb_current(bp); tag; tag = pb_current(bp)) {
@@ -577,6 +580,10 @@ void MarkRoots() {
   omark(RootForMain);
   omark(function);
   omark(fp);
+  // data.c:
+  omark(Stdin);
+  omark(Stdout);
+  omark(Stderr);
 }
 void DumpStats() {
   word count_used = 0;
@@ -590,15 +597,19 @@ void Directory() {
   SayObj(item, 2);
   osay(item);
   DONE
+#endif
 
+#if unix
       FOR_EACH(i, item, GlobalDict) DO printf(";; GlobalDict[%d] :: ", i);
-  SayObj(item, 2);
-  osay(item);
+  Show(item);
+  // osay(item);
+  printf("\n");
   DONE
 
       FOR_EACH(i, item, InternList) DO printf(";; InternList[%d] :: ", i);
-  SayObj(item, 2);
-  osay(item);
+  Show(item);
+  // osay(item);
+  printf("\n");
   DONE
 
       FOR_EACH(i, item, ClassList) DO printf(";; ClassList[%d] :: ", i);
@@ -613,6 +624,9 @@ void Directory() {
   }
   printf("End Of Class\n");
   DONE
+#endif
+
+#if unix
 
       FOR_EACH(i, item, MessageList) DO printf(";; MessageList[%d] :: ", i);
   SayObj(item, 2);
@@ -704,7 +718,7 @@ void Break(const char* why) {
   }
   printf("\n@ Break )))\n");
 #else
-  printf(" <%s> ", why);
+  VERB(" <%s> ", why);
 #endif
 }
 
@@ -816,7 +830,15 @@ void Call(byte nargs, word fn) {
     return;
   }
   Break("CALL");
+  if(ocls(fn) != C_Bytecodes) {
+    printf("Call:");
+    Show(fn);
+  }
   CHECK(ocls(fn) == C_Bytecodes, "bad_fn_cls");
+  if(ogetb(fn + BC_NUM_ARGS) != nargs) {
+    printf("Call: want %d got %d nargs\n", ogetb(fn+BC_NUM_ARGS), nargs);
+  }
+  CHECK(ogetb(fn + BC_NUM_ARGS) == nargs, "bad_nargs");
 
   word old_fp = fp;
   fp = oalloc(32, C_Frame);
@@ -829,22 +851,23 @@ void Call(byte nargs, word fn) {
 
   function = fn;
   Frame_function_Put(fp, function);
-#if 1
-  CHECK(ocls(function) == C_Bytecodes, "bad_bc_cls");
-  CHECK(ogetb(function + BC_NUM_ARGS) == nargs, "bad_nargs");
-#else
-  assert2(ocls(function) == C_Bytecodes, "func got cls %d, want %d",
-          ocls(function), C_Bytecodes);
-  assert2(ogetb(function + BC_NUM_ARGS) == nargs, "func got %d args, want %d",
-          nargs, ogetb(function + BC_NUM_ARGS));
-#endif
   sp = fp + ocap(fp);
   ip = function + BC_HEADER_SIZE;
+}
+
+void PleaseCallMeth0(byte meth_isn, word self) {
+  PushSp(self);
+  CallMeth(meth_isn, 1);
 }
 
 void CallMeth(byte meth_isn, byte nargs /* with self */) {
   word self = ogetw(sp);
   word fn = FindMethForObjOrNull(self, meth_isn);
+  if (!fn) {
+    Show(ChainGetNth(InternList, meth_isn));
+    Show(self);
+    osay(self);
+  }
   assert2(fn, "meth %d not found on self %d", meth_isn, self);
 
   Call(nargs, fn);
@@ -898,7 +921,7 @@ void DoEndTry(byte end_catch_loc) {
   ip = function + end_catch_loc;
 }
 void RaiseC(const char* msg) {
-  printf("\nRaiseC: %s\n", msg);
+  // printf("\nRaiseC: %s\n", msg);
   Raise(ZtrFromC(msg));
 }
 void Raise(word ex) {
@@ -911,7 +934,7 @@ void Raise(word ex) {
   Break("RAISE");
   for (word p = fp; p; p = Frame_prev_frame(p)) {
     word try = Frame_tries(p);
-    printf("frame %d tries=%d\n", p, try);
+    // printf("frame %d tries=%d\n", p, try);
     if (try) {
       fp = p;
 

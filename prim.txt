@@ -119,9 +119,17 @@ code  Plus
   in a b
   out z
   [
-    int aa = N(a);
-    int bb = N(b);
-    z = ( Q(aa + bb) );
+    if ((a&1) && (b&1)) {
+      int aa = N(a);
+      int bb = N(b);
+      z = ( Q(aa + bb) );
+    } else if ((a&1) || (b&1)) {
+      RaiseC("bad_plus_mixed");
+    } else if (ocls(a)==C_Ztr && ocls(b)==C_Ztr) {
+      z = ZtrCat2(a, b);
+    } else {
+      RaiseC("bad_plus");
+    }
   ]
 code  Minus
   in a b
@@ -260,50 +268,42 @@ code  EQ
   in a b
   out z
   [
-    word p = Equal(a, b);
+    int p = Equal(a, b);
     z = Q(p);
   ]
 code  NE
   in a b
   out z
   [
-    word p = !Equal(a, b);
+    int p = !Equal(a, b);
     z = Q(p);
   ]
 code  LT
   in a b
   out z
   [
-    int aa = N(a);
-    int bb = N(b);
-    word p = (aa < bb);
+    int p = LessThan(a, b);
     z = Q(p);
   ]
 code  GT
   in a b
   out z
   [
-    int aa = N(a);
-    int bb = N(b);
-    word p = (aa > bb);
+    int p = !LessThan(a, b) && !Equal(a, b);
     z = Q(p);
   ]
 code  LE
   in a b
   out z
   [
-    int aa = N(a);
-    int bb = N(b);
-    word p = (aa <= bb);
+    int p = LessThan(a, b) || Equal(a, b);
     z = Q(p);
   ]
 code  GE
   in a b
   out z
   [
-    int aa = N(a);
-    int bb = N(b);
-    word p = (aa >= bb);
+    int p = !LessThan(a, b);
     z = Q(p);
   ]
 
@@ -558,12 +558,60 @@ code Negate
   int x = - TO_INT(a);
   z = FROM_INT(x);
 ]
+code Int
+  in a
+  out z
+[
+  z = BuiltinInt(a);
+]
+code Str
+[
+  word a = PopSp();
+  word z = BuiltinStr(a);
+  if (z) PushSp(z);  // if None, don't touch stack.
+]
+code Repr
+  in a
+  out z
+[
+  z = BuiltinStr(a);
+]
+code Sorted
+  in a
+  out z
+[
+  z = BuiltinSorted(a);
+]
+code GC
+  out z
+[
+  // DumpStats();
+  // ogc();
+  DumpStats();
+  z = None;
+]
+
+# # # # # #
 
 prim Ztr __str__
   in self
   out z
 [
   z = self;
+]
+
+prim Ztr rstrip
+  in self
+  out z
+[
+  z = ZtrRStrip(self);
+]
+
+prim Ztr upper
+  in self
+  out z
+[
+  z = ZtrUpper(self);
 ]
 
 prim List __iter__
@@ -633,8 +681,35 @@ prim FileIter next
   z = FileReadLineToNewBuf(self);
   if (!z) RaiseC("StopIteration");
 ]
+prim File readline
+  in self
+  out line
+[
+  line = FileReadLineToNewBuf(self);
+]
+prim File writeline
+  in line self
+  out z
+[
+  FileWriteLine(self, line);
+  z = None;
+]
 prim File close
   in self
+  out z
 [
   RaiseC("unimp");
+  z = None;
+]
+prim File flush
+  in self
+  out z
+[
+  z = None;
+]
+prim Dict items
+  in self
+  out z
+[
+  z = DictItems(self);
 ]

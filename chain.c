@@ -157,18 +157,37 @@ byte ChainMapWhatNth(word chain, word key) {
 word ChainMapAddr(word chain, word key) {
   SAY("@@@@@ chain", chain);
   SAY("key", key);
-  struct ChainIterator it;
-  ChainIterStart(chain, &it);
-  while (ChainIterMore(chain, &it)) {
-    word ikey = ChainIterNext(chain, &it);
-    assert(ChainIterMore(chain, &it));
-    word iaddr = ChainIterNextAddr(chain, &it);
-    SAY("iter_key", ikey);
-    if (ikey == key) {
-      VERB("FOUND at %04x\n", iaddr);
-      return iaddr;
+
+  { // First pass: ==
+    struct ChainIterator it;
+    ChainIterStart(chain, &it);
+    while (ChainIterMore(chain, &it)) {
+      word ikey = ChainIterNext(chain, &it);
+      assert(ChainIterMore(chain, &it));
+      word iaddr = ChainIterNextAddr(chain, &it);
+      SAY("iter_key", ikey);
+      if (ikey == key) {
+        VERB("FOUND at %04x\n", iaddr);
+        return iaddr;
+      }
     }
   }
+
+  { // Second pass: Equal()
+    struct ChainIterator it;
+    ChainIterStart(chain, &it);
+    while (ChainIterMore(chain, &it)) {
+      word ikey = ChainIterNext(chain, &it);
+      assert(ChainIterMore(chain, &it));
+      word iaddr = ChainIterNextAddr(chain, &it);
+      SAY("iter_key", ikey);
+      if (Equal(ikey, key)) {
+        VERB("FOUND at %04x\n", iaddr);
+        return iaddr;
+      }
+    }
+  }
+
   SAY("NOT FOUND", key);
   return NIL;
 }
@@ -177,7 +196,7 @@ word ChainMapGet(word chain, word key) {
   SAY("@@@@@ chain", chain);
   SAY("key", key);
   word addr = ChainMapAddr(chain, key);
-  if (!addr) return NIL;
+  if (!addr) RaiseC("key_not_found");
   SAY("FOUND; value", ogetw(addr));
   return ogetw(addr);
 }

@@ -96,6 +96,8 @@ word PopSp();
 void PushSp(word a);
 void SimplePrint(word p);
 void DumpStats();
+bool Equal(word a, word b);
+void PleaseCallMeth0(byte meth_isn, word self);
 
 #define FOR_EACH(I, ITEM, X)                           \
   {                                                    \

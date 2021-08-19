@@ -28,6 +28,8 @@ class MessagePrinter:
                 return z
 
     def Mess(self):
+        prev_ttag = -1
+        count = 0
         while True:
             if self.i >= len(self.v):
                 raise Exception('Expected another tag in Message')
@@ -37,6 +39,12 @@ class MessagePrinter:
                 print '%s ;' % self.pre
                 return self.i
 
+            if ttag == prev_ttag:
+                count += 1
+            else:
+                count = 0
+                prev_ttag = ttag
+
             tag, kind = ttag >> 3, ttag & 7
             assert 1 <= tag <= 29
             assert 1 <= kind <= 3
@@ -44,19 +52,19 @@ class MessagePrinter:
 
             if kind == 1:
                 x = self.VarInt()
-                print '%s (%02x) %d %s: int %d' % (self.pre, ttag, tag,
+                print '%s %d. (%02x) %d %s: int %d' % (self.pre, count, ttag, tag,
                                                    fullname, x)
             elif kind == 2:
                 n = self.VarInt()
                 x = self.v[self.i:self.i + n]
                 self.i += n
                 s = ''.join([chr(e) for e in x])
-                print '%s (%02x) %d %s: str %s' % (self.pre, ttag, tag,
+                print '%s %d. (%02x) %d %s: str %s' % (self.pre, count, ttag, tag,
                                                    fullname, repr(s))
                 if bcp and fullname.endswith('bytecode'):
                     bcp.Render([ord(e) for e in s], self.pre)
             elif kind == 3:
-                print '%s (%02x) %d %s: message:' % (self.pre, ttag, tag,
+                print '%s %d. (%02x) %d %s: message:' % (self.pre, count, ttag, tag,
                                                      fullname)
                 old = self.pre
                 self.pre += '  '

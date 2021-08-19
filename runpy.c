@@ -6,6 +6,8 @@
 #include "runtime.h"
 
 int main(int argc, char* argv[]) {
+  printf("(nl) %d (cr) %d\n", "\n"[0], "\r"[0]);
+
   defs_init(MarkRoots);
   InitData();
   RuntimeInit();

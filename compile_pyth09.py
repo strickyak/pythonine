@@ -1130,6 +1130,16 @@ class Compiler(object):
             self.ops.append('Ord')
         elif type(t.fn) == TIdent and t.fn.x == 'range' and len(t.xlist) == 1:
             self.ops.append('Range')
+        elif type(t.fn) == TIdent and t.fn.x == 'int' and len(t.xlist) == 1:
+            self.ops.append('Int')
+        elif type(t.fn) == TIdent and t.fn.x == 'str' and len(t.xlist) == 1:
+            self.ops.append('Str')
+        elif type(t.fn) == TIdent and t.fn.x == 'repr' and len(t.xlist) == 1:
+            self.ops.append('Repr')
+        elif type(t.fn) == TIdent and t.fn.x == 'sorted' and len(t.xlist) == 1:
+            self.ops.append('Sorted')
+        elif type(t.fn) == TIdent and t.fn.x == 'ogc' and len(t.xlist) == 0:
+            self.ops.append('GC')
         else:
             self.visitFunCallMoreMore(t)
 
