@@ -39,6 +39,7 @@ word NewDict();
 byte DictWhatNth(word chain, word key);
 word DictAddr(word chain, word key);
 word DictGet(word chain, word key);
+word DictGetOrDefault(word chain, word key, word dflt);
 void DictPut(word chain, word key, word value);
 word NewDictIter(word base);
 word DictIterNext(word it);

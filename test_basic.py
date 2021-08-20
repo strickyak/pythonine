@@ -81,15 +81,10 @@ def List():
 
 def Run():
     LineNum[0] = 1
-    i = 0
     while True:
-        i = i + 1
-        if i > 10000:
-            raise Exception('timeout')
         x, y = Nearest(LineNum[0])
         if x <= 0:
             break
-        # print '[', x, ']',
         LineNum[0] = x + 1
         y.execute()
     print '[STOP]'
@@ -101,7 +96,6 @@ def Nearest(n):
             x, y = num, stmt
     if x == 15000:
         x = 0
-    # print '(Nearest', n, x, y, ')'
     return x, y
 
 
@@ -324,8 +318,7 @@ class PRINT:
         return 'PRINT ' + self.expr.__str__()
 
     def execute(self):
-        print '@@', self.expr.eval(),
-        # if not self.tail: print
+        print self.expr.eval(),
         sys.stdout.flush()
 
 
@@ -338,6 +331,7 @@ class GOTO:
 
     def execute(self):
         LineNum[0] = self.expr.eval()
+        ogc()
 
 
 class IF:
@@ -351,9 +345,18 @@ class IF:
     def execute(self):
         if self.pred.eval():
             LineNum[0] = self.target.eval()
+        ogc()
 
 Vars = {}
 Program = {}
+def initProgram():
+    Program[10]= LET('X', XInt(0))
+    Program[20]= PRINT(XVar('X'), 0)
+    Program[30]= LET('X', XBinary(XVar('X'), '+', XInt(1)))
+    Program[40]= IF(XBinary(XVar('X'),'<',XInt(1001)), XInt(20))
+    Program[50]= GOTO(XInt(10))
+initProgram()
+
 LineNum = [1]
 
 def Command(line):
@@ -365,13 +368,12 @@ def Command(line):
             Insert(n, st)
         else:
             st = p.parseStatementOrNone()
-            # print >>E, 'pSON:', st
             if st:
                 st.execute()
             else:
                 raise Exception('not_a_statement')
     except Exception as ex:
-        print "ERR", ex
+        print " *** ERR", ex
 
 
 def Loop():
@@ -382,7 +384,6 @@ def Loop():
         if not line: break
 
         line = line.rstrip().upper()
-        ## print 'you entered: ', repr(line)
         if line == "Q" or line == "B" or line == "BYE": break
         elif line == "L" or line == "LIST": List()
         elif line == "R" or line == "RUN": Run()

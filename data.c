@@ -94,6 +94,7 @@ word NewDict() { return NewChain(Dict_Size, C_Dict); }
 byte DictWhatNth(word chain, word key) { return ChainMapWhatNth(chain, key); }
 word DictAddr(word chain, word key) { return ChainMapAddr(chain, key); }
 word DictGet(word chain, word key) { return ChainMapGet(chain, key); }
+word DictGetOrDefault(word chain, word key, word dflt) { return ChainMapGetOrDefault(chain, key, dflt); }
 void DictPut(word chain, word key, word value) {
   return ChainMapPut(chain, key, value);
 }
@@ -357,10 +358,11 @@ word ZtrFromInt(int x) {
 
   char* p = buf;
   if (neg) *p++ = '-';
-  if (d4) *p++ = d4 + '0';
-  if (d3) *p++ = d3 + '0';
-  if (d2) *p++ = d2 + '0';
-  if (d1) *p++ = d1 + '0';
+  bool show = 0;
+  if (d4) *p++ = d4 + '0', show=1;
+  if (show||d3) *p++ = d3 + '0', show=1;
+  if (show||d2) *p++ = d2 + '0', show=1;
+  if (show||d1) *p++ = d1 + '0';
   *p++ = d0 + '0';
   *p = 0;
 

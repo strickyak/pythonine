@@ -291,24 +291,21 @@ void ogc() {
 
   word p = ORamBegin + DHDR;
   while (p < ORamUsed) {
-    // printf("%x ", p);
 #if GUARD
     ocheckguards(p);
 #endif
     byte cls = ocls(p);
     byte cap = ocap(p);
     byte mark_bit = 0x80 & ogetb(p - DCAP);
-    // printf("%d:%d:%d ", cap, cls, !!mark_bit);
     // If it's unused (its class is 0 or mark bit is not set):
     // TODO: !cls doesn't mean anything.
-    if (!cls || !mark_bit) {
-      oputb(p - DCLS, 0);  // Clear class.
-#if 0
-      ozero(p, cap);       // Clear payload.
-#endif
+    if (/*!cls ||*/ !mark_bit) {
+      // avoid writing if already OK, to avoid MOOH VGA damage.
+      if (ogetb(p-DCLS)) oputb(p - DCLS, 0);  // Clear class.
       byte buck = osize2bucket(cap);
       // Add p to front of linked list.
-      oputw(p, OBucket[buck]);
+      // avoid writing if already OK, to avoid MOOH VGA damage.
+      if (ogetw(p) != OBucket[buck]) oputw(p, OBucket[buck]);
       OBucket[buck] = p;
     } else {
       oputb(p - DCAP, ogetb(p - DCAP) & 0x7F);  // clear the mark bit.

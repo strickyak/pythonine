@@ -41,6 +41,7 @@ void opanic(byte x) {
 #if 1  // ========================================
 
 #define MEMSIZE 32000u
+// #define MEMSIZE 25000u
 
 #if unix
 #define data 10u

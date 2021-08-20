@@ -47,6 +47,7 @@ void ChainAppend(word chain, word value);
 byte ChainMapWhatNth(word chain, word key);
 word ChainMapAddr(word chain, word key);
 word ChainMapGet(word chain, word key);
+word ChainMapGetOrDefault(word chain, word key, word dflt);
 void ChainMapPut(word chain, word key, word value);
 
 #endif

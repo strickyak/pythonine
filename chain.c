@@ -65,6 +65,12 @@ word ChainAddrOfAppend(word chain) {
     if (!p) {
       p = oalloc(CHAIN_CHUNK_SIZE, C_Array);
       oputw(linkaddr, p);
+      printf("a=%d;", p);
+    }
+    if (ocap(p) != CHAIN_CHUNK_SIZE || ocls(p) != C_Array) {
+      printf(";n=%d;chain=%d;p=%d;\n", (int)n, chain, p);
+      osay(chain);
+      osay(p);
     }
     assert(ocap(p) == CHAIN_CHUNK_SIZE);
     assert(ocls(p) == C_Array);
@@ -197,6 +203,14 @@ word ChainMapGet(word chain, word key) {
   SAY("key", key);
   word addr = ChainMapAddr(chain, key);
   if (!addr) RaiseC("key_not_found");
+  SAY("FOUND; value", ogetw(addr));
+  return ogetw(addr);
+}
+word ChainMapGetOrDefault(word chain, word key, word dflt) {
+  SAY("@@@@@ chain", chain);
+  SAY("key", key);
+  word addr = ChainMapAddr(chain, key);
+  if (!addr) return dflt;
   SAY("FOUND; value", ogetw(addr));
   return ogetw(addr);
 }

@@ -586,8 +586,8 @@ code GC
   out z
 [
   // DumpStats();
-  // ogc();
-  DumpStats();
+  ogc();
+  // DumpStats();
   z = None;
 ]
 

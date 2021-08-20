@@ -126,6 +126,7 @@ ci:
 FLOPPY=drive/boot2coco3
 HARD=drive/disk2
 SDC=drive/my-68SDC.VHD
+SDCARD=sdb
 
 emu: __always__
 	rm -f runpy
@@ -175,7 +176,7 @@ mooh:
 	:
 	dd bs=512 seek=512 count=7650 if=/tmp/_drive of=/tmp/_img
 	sync
-	test -b /dev/sdb && sudo dd bs=1024k if=/tmp/_img of=/dev/sdb
+	test -b /dev/${SDCARD} && sudo dd bs=1024k if=/tmp/_img of=/dev/${SDCARD}
 	sync; sync; sync
 	ls -l runpy
 

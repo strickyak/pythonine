@@ -504,7 +504,7 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
 
   {
     // Find the __init__ method, for creating the ctor.
-    word init_meth = DictGet(meth_dict, DunderInitZtr);
+    word init_meth = DictGetOrDefault(meth_dict, DunderInitZtr, None);
 
     // Default ctors take no args.
     byte num_args_to_ctor = 0;
@@ -681,6 +681,8 @@ void RuntimeInit() {
   }
 
   DumpStats();
+  ogc();
+  DumpStats();
 
 #if 0
   {
@@ -783,7 +785,7 @@ word FindMethForObjOrNull(word obj, byte meth_isn) {
   word dict = Class_methDict(cls);
   word meth_name = ChainGetNth(InternList, meth_isn);
   SayZtr(meth_name);
-  word meth = DictGet(dict, meth_name);
+  word meth = DictGetOrDefault(dict, meth_name, None);
   return meth;
 }
 word SingletonZtr(byte ch) {
