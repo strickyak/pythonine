@@ -46,13 +46,13 @@ void BufAppendByte(word buf, byte b) {
   oputb(buf + n + 1, 0); // NUL termination.
 }
 
-void BufAppendStr(word buf, word ztr) {
-  byte z_len = StrLen(ztr);
+void BufAppendStr(word buf, word str) {
+  byte z_len = StrLen(str);
   word newlen = BufLen(buf) + z_len;
   assert(newlen < 253);
   oputb(buf, (byte)newlen);
 
-  word src = ztr;  // for preincrement
+  word src = str;  // for preincrement
   word dest = buf;     // for preincrement
 
   for (byte i = 0; i < z_len; i++) {
@@ -64,11 +64,11 @@ void BufAppendStr(word buf, word ztr) {
 // BufGetStr makes a smaller copy of a bigger buf.
 word BufGetStr(word buf) {
   byte n = ogetb(buf);
-  word ztr = oalloc(n+2, C_Str); // 2 = 1(len) + 1(NUL)
-  oputb(ztr, n);  // len
-  omemcpy(ztr+1, buf + 1, n);
-  oputb(ztr + 1 + n, 0);  // NUL termination.
-  return ztr;
+  word str = oalloc(n+2, C_Str); // 2 = 1(len) + 1(NUL)
+  oputb(str, n);  // len
+  omemcpy(str+1, buf + 1, n);
+  oputb(str + 1 + n, 0);  // NUL termination.
+  return str;
 }
 
 // Tuple
@@ -142,24 +142,24 @@ word DictIterNext(word it) {
   return key;
 }
 
-byte StrLen(word ztr) {
-  CHECK(ocls(ztr) == C_Str, "not_ztr");
-  return ogetb(ztr);  // ztrlen is in first byte.
+byte StrLen(word str) {
+  CHECK(ocls(str) == C_Str, "not_str");
+  return ogetb(str);  // strlen is in first byte.
 }
-byte StrAt(word ztr, byte i) {
-  CHECK(ocls(ztr) == C_Str, "not_ztr");
-  if (i >= StrLen(ztr)) RaiseC("ztr_ix_oob");
-  return ogetb(ztr+1+i);
+byte StrAt(word str, byte i) {
+  CHECK(ocls(str) == C_Str, "not_str");
+  if (i >= StrLen(str)) RaiseC("str_ix_oob");
+  return ogetb(str+1+i);
 }
 
-byte StrAtOrZero(word ztr, byte i) {
-  CHECK(ocls(ztr) == C_Str, "not_ztr");
-  if (i >= StrLen(ztr)) return 0;
-  return ogetb(ztr+1+i);
+byte StrAtOrZero(word str, byte i) {
+  CHECK(ocls(str) == C_Str, "not_str");
+  if (i >= StrLen(str)) return 0;
+  return ogetb(str+1+i);
 }
-word StrRStrip(word ztr) {
+word StrRStrip(word str) {
   // TODO -- does not seem to be a problem in OS9.
-  return ztr;
+  return str;
 }
 word StrUpper(word a) {
   byte n = StrLen(a);
@@ -213,11 +213,11 @@ Good.1
   return fd;
 }
 
-word PyOpenFile(word name_ztr, word mode_ztr) {
-  byte mode_c = StrAtOrZero(mode_ztr, 0);
+word PyOpenFile(word name_str, word mode_str) {
+  byte mode_c = StrAtOrZero(mode_str, 0);
   byte fd = INF;
 
-  word p = name_ztr + 1;
+  word p = name_str + 1;
   switch (mode_c) {
     case 'r':
       fd = OpenFileForReadFD((const char*)olea(p));
@@ -265,17 +265,17 @@ OWT_ok
   if (err) RaiseC("bad_wr");
 }
 
-void FileWriteLine(word file, word ztr) {
+void FileWriteLine(word file, word str) {
   assert(ocls(file) == C_File);
   byte fd = (byte)File_fd(file);
-  // HACK -- change 10 to 13 *in place*, altering ztr.
-  byte n = StrLen(ztr);
+  // HACK -- change 10 to 13 *in place*, altering str.
+  byte n = StrLen(str);
   for (byte i = 0; i < n; i++) {
-    if (ogetb(ztr+1+i) == 10) {
-      oputb(ztr+1+i, 13);
+    if (ogetb(str+1+i) == 10) {
+      oputb(str+1+i, 13);
     }
   }
-  OsWriteText(fd, (const char*) olea(ztr+1), n);
+  OsWriteText(fd, (const char*) olea(str+1), n);
 }
 word FileReadLineToNewBuf(word file) {
   assert(ocls(file) == C_File);
@@ -463,7 +463,7 @@ word StrCat2(word a, word b) {
   byte na = StrLen(a);
   byte nb = StrLen(b);
   int nn = na + nb;
-  CHECK(nn<253, "ztrcat2_too_big");
+  CHECK(nn<253, "strcat2_too_big");
   byte n = (byte)nn;
   word z = oalloc(n+2, C_Str);
   oputb(z, n);

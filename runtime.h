@@ -11,7 +11,7 @@
 enum { FINISH = 1, CONTINUE = 2 };
 
 extern word StrFromC(const char* s);
-extern byte InternString(word ztr);
+extern byte InternString(word str);
 
 extern void EvalCodes(word code);
 #if !unix

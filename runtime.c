@@ -184,13 +184,13 @@ word StrFromC(const char* s) {
   int s_len = strlen(s);
   assert(s_len <= 253);
   byte len = (byte)s_len;
-  word ztr = oalloc(len+2, C_Str);  // 2 = 1(len) + 1(NUL)
-  oputb(ztr, len); // len
+  word str = oalloc(len+2, C_Str);  // 2 = 1(len) + 1(NUL)
+  oputb(str, len); // len
   for (byte i = 0; i < len; i++) {
-    oputb(ztr + 1 + i, s[i]);
+    oputb(str + 1 + i, s[i]);
   }
-  oputb(ztr + 1 + len, 0); // NUL termination.
-  return ztr;
+  oputb(str + 1 + len, 0); // NUL termination.
+  return str;
 }
 
 bool Truth(word a) {
@@ -346,17 +346,17 @@ void RunBuiltin(byte builtin_num) {
   }  // end switch
 }
 
-byte InternString(word ztr) {
-  assert(ocls(ztr) == C_Str);
+byte InternString(word str) {
+  assert(ocls(str) == C_Str);
   struct ChainIterator it;
   ChainIterStart(InternList, &it);
   byte i = 0;
   while (ChainIterMore(InternList, &it)) {
     word s = ChainIterNext(InternList, &it);
-    if (StrEqual(s, ztr)) return i;
+    if (StrEqual(s, str)) return i;
     ++i;
   }
-  ChainAppend(InternList, ztr);
+  ChainAppend(InternList, str);
   return i;
 }
 
@@ -369,12 +369,12 @@ void SlurpIntern(struct ReadBuf* bp, word bc, word ilist) {
         word bytes = pb_str(bp, C_Bytes, &bytes_len);
         assert(bytes_len < INF);
 
-        word ztr = oalloc(bytes_len+2, C_Str);
-        oputb(ztr, bytes_len); // len
-        omemcpy(ztr+1, bytes, bytes_len);  // guts
-        oputb(ztr+1+bytes_len, 0);  // NUL
+        word str = oalloc(bytes_len+2, C_Str);
+        oputb(str, bytes_len); // len
+        omemcpy(str+1, bytes, bytes_len);  // guts
+        oputb(str+1+bytes_len, 0);  // NUL
 
-        i_num = InternString(ztr);
+        i_num = InternString(str);
         assert(i_num < INF);
         ChainAppend(ilist, Q(i_num));
       } break;
@@ -793,11 +793,11 @@ word FindMethForObjOrNull(word obj, byte meth_isn) {
   return meth;
 }
 word SingletonStr(byte ch) {
-  word ztr = oalloc(3, C_Str);
-  oputb(ztr, 1); // len
-  oputb(ztr+1, ch); // guts
-  oputb(ztr+2, 0); // NUL
-  return ztr;
+  word str = oalloc(3, C_Str);
+  oputb(str, 1); // len
+  oputb(str+1, ch); // guts
+  oputb(str+2, 0); // NUL
+  return str;
 }
 
 void Construct(byte cls_num, byte nargs /*less self */) {

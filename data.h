@@ -15,7 +15,7 @@ void InitData();
 word NewBuf();
 byte BufLen(word buf);
 void BufAppendByte(word buf, byte b);
-void BufAppendStr(word buf, word ztr);
+void BufAppendStr(word buf, word str);
 // BufGetStr makes a smaller copy of a bigger buf.
 word BufGetStr(word buf);
 
@@ -46,19 +46,19 @@ word DictIterNext(word it);
 word DictItems(word a);
 
 // Str
-byte StrLen(word ztr);
-byte StrAt(word ztr, byte i);
-byte StrAtOrZero(word ztr, byte i);
-word StrRStrip(word ztr);
+byte StrLen(word str);
+byte StrAt(word str, byte i);
+byte StrAtOrZero(word str, byte i);
+word StrRStrip(word str);
 word StrUpper(word a);
 int StrCmp(word a, word b);
 word StrFromInt(int x);
 
 // File
 byte OpenFileForReadFD(const char* filename);
-word PyOpenFile(word name_ztr, word mode_ztr);
+word PyOpenFile(word name_str, word mode_str);
 word FileReadLineToNewBuf(word file);
-void FileWriteLine(word file, word ztr);
+void FileWriteLine(word file, word str);
 void OsWriteText(int fd, const char* p, byte n);
 
 // Builtin

@@ -6,6 +6,9 @@
 #include "runtime.h"
 
 int main(int argc, char* argv[]) {
+#if !unix
+  printf("(main) $%x=%d. ", main, main);
+#endif
   printf("(nl) %d (cr) %d\n", "\n"[0], "\r"[0]);
 
   defs_init(MarkRoots);
