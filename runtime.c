@@ -18,7 +18,7 @@ word GlobalDict;  // todo: Modules.
 word InternList;
 word ClassList;
 word MessageList;
-word DunderInitZtr;
+word DunderInitStr;
 byte DunderInitIsn;
 
 byte* codes;     // ????
@@ -56,10 +56,10 @@ void SayChain(word p) {
 void SimplePrint(word p) {
   if (p & 1) {
     printf("%d ", TO_INT(p));
-  } else if (ocls(p) == C_Ztr) {
-    byte n = ZtrLen(p);
+  } else if (ocls(p) == C_Str) {
+    byte n = StrLen(p);
     for (byte i = 0; i < n; i++) {
-      printf("%c", ZtrAt(p, i));
+      printf("%c", StrAt(p, i));
     }
     printf(" ");
   } else {
@@ -67,12 +67,12 @@ void SimplePrint(word p) {
   }
   fflush(stdout);
 }
-void ShowZtr(word p) {
-  assert(ocls(p) == C_Ztr);
+void ShowStr(word p) {
+  assert(ocls(p) == C_Str);
   printf("'");
-  byte n = ZtrLen(p);
+  byte n = StrLen(p);
   for (byte i = 0; i < n; i++) {
-    byte ch = ZtrAt(p, i);
+    byte ch = StrAt(p, i);
     if (' ' <= ch && ch <= '~') {
       printf("%c", ch);
     } else {
@@ -82,9 +82,9 @@ void ShowZtr(word p) {
   printf("'");
   fflush(stdout);
 }
-void SayZtr(word p) {
+void SayStr(word p) {
 #if unix
-  ShowZtr(p);
+  ShowStr(p);
 #endif
 }
 void ShowL(word p, byte level) {
@@ -99,8 +99,8 @@ void ShowL(word p, byte level) {
   } else if (ovalidaddr(p)) {
     const char* clsname = "?";
     byte cls = ocls(p);
-    if (cls == C_Ztr) {
-      ShowZtr(p);
+    if (cls == C_Str) {
+      ShowStr(p);
     } else {
       if (cls < ClassNames_SIZE) {
         clsname = ClassNames[cls];
@@ -135,7 +135,7 @@ void ShowL(word p, byte level) {
         word clsobj = ChainGetNth(ClassList, cls);
         if (clsobj) {
           printf("cls=");
-          ShowZtr(Class_className(clsobj));
+          ShowStr(Class_className(clsobj));
           printf(" cap=%d", ocap(p));
         } else {
           printf(" unknown:cls=%d", cls);
@@ -180,11 +180,11 @@ word NewBuf() {
   return buf;
 }
 #endif
-word ZtrFromC(const char* s) {
+word StrFromC(const char* s) {
   int s_len = strlen(s);
   assert(s_len <= 253);
   byte len = (byte)s_len;
-  word ztr = oalloc(len+2, C_Ztr);  // 2 = 1(len) + 1(NUL)
+  word ztr = oalloc(len+2, C_Str);  // 2 = 1(len) + 1(NUL)
   oputb(ztr, len); // len
   for (byte i = 0; i < len; i++) {
     oputb(ztr + 1 + i, s[i]);
@@ -200,8 +200,8 @@ bool Truth(word a) {
       case C_List:
       case C_Dict:
         return (Chain_len2(a) > 0);
-      case C_Ztr:
-        return (ZtrLen(a) > 0);
+      case C_Str:
+        return (StrLen(a) > 0);
     }
   } else {
     if (a == 0) return false;       // None
@@ -210,8 +210,8 @@ bool Truth(word a) {
   return true;
 }
 
-bool ZtrEqual(word a, word b) {
-  byte len_a = ZtrLen(a);
+bool StrEqual(word a, word b) {
+  byte len_a = StrLen(a);
   assert(0 <= len_a && len_a <= 253);
 
   // i iterates the length, then the contents.
@@ -230,8 +230,8 @@ bool Equal(word a, word b) {
   if ((byte)a & 1) return false;
   if ((byte)b & 1) return false;
   if (ovalidaddr(a) && ovalidaddr(b)) {
-    if (ocls(a) == C_Ztr && ocls(b) == C_Ztr) {
-      return ZtrEqual(a, b);
+    if (ocls(a) == C_Str && ocls(b) == C_Str) {
+      return StrEqual(a, b);
     }
     return false;
   }
@@ -248,20 +248,9 @@ bool Equal(word a, word b) {
 //   oop[] flex
 
 void EvalCodes(word fn) {
-#if 0
-  // fp0, the partial ur-frame.
-  word fp0 = oalloc(32, C_Frame);
-  // Put fn on the stack, to call with no args.
-  byte cap0 = ocap(fp0);
-  oputw(fp0 + cap0 - 2, fn);
-  // XXX do I really need fp0?
-#else
-  word fp0 = 0;
-#endif
-
   fp = oalloc(32, C_Frame);
   byte cap = ocap(fp);
-  Frame_prev_frame_Put(fp, fp0);
+  Frame_prev_frame_Put(fp, None);
   Frame_function_Put(fp, fn);
   Frame_nargs_Put(fp, 0);
   Frame_prev_sp_Put(fp, cap - 2);
@@ -276,18 +265,33 @@ void EvalCodes(word fn) {
   sp = ip = 0;
 }
 
+#if !unix
+asm void Intercept() {
+  asm {
+    ldx #42
+    lbsr _olongjmp
+    rti ; not reached
+  }
+}
+#endif
+
+void SetIntercept() {
+#if !unix
+  asm {
+    ldx _Intercept
+    SWI2
+    FCB $09
+  }
+#endif
+}
+
 ojmp_buf run_loop_jmp_buf;
 void RunLoop() {
   byte message = osetjmp(run_loop_jmp_buf);
-  // if (message) {
-    // printf("osetjmp: %d\n", message);
-    // fflush(stdout);
-  // }
+  SetIntercept();
   if (message == FINISH) return;
 
 RUN_LOOP:
-  // DumpStats();
-  // ogc();
 
   // Redundant with CAREFUL.
   assert(sp >= fp + Frame_Size - 2);
@@ -342,14 +346,14 @@ void RunBuiltin(byte builtin_num) {
   }  // end switch
 }
 
-byte InternZtring(word ztr) {
-  assert(ocls(ztr) == C_Ztr);
+byte InternString(word ztr) {
+  assert(ocls(ztr) == C_Str);
   struct ChainIterator it;
   ChainIterStart(InternList, &it);
   byte i = 0;
   while (ChainIterMore(InternList, &it)) {
     word s = ChainIterNext(InternList, &it);
-    if (ZtrEqual(s, ztr)) return i;
+    if (StrEqual(s, ztr)) return i;
     ++i;
   }
   ChainAppend(InternList, ztr);
@@ -365,12 +369,12 @@ void SlurpIntern(struct ReadBuf* bp, word bc, word ilist) {
         word bytes = pb_str(bp, C_Bytes, &bytes_len);
         assert(bytes_len < INF);
 
-        word ztr = oalloc(bytes_len+2, C_Ztr);
+        word ztr = oalloc(bytes_len+2, C_Str);
         oputb(ztr, bytes_len); // len
         omemcpy(ztr+1, bytes, bytes_len);  // guts
         oputb(ztr+1+bytes_len, 0);  // NUL
 
-        i_num = InternZtring(ztr);
+        i_num = InternString(ztr);
         assert(i_num < INF);
         ChainAppend(ilist, Q(i_num));
       } break;
@@ -504,7 +508,7 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
 
   {
     // Find the __init__ method, for creating the ctor.
-    word init_meth = DictGetOrDefault(meth_dict, DunderInitZtr, None);
+    word init_meth = DictGetOrDefault(meth_dict, DunderInitStr, None);
 
     // Default ctors take no args.
     byte num_args_to_ctor = 0;
@@ -641,8 +645,8 @@ void RuntimeInit() {
   ClassList = NewList();
   MessageList = NewList();
 
-  DunderInitIsn = InternZtring(ZtrFromC("__init__"));
-  DunderInitZtr = ChainGetNth(InternList, DunderInitIsn);
+  DunderInitIsn = InternString(StrFromC("__init__"));
+  DunderInitStr = ChainGetNth(InternList, DunderInitIsn);
 
   // Reserve builtin class slots, with None.
   ChainAppend(ClassList, None);  // unused 0.
@@ -651,8 +655,8 @@ void RuntimeInit() {
     word cls = oalloc(Class_Size, C_Class);
     Class_classNum_Put(cls, i);
     const char* cstr = ClassNames[i];
-    word name = ZtrFromC(cstr);
-    word name_isn = InternZtring(name);
+    word name = StrFromC(cstr);
+    word name_isn = InternString(name);
     name = ChainGetNth(InternList, name_isn);
     Class_className_Put(cls, name);
     word d = NewDict();
@@ -660,8 +664,8 @@ void RuntimeInit() {
     ChainAppend(ClassList, cls);
   }
   for (byte i = 0; i < MessageNames_SIZE; i++) {
-    word name = ZtrFromC(MessageNames[i]);
-    word name_isn = InternZtring(name);
+    word name = StrFromC(MessageNames[i]);
+    word name_isn = InternString(name);
     ChainAppend(MessageList, ChainGetNth(InternList, name_isn));
   }
   {
@@ -689,11 +693,11 @@ void RuntimeInit() {
     printf("################ Read (((\n");
     word file = PyOpenFile(
 #if unix
-        ZtrFromC("/etc/fstab"),
+        StrFromC("/etc/fstab"),
 #else
-        ZtrFromC("STARTUP"),
+        StrFromC("STARTUP"),
 #endif
-        ZtrFromC("r"));
+        StrFromC("r"));
     assert(file);
     osay(file);
     while (1) {
@@ -729,7 +733,7 @@ byte FieldOffset(word obj, byte member_name_isn) {
   if (!cls) return INF;
   word member_name = ChainGetNth(InternList, member_name_isn);
   VERB("Field Offset of ");
-  SayZtr(member_name);
+  SayStr(member_name);
   word p = Class_fieldList(cls);
 
   struct ChainIterator iter;
@@ -781,15 +785,15 @@ void ArgPut(byte i, word a) {
 
 word FindMethForObjOrNull(word obj, byte meth_isn) {
   word cls = ChainGetNth(ClassList, ocls(obj));
-  SayZtr(Class_className(cls));
+  SayStr(Class_className(cls));
   word dict = Class_methDict(cls);
   word meth_name = ChainGetNth(InternList, meth_isn);
-  SayZtr(meth_name);
+  SayStr(meth_name);
   word meth = DictGetOrDefault(dict, meth_name, None);
   return meth;
 }
-word SingletonZtr(byte ch) {
-  word ztr = oalloc(3, C_Ztr);
+word SingletonStr(byte ch) {
+  word ztr = oalloc(3, C_Str);
   oputb(ztr, 1); // len
   oputb(ztr+1, ch); // guts
   oputb(ztr+2, 0); // NUL
@@ -924,7 +928,7 @@ void DoEndTry(byte end_catch_loc) {
 }
 void RaiseC(const char* msg) {
   // printf("\nRaiseC: %s\n", msg);
-  Raise(ZtrFromC(msg));
+  Raise(StrFromC(msg));
 }
 void Raise(word ex) {
   if (!fp) {
@@ -969,8 +973,8 @@ void Implode(byte len, word chain) {
 byte Len(word o) {
   byte n;
   switch (ocls(o)) {
-    case C_Ztr:
-      n = ZtrLen(o);
+    case C_Str:
+      n = StrLen(o);
       break;
     case C_Tuple:
     case C_List:
@@ -1002,11 +1006,11 @@ void Explode(byte len) {
 word GetItem(word coll, word key) {
   word value;
   switch (ocls(coll)) {
-    case C_Ztr: {
+    case C_Str: {
       int i = TO_INT(key);
       assert(i>=0);
       assert(i<253);
-      value = SingletonZtr(ZtrAt(coll, i));
+      value = SingletonStr(StrAt(coll, i));
     } break;
     case C_Tuple:
     case C_List: {

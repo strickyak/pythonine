@@ -15,9 +15,9 @@ void InitData();
 word NewBuf();
 byte BufLen(word buf);
 void BufAppendByte(word buf, byte b);
-void BufAppendZtr(word buf, word ztr);
-// BufGetZtr makes a smaller copy of a bigger buf.
-word BufGetZtr(word buf);
+void BufAppendStr(word buf, word ztr);
+// BufGetStr makes a smaller copy of a bigger buf.
+word BufGetStr(word buf);
 
 // Tuple
 word NewTuple();
@@ -46,13 +46,13 @@ word DictIterNext(word it);
 word DictItems(word a);
 
 // Str
-byte ZtrLen(word ztr);
-byte ZtrAt(word ztr, byte i);
-byte ZtrAtOrZero(word ztr, byte i);
-word ZtrRStrip(word ztr);
-word ZtrUpper(word a);
-int ZtrCmp(word a, word b);
-word ZtrFromInt(int x);
+byte StrLen(word ztr);
+byte StrAt(word ztr, byte i);
+byte StrAtOrZero(word ztr, byte i);
+word StrRStrip(word ztr);
+word StrUpper(word a);
+int StrCmp(word a, word b);
+word StrFromInt(int x);
 
 // File
 byte OpenFileForReadFD(const char* filename);
@@ -67,6 +67,7 @@ word BuiltinStr(word a);
 // TODO // word BuiltinRepr(word a);
 word BuiltinSorted(word a);
 bool LessThan(word a, word b);
-word ZtrCat2(word a, word b);
+word StrCat2(word a, word b);
+byte ForkShellAndWait();
 
 #endif

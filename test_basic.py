@@ -387,6 +387,7 @@ def Loop():
         if line == "Q" or line == "B" or line == "BYE": break
         elif line == "L" or line == "LIST": List()
         elif line == "R" or line == "RUN": Run()
+        elif line == "SHELL": shell()
         else: Command(line)
 
 Loop()

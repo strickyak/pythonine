@@ -1140,6 +1140,8 @@ class Compiler(object):
             self.ops.append('Sorted')
         elif type(t.fn) == TIdent and t.fn.x == 'ogc' and len(t.xlist) == 0:
             self.ops.append('GC')
+        elif type(t.fn) == TIdent and t.fn.x == 'shell' and len(t.xlist) == 0:
+            self.ops.append('ForkShellAndWait')
         else:
             self.visitFunCallMoreMore(t)
 

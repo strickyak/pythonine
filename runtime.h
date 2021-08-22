@@ -10,12 +10,16 @@
 // For olongjmp() to run_loop_jmp_buf:
 enum { FINISH = 1, CONTINUE = 2 };
 
-extern word ZtrFromC(const char* s);
-extern byte InternZtring(word ztr);
+extern word StrFromC(const char* s);
+extern byte InternString(word ztr);
 
 extern void EvalCodes(word code);
+#if !unix
+extern asm void Intercept();
+#endif
+extern void SetIntercept();
 extern void RunLoop();
-extern bool ZtrEqual(word a, word b);
+extern bool StrEqual(word a, word b);
 bool Truth(word a);
 
 void RuntimeInit();
@@ -66,7 +70,7 @@ extern ojmp_buf run_loop_jmp_buf;
 // We really want all zero bits to mean None.
 #define None ((word)0)
 
-void SayZtr(word p);
+void SayStr(word p);
 void SayObj(word p, byte level);
 
 word MemberGet(word obj, byte isn);
@@ -74,7 +78,7 @@ void MemberPut(word obj, byte isn, word value);
 word ArgGet(byte i);
 void ArgPut(byte i, word a);
 word FindMethForObjOrNull(word obj, byte meth_isn);
-word SingletonZtr(byte ch);
+word SingletonStr(byte ch);
 void RunBuiltin(byte builtin_num);
 void Directory();
 

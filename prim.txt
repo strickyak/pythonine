@@ -6,7 +6,7 @@ class SmallInt # 1: Inside OOP with the low bit set.
   # no contents
 class Bytes # 2: arbitrary bytes (of varying length).
   byte[] flex
-class Ztr # 3: string and/or byte buffer
+class Str # 3: string and/or byte buffer
   byte[] flex  # first byte is len.
 class Bytecodes # 4: Python bytecodes (of varying length).
   byte[] flex
@@ -55,7 +55,7 @@ class DictIter
   oop p
   small i
   small len4
-class ZtrIter
+class StrIter
   oop base
   oop p
   small i
@@ -125,8 +125,8 @@ code  Plus
       z = ( Q(aa + bb) );
     } else if ((a&1) || (b&1)) {
       RaiseC("bad_plus_mixed");
-    } else if (ocls(a)==C_Ztr && ocls(b)==C_Ztr) {
-      z = ZtrCat2(a, b);
+    } else if (ocls(a)==C_Str && ocls(b)==C_Str) {
+      z = StrCat2(a, b);
     } else {
       RaiseC("bad_plus");
     }
@@ -445,9 +445,9 @@ code Ord
   out z
   [
     word s = x;
-    CHECK(ocls(s) == C_Ztr, "ord");
-    CHECK(ZtrLen(x), "ord");
-    byte ch = ZtrAt(x, 0);
+    CHECK(ocls(s) == C_Str, "ord");
+    CHECK(StrLen(x), "ord");
+    byte ch = StrAt(x, 0);
     z = FROM_INT(ch);
   ]
 code Chr
@@ -457,7 +457,7 @@ code Chr
     word n = TO_INT(x);
     CHECK(n>=0, "chr");
     CHECK(n<=255, "chr");
-    z = SingletonZtr((byte)n);
+    z = SingletonStr((byte)n);
   ]
 code Try
   arg catch_loc
@@ -549,7 +549,7 @@ code Percent
   in b a
   out z
 [
-  z = ZtrFromC("todo_formatted");
+  z = StrFromC("todo_formatted");
 ]
 code Negate
   in a
@@ -590,28 +590,34 @@ code GC
   // DumpStats();
   z = None;
 ]
+code ForkShellAndWait
+  out z
+[
+  byte x = ForkShellAndWait();
+  z = FROM_INT(x);
+]
 
 # # # # # #
 
-prim Ztr __str__
+prim Str __str__
   in self
   out z
 [
   z = self;
 ]
 
-prim Ztr rstrip
+prim Str rstrip
   in self
   out z
 [
-  z = ZtrRStrip(self);
+  z = StrRStrip(self);
 ]
 
-prim Ztr upper
+prim Str upper
   in self
   out z
 [
-  z = ZtrUpper(self);
+  z = StrUpper(self);
 ]
 
 prim List __iter__

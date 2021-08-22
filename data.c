@@ -33,7 +33,7 @@ void InitData() {
 // The first is the amount used.
 // The rest are the contents.
 
-word NewBuf() { return oalloc(254, C_Ztr); }
+word NewBuf() { return oalloc(254, C_Str); }
 
 byte BufLen(word buf) { return ogetb(buf); }
 
@@ -46,8 +46,8 @@ void BufAppendByte(word buf, byte b) {
   oputb(buf + n + 1, 0); // NUL termination.
 }
 
-void BufAppendZtr(word buf, word ztr) {
-  byte z_len = ZtrLen(ztr);
+void BufAppendStr(word buf, word ztr) {
+  byte z_len = StrLen(ztr);
   word newlen = BufLen(buf) + z_len;
   assert(newlen < 253);
   oputb(buf, (byte)newlen);
@@ -61,10 +61,10 @@ void BufAppendZtr(word buf, word ztr) {
   oputb(dest, 0);  // NUL termination.
 }
 
-// BufGetZtr makes a smaller copy of a bigger buf.
-word BufGetZtr(word buf) {
+// BufGetStr makes a smaller copy of a bigger buf.
+word BufGetStr(word buf) {
   byte n = ogetb(buf);
-  word ztr = oalloc(n+2, C_Ztr); // 2 = 1(len) + 1(NUL)
+  word ztr = oalloc(n+2, C_Str); // 2 = 1(len) + 1(NUL)
   oputb(ztr, n);  // len
   omemcpy(ztr+1, buf + 1, n);
   oputb(ztr + 1 + n, 0);  // NUL termination.
@@ -142,28 +142,28 @@ word DictIterNext(word it) {
   return key;
 }
 
-byte ZtrLen(word ztr) {
-  CHECK(ocls(ztr) == C_Ztr, "not_ztr");
+byte StrLen(word ztr) {
+  CHECK(ocls(ztr) == C_Str, "not_ztr");
   return ogetb(ztr);  // ztrlen is in first byte.
 }
-byte ZtrAt(word ztr, byte i) {
-  CHECK(ocls(ztr) == C_Ztr, "not_ztr");
-  if (i >= ZtrLen(ztr)) RaiseC("ztr_ix_oob");
+byte StrAt(word ztr, byte i) {
+  CHECK(ocls(ztr) == C_Str, "not_ztr");
+  if (i >= StrLen(ztr)) RaiseC("ztr_ix_oob");
   return ogetb(ztr+1+i);
 }
 
-byte ZtrAtOrZero(word ztr, byte i) {
-  CHECK(ocls(ztr) == C_Ztr, "not_ztr");
-  if (i >= ZtrLen(ztr)) return 0;
+byte StrAtOrZero(word ztr, byte i) {
+  CHECK(ocls(ztr) == C_Str, "not_ztr");
+  if (i >= StrLen(ztr)) return 0;
   return ogetb(ztr+1+i);
 }
-word ZtrRStrip(word ztr) {
+word StrRStrip(word ztr) {
   // TODO -- does not seem to be a problem in OS9.
   return ztr;
 }
-word ZtrUpper(word a) {
-  byte n = ZtrLen(a);
-  word z = oalloc(n + 2, C_Ztr);
+word StrUpper(word a) {
+  byte n = StrLen(a);
+  word z = oalloc(n + 2, C_Str);
   oputb(z, n);
   oputb(z+1+n, 0);
   for (byte i = 0; i < n; i++) {
@@ -196,6 +196,7 @@ byte OpenFileForReadFD(const char* filename) {
   ++NextFileHandle;
 #else
   asm {
+    pshs y,u
     lda #1 ; read mode
     ldx filename
     SWI2
@@ -206,13 +207,14 @@ byte OpenFileForReadFD(const char* filename) {
 
 Good.1
     sta fd
+    puls y,u
   }
 #endif
   return fd;
 }
 
 word PyOpenFile(word name_ztr, word mode_ztr) {
-  byte mode_c = ZtrAtOrZero(mode_ztr, 0);
+  byte mode_c = StrAtOrZero(mode_ztr, 0);
   byte fd = INF;
 
   word p = name_ztr + 1;
@@ -267,7 +269,7 @@ void FileWriteLine(word file, word ztr) {
   assert(ocls(file) == C_File);
   byte fd = (byte)File_fd(file);
   // HACK -- change 10 to 13 *in place*, altering ztr.
-  byte n = ZtrLen(ztr);
+  byte n = StrLen(ztr);
   for (byte i = 0; i < n; i++) {
     if (ogetb(ztr+1+i) == 10) {
       oputb(ztr+1+i, 13);
@@ -328,7 +330,7 @@ word BuiltinInt(word a) {
     z = a;
   } else {
     switch(ocls(a)) {
-    case C_Ztr:
+    case C_Str:
       x = atoi((const char*)olea(a+1));
       z = FROM_INT(x);
       break;
@@ -339,7 +341,7 @@ word BuiltinInt(word a) {
   return z;
 }
 
-word ZtrFromInt(int x) {
+word StrFromInt(int x) {
   char buf[8];
   bool neg=0;
   if (x<0) {
@@ -366,7 +368,7 @@ word ZtrFromInt(int x) {
   *p++ = d0 + '0';
   *p = 0;
 
-  return ZtrFromC(buf);
+  return StrFromC(buf);
 }
 
 word BuiltinStr(word a) {
@@ -376,16 +378,16 @@ word BuiltinStr(word a) {
   if (a&1) {
     // char buf[10];
     // sprintf(buf, "%d", TO_INT(a));
-    // z = ZtrFromC(buf);
-    z = ZtrFromInt(TO_INT(a));
+    // z = StrFromC(buf);
+    z = StrFromInt(TO_INT(a));
   } else {
     switch(ocls(a)) {
-    case C_Ztr:
+    case C_Str:
       z = a;
       break;
     default:
       RaiseC("broken_b_str");
-      isn = InternZtring(ZtrFromC("__str__"));
+      isn = InternString(StrFromC("__str__"));
       PleaseCallMeth0(isn, a);
       z = None;  // special return.
     }
@@ -431,14 +433,14 @@ word BuiltinSorted(word a) {
   return z;
 }
 
-int ZtrCmp(word a, word b) {
-  byte na = ZtrLen(a);
-  byte nb = ZtrLen(b);
+int StrCmp(word a, word b) {
+  byte na = StrLen(a);
+  byte nb = StrLen(b);
   byte n = (na < nb) ? na : nb;
 
   for (byte i = 0; i<n; i++) {
-    byte ca = ZtrAt(a, i);
-    byte cb = ZtrAt(b, i);
+    byte ca = StrAt(a, i);
+    byte cb = StrAt(b, i);
     if (ca < cb) return -1;
     if (ca > cb) return 1;
   }
@@ -451,19 +453,19 @@ bool LessThan(word a, word b) {
   if ((a&1) && (b&1)) {
     return TO_INT(a) < TO_INT(b);
   }
-  if (ocls(a)==C_Ztr && ocls(b)==C_Ztr) {
-    return ZtrCmp(a,b) < 0;
+  if (ocls(a)==C_Str && ocls(b)==C_Str) {
+    return StrCmp(a,b) < 0;
   }
   return a < b;
 }
 
-word ZtrCat2(word a, word b) {
-  byte na = ZtrLen(a);
-  byte nb = ZtrLen(b);
+word StrCat2(word a, word b) {
+  byte na = StrLen(a);
+  byte nb = StrLen(b);
   int nn = na + nb;
   CHECK(nn<253, "ztrcat2_too_big");
   byte n = (byte)nn;
-  word z = oalloc(n+2, C_Ztr);
+  word z = oalloc(n+2, C_Str);
   oputb(z, n);
   oputb(z+1+n, 0);
   for (int i=0; i<na; i++) {
@@ -489,4 +491,50 @@ word DictItems(word a) {
     ListAppend(z, tup);
   }
   return z;
+}
+
+byte ForkShellAndWait() {
+#if unix
+  byte err = (byte) system("/bin/sh");
+#else
+  const char* name = "SHELL";
+  byte pid;
+  byte err=0;
+  asm {
+    daa
+    daa
+    daa
+    daa
+    pshs y,u 
+
+    clra       ; any lang
+    clrb       ; D=0
+    ldx name  ; SHELL name
+    tfr d,y       ; no params
+    tfr d,u       ; no param memory
+    ldb #32    ; data pages
+
+    SWI2
+    FCB $03 ; F$Fork
+    puls y,u
+    BCS Bad_fs
+
+    sta pid
+    pshs y,u 
+
+Again_fs
+    SWI2
+    FCB $04 ; F$Wait
+    puls y,u
+    BCS Bad_fs
+
+    cmpa pid  ; did the right child die?
+    BNE Again_fs
+* Fall thru, storing B to err.
+
+Bad_fs
+    STB err
+  }
+#endif
+  return err;
 }
