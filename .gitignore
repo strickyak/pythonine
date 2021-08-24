@@ -5,6 +5,7 @@ a.out
 *.pyc
 *.o
 *.s
+*.s-orig
 *.list
 *.link
 *.map

@@ -116,7 +116,7 @@ format:
 	yapf -i *.py
 
 clean:
-	rm -f a.out *.bin *.pyc *.bc _* *.s *.o.list *.map *.link ,*
+	rm -f a.out *.bin *.pyc *.bc _* *.s *.s-orig *.o.list *.map *.link ,*
 
 ci:
 	mkdir -p RCS
