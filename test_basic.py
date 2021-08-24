@@ -331,7 +331,7 @@ class GOTO:
 
     def execute(self):
         LineNum[0] = self.expr.eval()
-        ogc()
+        # ogc()
 
 
 class IF:
@@ -345,7 +345,7 @@ class IF:
     def execute(self):
         if self.pred.eval():
             LineNum[0] = self.target.eval()
-        ogc()
+        # ogc()
 
 Vars = {}
 Program = {}
@@ -378,7 +378,7 @@ def Command(line):
 
 def Loop():
     while True:
-        ogc()
+        # ogc()
         print "  -->",
         line = sys.stdin.readline()
         if not line: break
