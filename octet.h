@@ -166,6 +166,8 @@ extern byte ORam[1 << 16];
 
 #else  // unix
 
+asm fatal_coredump();
+
 void ofatal(const char* f, word x, word y);
 #define assert0(C, F) \
   if (!(C)) ofatal((F), 0, 0)

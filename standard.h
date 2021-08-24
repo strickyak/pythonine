@@ -18,7 +18,14 @@
 #define CAREFUL 0
 #define GUARD 0
 
-#include <assert.h>
+
+#define assert(cond) do { if (!(cond)) { \
+                        printf("@@@ ASSERT FAILED (coredump): %s:%u: %s\n", __FILE__, __LINE__, #cond); \
+                        fatal_coredump(); \
+                        for (;;); } } while (0)
+
+
+// #include <assert.h>
 #include <cmoc.h>
 
 #define fflush(F) /*nothing*/

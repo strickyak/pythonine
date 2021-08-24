@@ -455,6 +455,16 @@ void ofatal(const char* f, word x, word y) {
   printf("\n\n*** ofailure *** ");
   printf(f, x, y);
   printf("\n");
+  fatal_coredump();
 #endif
   exit(13);
 }
+
+#if !unix
+asm fatal_coredump() {
+  asm {
+    SWI
+    FCB $FF
+  }
+}
+#endif

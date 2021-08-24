@@ -265,6 +265,7 @@ void EvalCodes(word fn) {
   sp = ip = 0;
 }
 
+#if 0 // this is wrong -- it has to set some global and then RTI.
 #if !unix
 asm void Intercept() {
   asm {
@@ -284,11 +285,11 @@ void SetIntercept() {
   }
 #endif
 }
+#endif // 0
 
 ojmp_buf run_loop_jmp_buf;
 void RunLoop() {
   byte message = osetjmp(run_loop_jmp_buf);
-  SetIntercept();
   if (message == FINISH) return;
 
 RUN_LOOP:
