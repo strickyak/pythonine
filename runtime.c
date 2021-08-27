@@ -12,6 +12,7 @@
 
 // GC Roots:
 word RootForMain;  // For main() to use.
+word LoopAllocRoot;  // For DictItems, etc.
 
 word Builtins;
 word GlobalDict;  // todo: Modules.
@@ -249,7 +250,7 @@ bool Equal(word a, word b) {
 //   oop[] flex
 
 void EvalCodes(word fn) {
-  fp = oalloc(32, C_Frame);
+  fp = oalloc(FRAME_SIZE, C_Frame);
   byte cap = ocap(fp);
   Frame_prev_frame_Put(fp, None);
   Frame_function_Put(fp, fn);
@@ -584,6 +585,7 @@ void MarkRoots() {
   omark(ClassList);
   omark(MessageList);
   omark(RootForMain);
+  omark(LoopAllocRoot);
   omark(function);
   omark(fp);
   // data.c:
@@ -814,7 +816,8 @@ void Construct(byte cls_num, byte nargs /*less self */) {
   }
 
   // Create the object and push self to our stack.
-  byte size = 32;
+  // TODO: correct object size.
+  byte size = OBJECT_SIZE;
   word obj = oalloc(size, cls_num);
   sp -= 2;
   oputw(sp, obj);
@@ -849,7 +852,7 @@ void Call(byte nargs, word fn) {
   CHECK(ogetb(fn + BC_NUM_ARGS) == nargs, "bad_nargs");
 
   word old_fp = fp;
-  fp = oalloc(32, C_Frame);
+  fp = oalloc(FRAME_SIZE, C_Frame);
 
   Frame_prev_frame_Put(fp, old_fp);
   Frame_function_Put(fp, fn);
@@ -975,6 +978,8 @@ void Implode(byte len, word chain) {
 byte Len(word o) {
   byte n;
   switch (ocls(o)) {
+    case C_Pair:
+      return 2;
     case C_Str:
       n = StrLen(o);
       break;
@@ -1007,25 +1012,28 @@ void Explode(byte len) {
 }
 word GetItem(word coll, word key) {
   word value;
-  switch (ocls(coll)) {
-    case C_Str: {
+  byte cls = ocls(coll);
+  if (cls == C_Dict) {
+      value = ChainMapGet(coll, key);
+  } else {
       int i = TO_INT(key);
       assert(i>=0);
       assert(i<253);
-      value = SingletonStr(StrAt(coll, i));
-    } break;
-    case C_Tuple:
-    case C_List: {
-      int i = TO_INT(key);
-      assert(i>=0);
-      assert(i<254);
-      value = ChainGetNth(coll, i);
-    } break;
-    case C_Dict:
-      value = ChainMapGet(coll, key);
-      break;
-    default:
-      opanic(101);
+      switch (cls) {
+        case C_Str: {
+          value = SingletonStr(StrAt(coll, i));
+        } break;
+        case C_Pair:
+          assert(i<2);
+          value = ogetw(coll+i+i);
+          break;
+        case C_Tuple:
+        case C_List: {
+          value = ChainGetNth(coll, i);
+        } break;
+        default:
+          opanic(101);
+      }
   }
   return value;
 }

@@ -65,9 +65,9 @@ class File
 class FileIter
   small fd
 
-# class Pair
-#   oop first
-#   oop second
+class Pair
+  oop first
+  oop second
 
 # class Train
 #   small len2

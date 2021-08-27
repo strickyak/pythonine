@@ -30,8 +30,8 @@ void Break(const char* why);
 // GC Roots:
 extern word ForeverRoot;
 extern word RootForMain;  // For main() to use.
+extern word LoopAllocRoot;  // For DictItems, etc.
 
-#define STACK_SIZE 200
 extern word Builtins;
 extern word GlobalDict;  // todo: Modules.
 extern word InternList;
@@ -64,6 +64,9 @@ extern ojmp_buf run_loop_jmp_buf;
 
 #define MAGIC_FRAME_VALUE 0x1555
 #define MAGIC_FRAME_OOP FROM_INT(MAGIC_FRAME_VALUE)
+
+#define FRAME_SIZE 48  /* was 32 */
+#define OBJECT_SIZE 32 /* TODO, use correct size */
 
 #define Q(N) FROM_INT(N)
 #define N(Q) TO_INT(Q)

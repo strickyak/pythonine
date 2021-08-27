@@ -28,6 +28,14 @@ void InitData() {
 #endif
 }
 
+// Pair
+word NewPair(word first, word second) {
+  word p = oalloc(4, C_Pair);
+  Pair_first_Put(p, first);
+  Pair_second_Put(p, second);
+  return p;
+}
+
 // Buf
 // Buf uses a single object of 254 Bytes.
 // The first is the amount used.
@@ -484,17 +492,27 @@ word StrCat2(word a, word b) {
 
 word DictItems(word a) {
   word z = NewList();
+  LoopAllocRoot = z; // Protect tuple allocs inside this list.
+  // printf("\n==DictItems== a=%d z=%d\n", a, z);
   struct ChainIterator it;
 
   ChainIterStart(a, &it);
   while (ChainIterMore(a, &it)) {
     word key = ChainIterNext(a, &it);
     word val = ChainIterNext(a, &it);
+#if 1
+    // using Pair.
+    ListAppend(z, NewPair(key, val));
+#else
+    // using Tuple (huge, with no initial cap).
     word tup = NewTuple();
     TupleAppend(tup, key);
     TupleAppend(tup, val);
+    // printf("\n==DictItems== a=%d z=%d k=%d v=%d tup=%d\n", a, z, key, val, tup);
     ListAppend(z, tup);
+#endif
   }
+  LoopAllocRoot = None;
   return z;
 }
 

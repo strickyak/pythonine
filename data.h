@@ -10,6 +10,9 @@ extern word Stderr;
 
 void InitData();
 
+// Pair
+word NewPair(word first, word second);
+
 // Buf
 
 word NewBuf();
