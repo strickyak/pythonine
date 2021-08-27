@@ -65,6 +65,20 @@ class File
 class FileIter
   small fd
 
+# class Pair
+#   oop first
+#   oop second
+
+# class Train
+#   small len2
+#   oop next
+#   oop flex[]
+# class TrainIter
+#   oop current
+#   small currentI
+#   small moreAfterCurent
+
+
 # Opcodes.
 code  Abort  # Abort comes first, so 00 means abort.
   [
@@ -411,6 +425,7 @@ code NewTuple
   arg llen
   [
     Implode(llen, NewTuple());
+    // Implode(llen, NewTuple(llen));
   ]
 code NewList
   arg llen
@@ -595,6 +610,12 @@ code ForkShellAndWait
 [
   byte x = ForkShellAndWait();
   z = FROM_INT(x);
+]
+code GetAndClearSignal
+  out z
+[
+  z = FROM_INT(signalled);
+  signalled = 0;
 ]
 
 # # # # # #

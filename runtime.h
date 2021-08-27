@@ -41,6 +41,7 @@ extern word function;
 extern word ip;  // Stores in Frame as ip - function.
 extern word fp;
 extern word sp;  // Stores in Frame as sp - fp.
+extern bool signalled;
 extern ojmp_buf run_loop_jmp_buf;
 
 // Header on bytecodes object:

@@ -28,6 +28,7 @@ word function;
 word ip;  // Stores in Frame as ip - function.
 word fp;
 word sp;  // Stores in Frame as sp - fp.
+byte signalled;
 
 #if unix
 #define VERB \
@@ -265,13 +266,12 @@ void EvalCodes(word fn) {
   sp = ip = 0;
 }
 
-#if 0 // this is wrong -- it has to set some global and then RTI.
 #if !unix
 asm void Intercept() {
   asm {
-    ldx #42
-    lbsr _olongjmp
-    rti ; not reached
+    lda #1
+    sta signalled
+    rti
   }
 }
 #endif
@@ -279,13 +279,14 @@ asm void Intercept() {
 void SetIntercept() {
 #if !unix
   asm {
+    pshs y,u
     ldx _Intercept
     SWI2
-    FCB $09
+    FCB 9
+    puls y,u
   }
 #endif
 }
-#endif // 0
 
 ojmp_buf run_loop_jmp_buf;
 void RunLoop() {

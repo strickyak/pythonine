@@ -73,7 +73,12 @@ word BufGetStr(word buf) {
 
 // Tuple
 
-word NewTuple() { return NewChain(Tuple_Size, C_Tuple); }
+//# word NewTuple(byte cap2) {
+//#   return NewChainWithCap(Tuple_Size, C_Tuple, cap2);
+//# }
+word NewTuple() {
+  return NewChain(Tuple_Size, C_Tuple);
+}
 word TupleGetNth(word tuple, byte nth) { return ChainGetNth(tuple, nth); }
 void TuplePutNth(word tuple, byte nth, word value) {
   ChainPutNth(tuple, nth, value);
