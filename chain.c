@@ -56,6 +56,7 @@ word ChainAddrOfNth(word chain, byte nth) {
 
 word ChainAddrOfAppend(word chain) {
   byte n = (byte)Chain_len2(chain);
+  // printf("\n==ChainAddrOfAppend== chain=%d len2=%d\n", chain, n);
   assert(n < 254);  // max is 254, after +1.
   Chain_len2_Put(chain, n + 1);
 
@@ -65,10 +66,10 @@ word ChainAddrOfAppend(word chain) {
     if (!p) {
       p = oalloc(CHAIN_CHUNK_SIZE, C_Array);
       oputw(linkaddr, p);
-      printf("a=%d;", p);
+      // printf("a=%d;", p);
     }
     if (ocap(p) != CHAIN_CHUNK_SIZE || ocls(p) != C_Array) {
-      printf(";n=%d;chain=%d;p=%d;\n", (int)n, chain, p);
+      // printf(";n=%d;chain=%d;p=%d;\n", (int)n, chain, p);
       osay(chain);
       osay(p);
     }
