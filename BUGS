@@ -1,8 +1,8 @@
-Sorting backwards.
+Sorting backwards?  (the listing in test_basic.py)
 
-Integer relops broken.
+Integer relops broken?  (doesn't seem so)
 
-global quit working.
+`global` quit working.
 
 /etc/fstab disabled, because of "disk full" errors from unix os9 command.
 
@@ -30,3 +30,8 @@ BASIC:
 * GOSUB .. RETURN
 * Strings
 * PEEK(Hi,Lo) & POKE HI, LO, BYTE
+
+FIXED:
+* `FRAME_SIZE=48` is better than 32, but not correct.
+* `Pair` is tiny compared to Tuple, which needs a smart len & cap.
+* `LoopAllocRoot` to protect new lists of new objects.
