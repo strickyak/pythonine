@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
 
   EvalCodes(main_bytecodes);
   printf("\n[[[ FINISHED ]]]\n");
-  DumpStats();
+  odumpsummary();
   ogc();
-  DumpStats();
+  odumpsummary();
   return 0;
 }

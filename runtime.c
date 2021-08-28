@@ -593,12 +593,6 @@ void MarkRoots() {
   omark(Stdout);
   omark(Stderr);
 }
-void DumpStats() {
-  word count_used = 0;
-  word bytes_used = 0;
-  odump(&count_used, &bytes_used, NULL, NULL);
-  printf("STATS: count=%d bytes=%d\n", count_used, bytes_used);
-}
 void Directory() {
 #if unix
   FOR_EACH(i, item, Builtins) DO printf(";; Builtin[%d] :: ", i);
@@ -643,6 +637,9 @@ void Directory() {
 #endif
 }
 void RuntimeInit() {
+  // First carve some buffers in the GC arena.
+  for (byte i=0; i<4; i++) oalloc(254, C_Str);
+
   Builtins = NewList();
   GlobalDict = NewDict();  // todo: Modules.
   InternList = NewList();
@@ -654,7 +651,7 @@ void RuntimeInit() {
 
   // Reserve builtin class slots, with None.
   ChainAppend(ClassList, None);  // unused 0.
-  DumpStats();
+  odumpsummary();
   for (byte i = 1; i < ClassNames_SIZE; i++) {
     word cls = oalloc(Class_Size, C_Class);
     Class_classNum_Put(cls, i);
@@ -688,9 +685,9 @@ void RuntimeInit() {
     }
   }
 
-  DumpStats();
+  odumpsummary();
   ogc();
-  DumpStats();
+  odumpsummary();
 
 #if 0
   {
@@ -817,7 +814,12 @@ void Construct(byte cls_num, byte nargs /*less self */) {
 
   // Create the object and push self to our stack.
   // TODO: correct object size.
-  byte size = OBJECT_SIZE;
+  word cls = ListGetNth(ClassList, cls_num);
+  assert(cls);
+  word fields = Class_fieldList(cls);
+  assert(fields);
+  word flen = List_len2(fields);
+  byte size = flen+flen;  /// OBJECT_SIZE;
   word obj = oalloc(size, cls_num);
   sp -= 2;
   oputw(sp, obj);

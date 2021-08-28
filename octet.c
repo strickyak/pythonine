@@ -4,7 +4,7 @@
   if (false) printf
 
 #define V_DUMP \
-  if (false) printf
+  if (true) printf
 
 // Emulated memory for testing on a large host.
 // On a 64K platform, prefer raw memory somewhere.
@@ -82,6 +82,12 @@ byte osize2bucket(byte size) {
   return 0;            // Not reached.
 }
 
+void odumpsummary() {
+  word count_used = 0;
+  word bytes_used = 0;
+  odump(&count_used, &bytes_used, NULL, NULL);
+  printf("STATS: count=%d bytes=%d\n", count_used, bytes_used);
+}
 void oinit(word begin, word end, omarker fn) {
   begin = 0xFFFE & (begin + 2);  // 2-align up.
   end = 0xFFFE & (end - 1);      // 2-align down.
@@ -219,7 +225,11 @@ word oalloc(byte len, byte cls) {
     p = oalloc_try(len, cls);
   }
   V_OCTET("oalloc %d %d -> %d\n", len, cls, p);
-  if (!p) opanic(OE_OUT_OF_MEM);
+  if (!p) {
+    printf("oom: %d %d\n", len, cls);
+    odumpsummary();
+    opanic(OE_OUT_OF_MEM);
+  }
 #if CAREFUL
   ocheckguards(p);
 #endif
@@ -376,13 +386,13 @@ void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
   word bytes_skip = 0;
   V_DUMP("\n{{{{{ ODUMP %04x:\n", ORamBegin);
   word p = ORamBegin + DHDR;
-  V_DUMP("1p=%04x\n", p);
+  // V_DUMP("1p=%04x\n", p);
   while (p < ORamUsed) {
-    V_DUMP("2p=%04x...\n", p);
+    // V_DUMP("2p=%04x...\n", p);
     byte cap = ocap(p);
-    V_DUMP("2p=%04x cap=%02x...\n", p, cap);
+    // V_DUMP("2p=%04x cap=%02x...\n", p, cap);
     byte cls = ocls(p);
-    V_DUMP("2p=%04x\n cap=%02x cls=%02x\n", p, cap, cls);
+    // V_DUMP("2p=%04x\n cap=%02x cls=%02x\n", p, cap, cls);
     if (cls) {
       ++count_used;
       bytes_used += cap;
@@ -392,9 +402,21 @@ void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
     } else {
       ++count_skip;
       bytes_skip += cap;
-      V_DUMP("skip: %04x [%d.]\n", p, cap);
+      // V_DUMP("skip: %04x [%d.]\n", p, cap);
     }
     p += (word)cap + (word)DHDR;
+  }
+  // word OBucket[O_NUM_BUCKETS];
+  // byte OBucketCap[] = {2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 254};
+  {
+    for (byte i = 0; i < O_NUM_BUCKETS; i++) {
+      int count = 0;
+      for (word p = OBucket[i]; p; p = ogetw(p)) {
+        ++count;
+      }
+      V_DUMP("B%d[%d]Free:%d ", i, OBucketCap[i], count);
+    }
+    V_DUMP("\n");
   }
   V_DUMP("count: used=%d + skip=%d = total=%d.\n", count_used, count_skip,
          count_used + count_skip);

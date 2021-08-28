@@ -4,6 +4,8 @@ E = sys.stderr
 def Add(a, b): return a+b
 def Sub(a, b): return a-b
 def Mul(a, b): return a*b
+def Div(a, b): return a/b
+def Mod(a, b): return a%b
 def EQ(a, b): return a==b
 def LT(a, b): return a<b
 def GT(a, b): return a>b
@@ -13,6 +15,8 @@ def initBinaryOps():
   BinaryOps['+'] = Add
   BinaryOps['-'] = Sub
   BinaryOps['*'] = Mul
+  BinaryOps['/'] = Div
+  BinaryOps['%'] = Mod
   BinaryOps['='] = EQ
   BinaryOps['<'] = LT
   BinaryOps['>'] = GT
@@ -83,6 +87,7 @@ def Run():
     LineNum[0] = 1
     while True:
         x, y = Nearest(LineNum[0])
+        ## print '[',x,y,']'
         if x <= 0:
             break
         LineNum[0] = x + 1
@@ -123,6 +128,10 @@ class Parser(object):
                 self.t, self.x = T_EOL, None
                 return
             c = self.line[self.i]
+            if c == '#':
+                self.i = self.n
+                self.t, self.x = T_EOL, None
+                return
             if c <= ' ':
                 self.i = self.i + 1
                 continue
@@ -130,7 +139,6 @@ class Parser(object):
         self.Lex_2(c)
 
     def Lex_2(self, c):
-            # print >>E, 'Lex_2: ', c
             if '0' <= c and c <= '9':
                 x = 0
                 while '0' <= c and c <= '9':
@@ -187,7 +195,7 @@ class Parser(object):
     def parseProduct(self):
         a = self.parsePrim()
         t, op = self.t, self.x
-        while t == T_ETC and (op=='*' or op=='%'):
+        while t == T_ETC and (op=='*' or op=='%' or op=='/'):
             self.Lex()
             b = self.parsePrim()
             a = XBinary(a, op, b)
@@ -234,12 +242,13 @@ class Parser(object):
         while self.i < self.n:
             s = s + self.line[self.i]
             self.i = self.i + 1
-
         return REM(s)
 
     def parsePRINT(self):
         self.Lex()
-        a = self.parseExpr()
+        a = None
+        if self.t != EOL:
+            a = self.parseExpr()
         return PRINT(a, None)
 
     def parseGOTO(self):
@@ -315,10 +324,16 @@ class PRINT:
         self.tail = tail
 
     def __str__(self):
-        return 'PRINT ' + self.expr.__str__()
+        if self.expr == None:
+            return 'PRINT '
+        else:
+            return 'PRINT ' + self.expr.__str__()
 
     def execute(self):
-        print self.expr.eval(),
+        if self.expr == None:
+            print chr(10)
+        else:
+            print self.expr.eval(),
         sys.stdout.flush()
 
 
@@ -349,14 +364,6 @@ class IF:
 
 Vars = {}
 Program = {}
-def initProgram():
-    Program[10]= LET('X', XInt(0))
-    Program[20]= PRINT(XVar('X'), 0)
-    Program[30]= LET('X', XBinary(XVar('X'), '+', XInt(1)))
-    Program[40]= IF(XBinary(XVar('X'),'<',XInt(1001)), XInt(20))
-    Program[50]= GOTO(XInt(10))
-initProgram()
-
 LineNum = [1]
 
 def Command(line):
@@ -390,5 +397,20 @@ def Loop():
         elif line == "SHELL": shell()
         else: Command(line)
 
+def Init():
+    Command("10 REM Prove the Collatz Conjecture")
+    Command("30 LET a = 0                # Loop for natural nums with A")
+    Command("50 LET a = a + 1")
+    Command("80 PRINT")
+    Command("100 LET b = a               # start testing a chain with A")
+    Command("110 PRINT b")
+    Command("120 IF b < 2 THEN 50        # next a")
+    Command("130 IF b % 2 = 0 THEN 500")
+    Command("200 LET b = 3 * b + 1       # if odd")
+    Command("220 GOTO 110")
+    Command("500 LET b = b / 2           # if even")
+    Command("520 GOTO 110")
+
+Init()
 Loop()
 print "BYE!"

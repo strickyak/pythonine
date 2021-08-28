@@ -108,6 +108,7 @@ extern void ozero(word begin, word len);
 extern void oassertzero(word begin, word len);
 void omemcpy(word d, word s, byte n);
 int omemcmp(word pchar1, byte len1, word pchar2, byte len2);
+void odumpsummary();
 void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
            word* bytes_skip_ptr);
 void ocheckguards(word addr);

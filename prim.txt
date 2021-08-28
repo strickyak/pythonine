@@ -161,6 +161,22 @@ code  Times
     int bb = N(b);
     z = ( Q(aa * bb) );
   ]
+code  Div
+  in a b
+  out z
+  [
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa / bb) );
+  ]
+code  Mod
+  in a b
+  out z
+  [
+    int aa = N(a);
+    int bb = N(b);
+    z = ( Q(aa % bb) );
+  ]
 code  SimplePrint
   in a
   out
@@ -559,12 +575,6 @@ code SpecialNone
   out z
 [
   z = None;
-]
-code Percent
-  in b a
-  out z
-[
-  z = StrFromC("todo_formatted");
 ]
 code Negate
   in a

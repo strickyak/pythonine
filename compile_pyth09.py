@@ -369,7 +369,7 @@ class Parser(object):
     def ParseProduct(self):
         p = self.ParseUnary()
         op = self.x
-        while op == '*' or op == '%':
+        while op == '*' or op == '%' or op == '/':
             self.Advance()
             p2 = self.ParseUnary()
             p = TBinaryOp(p, op, p2)
@@ -1223,7 +1223,9 @@ class Compiler(object):
         elif t.op == '*':
             self.ops.append('Times')
         elif t.op == '%':
-            self.ops.append('Percent')
+            self.ops.append('Mod')
+        elif t.op == '/':
+            self.ops.append('Div')
         elif t.op == '==':
             self.ops.append('EQ')
         elif t.op == '!=':
@@ -1514,8 +1516,7 @@ class Compiler(object):
         ##// def __init__(self, parentCompiler, argVars, localVars, globalOverrides, tclass, isDunderInit):
         fc = Compiler(self, t.arglist, lg.localVars, lg.globalOverrides, tclass, t.name == '__init__')
         fc.visitBlock(t.block)
-        if not len(fc.ops) or (fc.ops[-1] != 'Return' and fc.ops[-1] != 'RetNone' and fc.ops[-1] != 'RetSelf'):
-            fc.ops.append('RetSelf' if fc.isDunderInit else 'RetNone')
+        fc.ops.append('RetSelf' if fc.isDunderInit else 'RetNone')
         func_dict[t.name] = fc
 
     def visitFor(self, t):
