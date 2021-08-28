@@ -116,7 +116,7 @@ format:
 	yapf -i *.py
 
 clean:
-	rm -f a.out *.bin *.pyc *.bc _* *.s *.s-orig *.o.list *.map *.link ,*
+	rm -f a.out *.bin *.pyc *.bc *.s *.s-orig *.o *.o.list *.map *.link *.dump _* ,*
 
 ci:
 	mkdir -p RCS
@@ -142,6 +142,23 @@ emu: __always__
 	(echo 'runpy #128 </term'; echo 'dir /d1') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
 	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
+	ls -l runpy
+
+
+lemu: __always__
+	rm -f runpy
+	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c chain.c pb2.c arith.c osetjmp.c defs.c octet.c
+	:
+	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
+	:
+	os9 copy -r runpy /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
+	os9 attr -per /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/runpy
+	:
+	: : : -os9 makdir /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,etc
+	: : : os9 copy -l -r /etc/fstab /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,etc/fstab
+	(echo 'runpy #128 </term'; echo 'dir /d1') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
+	: T=$T
+	(set -x ; cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>/dev/null)
 	ls -l runpy
 
 
