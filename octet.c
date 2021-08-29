@@ -21,7 +21,7 @@ word OGrace2;
 // Free chunks are link-listed from OBucket, by word addr.
 // Word addr 0 means empty bucket or end of list.
 word OBucket[O_NUM_BUCKETS];
-byte OBucketCap[] = {2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 254};
+byte OBucketCap[] = {2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 254};
 
 #if unix
 word ogetw(word addr) {
@@ -110,6 +110,13 @@ void oinit(word begin, word end, omarker fn) {
 #if GUARD
   oputb(ORamBegin, GUARD_ONE);
 #endif
+
+  // Carve some in each bucket, so none will be void after GC.
+  for (byte b =0; b < O_NUM_BUCKETS; b++) {
+    for (byte i=0; i<10; i++) {
+      oalloc(OBucketCap[b], 1);
+    }
+  }
 }
 
 void ozero(word begin, word len) {

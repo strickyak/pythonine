@@ -118,7 +118,7 @@ void ocheckall();
 extern byte ORam[1 << 16];
 #endif
 
-#define O_NUM_BUCKETS 13
+#define O_NUM_BUCKETS 12
 
 // Error Numbers
 #define OE_NULL_PTR 50   /* using a null pointer */
