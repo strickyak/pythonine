@@ -38,33 +38,32 @@ void opanic(byte x) {
   assert(0);
 }
 
-#if 1  // ========================================
-
-#define MEMSIZE 32000u
-// #define MEMSIZE 25000u
-
-#if unix
-#define data 10u
-#define data_end (data + MEMSIZE)
-#else
-char data_array[MEMSIZE];
-#define data ((unsigned)data_array)
-#define data_end (data + MEMSIZE)
-#endif
-
 void defs_init(void (*marker_fn)()) {
 #if unix
-  printf("oinit: start=%04x end=%04x markerfn=%x\n", data, data_end,
-         (unsigned)(unsigned long)marker_fn);
+  #define MEMSIZE 32000u
+  #define data 10u
+  #define data_end (data + MEMSIZE)
+  printf("oinit: start=$%04x end=$%04x\n", data, data_end);
 #else
-  printf("oinit: start=%04x end=%04x markerfn=%x\n", data, data_end,
-         (unsigned)marker_fn);
+  word stack_ptr;
+  asm {
+    sts stack_ptr
+  }
+  word bss_max;
+  asm {
+    IMPORT l_bss
+    ldd #l_bss
+    std bss_max
+  }
+
+  word data = 0xFFFC & (bss_max + 8);
+  word data_end = 0xFFFC & (stack_ptr - 800);
+  printf("oinit: size=%d. start=$%04x end=$%04x\n", (data_end - data), data, data_end);
 #endif
   oinit(data, data_end, marker_fn);
   odump(0, 0, 0, 0);
 }
 
-#endif  // ========================================
 
 #ifdef TEST___JUST_FOR_EXAMINING_THE_ASSEMBLY_OUTPUT
 
