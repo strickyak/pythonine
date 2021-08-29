@@ -637,9 +637,6 @@ void Directory() {
 #endif
 }
 void RuntimeInit() {
-  // First carve some buffers in the GC arena.
-  for (byte i=0; i<4; i++) oalloc(254, C_Str);
-
   Builtins = NewList();
   GlobalDict = NewDict();  // todo: Modules.
   InternList = NewList();
