@@ -4,6 +4,8 @@
 #include "chain.h"
 #include "octet.h"
 
+typedef signed char cmp_t;
+
 extern word Stdin;
 extern word Stdout;
 extern word Stderr;
@@ -54,7 +56,7 @@ byte StrAt(word str, byte i);
 byte StrAtOrZero(word str, byte i);
 word StrRStrip(word str);
 word StrUpper(word a);
-int StrCmp(word a, word b);
+cmp_t StrCmp(word a, word b);
 word StrFromInt(int x);
 
 // File
@@ -65,6 +67,9 @@ void FileWriteLine(word file, word str);
 void OsWriteText(int fd, const char* p, byte n);
 
 // Builtin
+cmp_t CompareInt(int a, int b);
+cmp_t Compare(word a, word b);
+
 word BuiltinInt(word a);
 word BuiltinStr(word a);
 // TODO // word BuiltinRepr(word a);

@@ -298,42 +298,42 @@ code  EQ
   in a b
   out z
   [
-    int p = Equal(a, b);
+    bool p = Equal(a, b);
     z = Q(p);
   ]
 code  NE
   in a b
   out z
   [
-    int p = !Equal(a, b);
+    bool p = !Equal(a, b);
     z = Q(p);
   ]
 code  LT
   in a b
   out z
   [
-    int p = LessThan(a, b);
+    cmp_t p = (-1 == Compare(a, b));
     z = Q(p);
   ]
 code  GT
   in a b
   out z
   [
-    int p = !LessThan(a, b) && !Equal(a, b);
+    cmp_t p = (+1 == Compare(a, b));
     z = Q(p);
   ]
 code  LE
   in a b
   out z
   [
-    int p = LessThan(a, b) || Equal(a, b);
+    cmp_t p = (+1 != Compare(a, b));
     z = Q(p);
   ]
 code  GE
   in a b
   out z
   [
-    int p = !LessThan(a, b);
+    cmp_t p = (-1 != Compare(a, b));
     z = Q(p);
   ]
 

@@ -422,7 +422,7 @@ word SortedList(word a) {
     for (byte j = 0; j<m; j++) {
       word u = ListGetNth(z, j);
       word v = ListGetNth(z, j+1);
-      if (v < u) {
+      if (Compare(u, v) > 0) {
         ListPutNth(z, j, v);
         ListPutNth(z, j+1, u);
       }
@@ -446,10 +446,10 @@ word BuiltinSorted(word a) {
   return z;
 }
 
-int StrCmp(word a, word b) {
+cmp_t StrCmp(word a, word b) {
   byte na = StrLen(a);
   byte nb = StrLen(b);
-  byte n = (na < nb) ? na : nb;
+  byte n = (na < nb) ? na : nb; // min
 
   for (byte i = 0; i<n; i++) {
     byte ca = StrAt(a, i);
@@ -462,6 +462,47 @@ int StrCmp(word a, word b) {
   return 0;
 }
 
+cmp_t CompareInt(int a, int b) {
+  return (a<b)? -1 : (a>b)? +1 : 0;
+}
+
+cmp_t Compare(word a, word b) {
+  if ((a&1) && (b&1)) {
+    return CompareInt(TO_INT(a), TO_INT(b));
+  }
+  if (ocls(a)==C_Str && ocls(b)==C_Str) {
+    return StrCmp(a,b);
+  }
+  if (ocls(a)==C_Pair && ocls(b)==C_Pair) {
+    cmp_t c = Compare(Pair_first(a), Pair_first(b));
+    if (c) return c;
+    return Compare(Pair_second(a), Pair_second(b));
+  }
+  if (ocls(a)==C_Tuple && ocls(b)==C_Tuple) {
+    byte u = (byte) Tuple_len2(a);
+    byte v = (byte) Tuple_len2(b);
+    byte w = (u < v) ? u : v; // min
+    for (byte i = 0; i<w; i++) {
+        cmp_t c = Compare(ListGetNth(a, i), ListGetNth(b, i));
+        if (c!=0) return c;
+    }
+    return CompareInt(u, v);
+  }
+  return CompareInt((int)a, (int)b);
+}
+/*
+extern void Show(word);
+cmp_t Compare(word a, word b) {
+  bool z = Compare_(a, b);
+  printf("Compare %d <- ((", z);
+  Show(a);
+  Show(b);
+  printf("))\n");
+  return z;
+}
+*/
+
+/*
 bool LessThan(word a, word b) {
   if ((a&1) && (b&1)) {
     return TO_INT(a) < TO_INT(b);
@@ -469,8 +510,12 @@ bool LessThan(word a, word b) {
   if (ocls(a)==C_Str && ocls(b)==C_Str) {
     return StrCmp(a,b) < 0;
   }
+  if (ocls(a)==C_Tuple && ocls(b)==C_Tuple) {
+    return StrCmp(a,b) < 0;
+  }
   return a < b;
 }
+*/
 
 word StrCat2(word a, word b) {
   byte na = StrLen(a);
