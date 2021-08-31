@@ -490,32 +490,17 @@ cmp_t Compare(word a, word b) {
   }
   return CompareInt((int)a, (int)b);
 }
-/*
+#if 0
 extern void Show(word);
-cmp_t Compare(word a, word b) {
-  bool z = Compare_(a, b);
+cmp_t VerboseCompare(word a, word b) {
+  bool z = Compare(a, b);
   printf("Compare %d <- ((", z);
   Show(a);
   Show(b);
   printf("))\n");
   return z;
 }
-*/
-
-/*
-bool LessThan(word a, word b) {
-  if ((a&1) && (b&1)) {
-    return TO_INT(a) < TO_INT(b);
-  }
-  if (ocls(a)==C_Str && ocls(b)==C_Str) {
-    return StrCmp(a,b) < 0;
-  }
-  if (ocls(a)==C_Tuple && ocls(b)==C_Tuple) {
-    return StrCmp(a,b) < 0;
-  }
-  return a < b;
-}
-*/
+#endif
 
 word StrCat2(word a, word b) {
   byte na = StrLen(a);

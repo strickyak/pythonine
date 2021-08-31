@@ -102,6 +102,11 @@ _chain_test:
 	cc -DDONT_SAY -g -o chain_test.bin chain_test.c osetjmp.c defs.c data.c chain.c octet.c
 	./chain_test.bin
 
+_train_test:
+	python2 generate_prim.py < prim.txt > _generated_prim.h
+	cc -I. -DDONT_SAY -g -o train_test.bin testc/test_train.c osetjmp.c defs.c data.c train.c chain.c octet.c runtime.c readbuf.c pb2.c
+	./train_test.bin
+
 _octet_test:
 	cc -g -o octet_test.bin octet_test.c octet.c
 	./octet_test.bin

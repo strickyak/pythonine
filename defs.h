@@ -3,6 +3,10 @@
 
 #include "octet.h"
 
+#ifndef STACK_GAP
+#define STACK_GAP 300
+#endif
+
 extern void defs_init(void (*marker_fn)());
 
 extern bool IS_INT(word x);

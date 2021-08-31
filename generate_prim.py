@@ -120,6 +120,7 @@ def CompileCore(core_contents):
                               (c.name, fname, at))
                 Macros.append('%s_%s_Put(P,X) oputw((P)+%d, FROM_INT(X))' %
                               (c.name, fname, at))
+                at += 2
 
             elif ftype == 'oop':
 
@@ -127,6 +128,7 @@ def CompileCore(core_contents):
                 Macros.append('%s_%s_Put(P,X) oputw((P)+%d, (X))' %
                               (c.name, fname, at))
                 Macros.append('%s_%s_LEA(P) ((P)+%d)' % (c.name, fname, at))
+                at += 2
 
             elif ftype == 'byte[]':
 
@@ -145,7 +147,6 @@ def CompileCore(core_contents):
                     '%s_%s_AtPut(P,I,X) oputw((word)(P)+%d+((byte)(I)<<1),(word)(X))'
                     % (c.name, fname, at))
 
-            at += 2
         Macros.append('%s_Size %d' % (c.name, at))
 
     print '// THIS FILE IS GENERATED'
