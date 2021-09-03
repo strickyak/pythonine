@@ -7,7 +7,7 @@
 #include "_generated_prim.h"
 #undef PRIM_PART
 
-extern byte ToByte(int x) {
+byte ToByte(int x) {
   byte b = (byte)x;
   assert((int)b == x);
   return b;
@@ -16,21 +16,16 @@ bool IS_INT(word x) { return (byte)1 & (byte)x; }
 
 bool IS_INT2(word x, word y) { return (byte)1 & (byte)x & (byte)y; }
 
-int TO_INT(word x) {
-  assert1(x & 1u, "TO_INT %04x", x);
-  if (x & 0x8000) {
-    // neg
-    return 0x4000 | 0x3FFF & -(int)(x >> 1);
-  } else {
-    // pos
-    return 0x3FFF & (x >> 1);
-  }
+int TO_INT(word oop) {
+  assert1(oop & 1u, "TO_INT %04x", oop);
+
+  // Shift encoded oop to left 1, to fix the top (sign) bit.
+  // Then shift back to correct int value.
+  return ((short)oop<<1)>>2;
 }
 
 word FROM_INT(int x) {
-  word y = (word)x;
-  assert1(!(y & 0x8000), "FROM_INT %04x", y);
-  return 1u | (y << 1);
+  return 1u | ((word)x << 1);
 }
 
 void opanic(byte x) {

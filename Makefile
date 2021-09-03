@@ -107,6 +107,11 @@ _test_dict:
 	cc -I. -DDONT_SAY -g -o dict_test.bin testc/test_dict.c osetjmp.c defs.c data.c train.c octet.c runtime.c readbuf.c pb2.c
 	./dict_test.bin
 
+_test_int:
+	python2 generate_prim.py < prim.txt > _generated_prim.h
+	cc -I. -DDONT_SAY -g -o int_test.bin testc/test_int.c osetjmp.c defs.c data.c train.c octet.c runtime.c readbuf.c pb2.c
+	./int_test.bin
+
 _octet_test:
 	cc -g -o octet_test.bin octet_test.c octet.c
 	./octet_test.bin
