@@ -14,21 +14,25 @@ class MC # 5: 6809/6309 Machine Code (of varying length).
   byte[] flex
 class Array # Array (of varying length) of OOPs.
   oop[] flex
-class Chain # a chain for an use.
-  oop root
-  small len2
+# class Chain # a chain for an use.
+#   oop root
+#   small len2
 class List # a chain for a list.
-  oop root
   small len2
+  oop next
+  oop[] flex
 class Tuple # just like List.
-  oop root
   small len2
+  oop next
+  oop[] flex
 class Dict # a chain for a dict.
-  oop root
   small len2
+  oop next
+  oop[] flex
 class Module # a Module is made from a Dict.
-  oop root
   small len2
+  oop next
+  oop[] flex
 class Frame
   oop prev_frame
   oop function
@@ -46,15 +50,11 @@ class Try
   small catch_loc
   oop next
 class ListIter
-  oop base
-  oop p
+  oop train
   small i
-  small len2
 class DictIter
-  oop base
-  oop p
+  oop train
   small i
-  small len4
 class StrIter
   oop base
   oop p
@@ -74,7 +74,7 @@ class Train
   oop next
   oop[] flex
 class TrainIter
-  oop current
+  oop train
   small i
 
 # Opcodes.
@@ -113,7 +113,7 @@ code  LitStr
   in
   out z
   [
-    z = ( ChainGetNth(InternList, nth) );
+    z = ( TrainGetNth(InternList, nth) );
   ]
 code  LitStr2
   arg hi lo
@@ -122,7 +122,7 @@ code  LitStr2
   [
 #if 0
     word nth = ((word)hi << 8) | (word)lo;
-    z = ( LongChainGetNth(InternList, nth) );
+    z = ( LongTrainGetNth(InternList, nth) );
 #else
     RaiseC("not_imp");
 #endif
@@ -204,7 +204,7 @@ code  GlobalGet
   in
   out z
   [
-    word addr = ChainAddrOfNth(GlobalDict, nth);
+    word addr = TrainAddrOfNth(GlobalDict, nth);
     assert(addr);
     z = ogetw(addr);
   ]
@@ -213,7 +213,7 @@ code  GlobalPut
   in a
   out
   [
-    word addr = ChainAddrOfNth(GlobalDict, nth);
+    word addr = TrainAddrOfNth(GlobalDict, nth);
     assert(addr);
     oputw(addr, a);
   ]

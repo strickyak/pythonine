@@ -16,6 +16,8 @@ struct TrainIterator {
 };
 
 word NewTrain(byte cap, byte cls);
+word NewTrainIter(word base, byte cls);
+
 int TrainLen2(word train);
 word TrainAddrOfNth(word train, int nth);
 word TrainAddrOfAppend(word train);
@@ -30,5 +32,6 @@ word TrainMapGet(word chain, word key);
 word TrainMapGetOrDefault(word chain, word key, word dflt);
 void TrainMapPut(word chain, word key, word value);
 word TrainMapAddr(word chain, word key);
+int TrainMapWhatNth(word chain, word key);
 
 #endif

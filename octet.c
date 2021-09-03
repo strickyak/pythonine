@@ -29,6 +29,7 @@ word ogetw(word addr) {
   return OGETW(addr);
 }
 void oputw(word addr, word value) {
+  assert(! (value != 0 && ((value&1) != 1) && (value < ORamBegin || value > ORamEnd)) );
   OPUTW(addr, value);
   ocheckall();
 }

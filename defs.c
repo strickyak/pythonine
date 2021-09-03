@@ -7,6 +7,11 @@
 #include "_generated_prim.h"
 #undef PRIM_PART
 
+extern byte ToByte(int x) {
+  byte b = (byte)x;
+  assert((int)b == x);
+  return b;
+}
 bool IS_INT(word x) { return (byte)1 & (byte)x; }
 
 bool IS_INT2(word x, word y) { return (byte)1 & (byte)x & (byte)y; }

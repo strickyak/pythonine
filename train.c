@@ -2,8 +2,8 @@
 
 #include "train.h"
 
-#define SAY(S,X) (printf("%s: ", (S)), osay(X))
-#define VERB(S,X) (printf("%s: ", (S)), osay(X))
+#define SAY(S,X) if(false)(printf("%s: ", (S)), osay(X), 0)
+#define VERB if(false)printf
 
 word Equal(word, word);
 
@@ -77,6 +77,8 @@ void TrainAppend(word train, word value) {
   oputw(addr, value);
 }
 
+// TrainIter
+
 void TrainIterStart(word train, struct TrainIterator *iter) {
   iter->p = train;
   iter->i = 0;
@@ -86,6 +88,7 @@ bool TrainIterMore(struct TrainIterator *iter) {
   if (!iter->p) return false;
   if (iter->i >= Train_len2(iter->p)) {
     iter->p = Train_next(iter->p);
+    iter->i = 0;
   }
   return (iter->p != 0);
 }
@@ -96,6 +99,15 @@ word TrainIterNextAddr(struct TrainIterator *iter) {
 }
 word TrainIterNext(struct TrainIterator *iter) {
   return ogetw(TrainIterNextAddr(iter));
+}
+
+// TrainIter
+
+word NewTrainIter(word base, byte cls) {
+  word it = oalloc(TrainIter_Size, cls);
+  TrainIter_train_Put(it, base);
+  TrainIter_i_Put(it, 0);
+  return it;
 }
 
 // Map
@@ -118,15 +130,14 @@ word TrainMapGetOrDefault(word train, word key, word dflt) {
 }
 void TrainMapPut(word train, word key, word value) {
   word addr = TrainMapAddr(train, key);
-  if (addr) {
-    oputw(addr, value);
-  } else {
+  if (!addr) {
     addr = TrainAddrOfAppend(train);
     assert(addr);
     oputw(addr, key);
     addr = TrainAddrOfAppend(train);
     assert(addr);
   }
+  oputw(addr, value);
 }
 word TrainMapAddr(word train, word key) {
   SAY("@@@@@ train", train);
@@ -164,4 +175,18 @@ word TrainMapAddr(word train, word key) {
 
   SAY("NOT FOUND", key);
   return NIL;
+}
+
+int TrainMapWhatNth(word chain, word key) {
+  struct TrainIterator it;
+  TrainIterStart(chain, &it);
+  int i = 0;
+  while (TrainIterMore(&it)) {
+    word ikey = TrainIterNext(&it);
+    assert(TrainIterMore(&it));
+    (void)TrainIterNext(&it);
+    if (ikey == key) return i;
+    i += 2;
+  }
+  return -1;
 }

@@ -43,12 +43,12 @@ byte Hex(byte b) {
   b = b & 15;
   return (b < 10) ? '0' + b : 'a' + b - 10;
 }
-void SayChain(word p) {
+void SayTrain(word train) {
 #if unix
-  struct ChainIterator iter;
-  ChainIterStart(p, &iter);
-  for (int i = 0; ChainIterMore(p, &iter); i++) {
-    word e = ChainIterNext(p, &iter);
+  struct TrainIterator iter;
+  TrainIterStart(train, &iter);
+  for (int i = 0; TrainIterMore(&iter); i++) {
+    word e = TrainIterNext(&iter);
     printf(" [[%d]] ", i);
     SayObj(e, 2);
   }
@@ -108,24 +108,24 @@ void ShowL(word p, byte level) {
         clsname = ClassNames[cls];
         printf("cls %s: cap=%d", clsname, ocap(p));
         if (level < 2) return;
-        if (cls == C_Chain || cls == C_List || cls == C_Tuple ||
+        if (cls == C_Train || cls == C_List || cls == C_Tuple ||
             cls == C_Dict) {
-          struct ChainIterator it;
-          ChainIterStart(p, &it);
-          printf(" list:\n");
-          for (byte i = 0; ChainIterMore(p, &it); ++i) {
-            word e = ChainIterNext(p, &it);
+          struct TrainIterator it;
+          TrainIterStart(p, &it);
+          printf(" list: (len2=%d, next=$%x)\n", Train_len2(p), Train_next(p));
+          for (byte i = 0; TrainIterMore(&it); ++i) {
+            word e = TrainIterNext(&it);
             printf("\n  [%d]: ", i);
             ShowL(e, level - 1);
           }
           printf("\n");
         } else if (cls == C_Dict) {
-          struct ChainIterator it;
-          ChainIterStart(p, &it);
+          struct TrainIterator it;
+          TrainIterStart(p, &it);
           printf(" dict:\n");
-          for (byte i = 0; ChainIterMore(p, &it); ++i) {
-            word k = ChainIterNext(p, &it);
-            word v = ChainIterNext(p, &it);
+          for (byte i = 0; TrainIterMore(&it); ++i) {
+            word k = TrainIterNext(&it);
+            word v = TrainIterNext(&it);
             printf("\n  [[[");
             ShowL(k, level - 1);
             printf("]]] = ");
@@ -133,8 +133,8 @@ void ShowL(word p, byte level) {
           }
           printf("\n");
         }
-      } else if (cls < Chain_len2(ClassList)) {
-        word clsobj = ChainGetNth(ClassList, cls);
+      } else if (cls < TrainLen2(ClassList)) {
+        word clsobj = TrainGetNth(ClassList, cls);
         if (clsobj) {
           printf("cls=");
           ShowStr(Class_className(clsobj));
@@ -198,10 +198,10 @@ word StrFromC(const char* s) {
 bool Truth(word a) {
   if (ovalidaddr(a)) {
     switch (ocls(a)) {
-      case C_Chain:
+      case C_Train:
       case C_List:
       case C_Dict:
-        return (Chain_len2(a) > 0);
+        return (TrainLen2(a) > 0);
       case C_Str:
         return (StrLen(a) > 0);
     }
@@ -351,15 +351,15 @@ void RunBuiltin(byte builtin_num) {
 
 byte InternString(word str) {
   assert(ocls(str) == C_Str);
-  struct ChainIterator it;
-  ChainIterStart(InternList, &it);
+  struct TrainIterator it;
+  TrainIterStart(InternList, &it);
   byte i = 0;
-  while (ChainIterMore(InternList, &it)) {
-    word s = ChainIterNext(InternList, &it);
+  while (TrainIterMore(&it)) {
+    word s = TrainIterNext(&it);
     if (StrEqual(s, str)) return i;
     ++i;
   }
-  ChainAppend(InternList, str);
+  TrainAppend(InternList, str);
   return i;
 }
 
@@ -379,7 +379,7 @@ void SlurpIntern(struct ReadBuf* bp, word bc, word ilist) {
 
         i_num = InternString(str);
         assert(i_num < INF);
-        ChainAppend(ilist, Q(i_num));
+        TrainAppend(ilist, Q(i_num));
       } break;
       case InternPack_patch: {
         word offset = pb_int(bp);
@@ -401,11 +401,11 @@ void SlurpGlobal(struct ReadBuf* bp, word bc, word ilist) {
       case GlobalPack_name_i: {
         word ith = pb_int(bp);
         assert(ith < INF);
-        byte i_num = (byte)N(ChainGetNth(ilist, (byte)ith));
+        byte i_num = (byte)N(TrainGetNth(ilist, (byte)ith));
         assert(i_num < INF);
         // TODO -- append to GlobalList.
         // Get the i_numth interned string.
-        word s = ChainGetNth(InternList, i_num);
+        word s = TrainGetNth(InternList, i_num);
         assert(s);
         // Create a global slot for that string, if not already there.
         if (!DictAddr(GlobalDict, s)) {
@@ -413,6 +413,9 @@ void SlurpGlobal(struct ReadBuf* bp, word bc, word ilist) {
         }
         g_num = 1 + DictWhatNth(GlobalDict, s);
         assert(g_num != INF);
+        printf("\nS_GLOBAL: ith=%d i_num=%d g_num=%d s=", ith, i_num, g_num);
+        Show(s);
+        printf("\n");
         // osaylabel(bc, "GlobalPack_name_i", ith);
       } break;
       case GlobalPack_patch: {
@@ -439,10 +442,10 @@ void SlurpFuncPack(struct ReadBuf* bp, word ilist, word dict) {
     switch (tag) {
       case FuncPack_name_i: {
         ith = pb_int(bp);
-        byte i_num = (byte)N(ChainGetNth(ilist, (byte)ith));
+        byte i_num = (byte)N(TrainGetNth(ilist, (byte)ith));
         assert(i_num < INF);
         // Get the i_numth interned string.
-        name_str = ChainGetNth(InternList, i_num);
+        name_str = TrainGetNth(InternList, i_num);
         assert(name_str);
         // printf("SLURPING FUNC: <<<");
         // SayObj(name_str, 2);
@@ -453,6 +456,10 @@ void SlurpFuncPack(struct ReadBuf* bp, word ilist, word dict) {
         pb_next(bp);
         SlurpCodePack(bp, &bc);
         DictPut(dict, name_str, bc);
+        printf("\nS_FuncPack pack:");
+        Show(name_str);
+        Show(bc);
+        Show(dict);
         // osaylabel(bc, "FuncPack_name_i", ith);
       } break;
       default:
@@ -463,7 +470,7 @@ void SlurpFuncPack(struct ReadBuf* bp, word ilist, word dict) {
 }
 void SlurpClassPack(struct ReadBuf* bp, word ilist) {
   printf("c");
-  word class_num = List_len2(ClassList);
+  word class_num = ListLen(ClassList);
   word name_str;
   word ith;
   word field_list = NewList();
@@ -473,32 +480,40 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
   Class_classNum_Put(cls, class_num);
   Class_fieldList_Put(cls, field_list);
   Class_methDict_Put(cls, meth_dict);
-  ChainAppend(ClassList, cls);
+  TrainAppend(ClassList, cls);
 
   for (byte tag = pb_current(bp); tag; tag = pb_current(bp)) {
     switch (tag) {
       case ClassPack_name_i: {
         ith = pb_int(bp);
-        byte i_num = (byte)N(ChainGetNth(ilist, (byte)ith));
+        byte i_num = (byte)N(TrainGetNth(ilist, (byte)ith));
         assert(i_num < INF);
         // Get the i_numth interned string.
-        name_str = ChainGetNth(InternList, i_num);
+        name_str = TrainGetNth(InternList, i_num);
         assert(name_str);
-        // printf("SLURPING CLASS: <<<");
+        printf("SLURPING CLASS: [[[");
         SayObj(name_str, 2);
-        // printf(">>>\n");
         Class_className_Put(cls, name_str);
+        SayObj(cls, 2);
+    printf("   classNum: %d\n", Class_classNum(cls));
+    printf("   className: ");
+    Show(Class_className(cls));
+    printf("   methDict: ");
+    SayObj(Class_methDict(cls), 3);
+    printf("   fieldList: ");
+    SayObj(Class_fieldList(cls), 3);
+        printf("]]]\n");
       } break;
       case ClassPack_field_i: {  // For a field.
         word field_ith = pb_int(bp);
-        byte field_i_num = (byte)N(ChainGetNth(ilist, (byte)field_ith));
+        byte field_i_num = (byte)N(TrainGetNth(ilist, (byte)field_ith));
         assert(field_i_num < INF);
-        word field_str = ChainGetNth(InternList, field_i_num);
+        word field_str = TrainGetNth(InternList, field_i_num);
         assert(field_str);
         // printf("SLURPING FIELD <<<");
         SayObj(field_str, 2);
         // printf(">>>\n");
-        ChainAppend(field_list, field_str);
+        TrainAppend(field_list, field_str);
       } break;
       case ClassPack_meth: {  // For a method.
         pb_next(bp);
@@ -618,8 +633,10 @@ void Directory() {
   SayObj(item, 2);
   if (item) {
     osay(item);
-    printf("   num: %d\n", Class_classNum(item));
-    printf("   name: ");
+    printf("   classNum: %d\n", Class_classNum(item));
+    printf("   className: ");
+    Show(Class_className(item));
+    printf("   methDict: ");
     SayObj(Class_methDict(item), 3);
     printf("   fieldList: ");
     SayObj(Class_fieldList(item), 3);
@@ -644,10 +661,10 @@ void RuntimeInit() {
   MessageList = NewList();
 
   DunderInitIsn = InternString(StrFromC("__init__"));
-  DunderInitStr = ChainGetNth(InternList, DunderInitIsn);
+  DunderInitStr = TrainGetNth(InternList, DunderInitIsn);
 
   // Reserve builtin class slots, with None.
-  ChainAppend(ClassList, None);  // unused 0.
+  TrainAppend(ClassList, None);  // unused 0.
   odumpsummary();
   for (byte i = 1; i < ClassNames_SIZE; i++) {
     word cls = oalloc(Class_Size, C_Class);
@@ -655,26 +672,26 @@ void RuntimeInit() {
     const char* cstr = ClassNames[i];
     word name = StrFromC(cstr);
     word name_isn = InternString(name);
-    name = ChainGetNth(InternList, name_isn);
+    name = TrainGetNth(InternList, name_isn);
     Class_className_Put(cls, name);
     word d = NewDict();
     Class_methDict_Put(cls, d);
-    ChainAppend(ClassList, cls);
+    TrainAppend(ClassList, cls);
   }
   for (byte i = 0; i < MessageNames_SIZE; i++) {
     word name = StrFromC(MessageNames[i]);
     word name_isn = InternString(name);
-    ChainAppend(MessageList, ChainGetNth(InternList, name_isn));
+    TrainAppend(MessageList, TrainGetNth(InternList, name_isn));
   }
   {
     byte i = 0;
     for (const byte* p = Prims; *p; p += 2, ++i) {
-      word cls = ChainGetNth(ClassList, p[0]);
+      word cls = TrainGetNth(ClassList, p[0]);
       SayObj(cls, 3);
       word meth_list = Class_methDict(cls);
-      word message = ChainGetNth(MessageList, p[1]);
-      ChainAppend(meth_list, message);
-      ChainAppend(meth_list, FROM_INT(i));
+      word message = TrainGetNth(MessageList, p[1]);
+      TrainAppend(meth_list, message);
+      TrainAppend(meth_list, FROM_INT(i));
       // printf(
       //"PRIMS: %d %d -> cls %d meth_list %d message %d i %d FROM_INT(i) "
       //"%d\n",
@@ -727,17 +744,17 @@ void Break(const char* why) {
 }
 
 byte FieldOffset(word obj, byte member_name_isn) {
-  word cls = ChainGetNth(ClassList, ocls(obj));
+  word cls = TrainGetNth(ClassList, ocls(obj));
   if (!cls) return INF;
-  word member_name = ChainGetNth(InternList, member_name_isn);
+  word member_name = TrainGetNth(InternList, member_name_isn);
   VERB("Field Offset of ");
   SayStr(member_name);
   word p = Class_fieldList(cls);
 
-  struct ChainIterator iter;
-  ChainIterStart(p, &iter);
-  for (int i = 0; ChainIterMore(p, &iter); i++) {
-    word e = ChainIterNext(p, &iter);
+  struct TrainIterator iter;
+  TrainIterStart(p, &iter);
+  for (int i = 0; TrainIterMore(&iter); i++) {
+    word e = TrainIterNext(&iter);
     if (e == member_name) {
       VERB("Field %d off %d\n", i, i + i);
       return (byte)i + (byte)i;
@@ -782,10 +799,10 @@ void ArgPut(byte i, word a) {
 }
 
 word FindMethForObjOrNull(word obj, byte meth_isn) {
-  word cls = ChainGetNth(ClassList, ocls(obj));
+  word cls = TrainGetNth(ClassList, ocls(obj));
   SayStr(Class_className(cls));
   word dict = Class_methDict(cls);
-  word meth_name = ChainGetNth(InternList, meth_isn);
+  word meth_name = TrainGetNth(InternList, meth_isn);
   SayStr(meth_name);
   word meth = DictGetOrDefault(dict, meth_name, None);
   return meth;
@@ -815,7 +832,7 @@ void Construct(byte cls_num, byte nargs /*less self */) {
   assert(cls);
   word fields = Class_fieldList(cls);
   assert(fields);
-  word flen = List_len2(fields);
+  word flen = ListLen(fields);
   byte size = flen+flen;  /// OBJECT_SIZE;
   word obj = oalloc(size, cls_num);
   sp -= 2;
@@ -874,7 +891,7 @@ void CallMeth(byte meth_isn, byte nargs /* with self */) {
   word self = ogetw(sp);
   word fn = FindMethForObjOrNull(self, meth_isn);
   if (!fn) {
-    Show(ChainGetNth(InternList, meth_isn));
+    Show(TrainGetNth(InternList, meth_isn));
     Show(self);
     osay(self);
   }
@@ -969,13 +986,13 @@ void Raise(word ex) {
 }
 void Implode(byte len, word chain) {
   for (word p = sp + ((word)len << 1) - 2; p >= sp; p -= 2) {
-    ChainAppend(chain, ogetw(p));
+    TrainAppend(chain, ogetw(p));
   }
   sp += ((word)len << 1) - 2;  // -2 for new list.
   oputw(sp, chain);
 }
-byte Len(word o) {
-  byte n;
+int Len(word o) {
+  int n;
   switch (ocls(o)) {
     case C_Pair:
       return 2;
@@ -984,10 +1001,10 @@ byte Len(word o) {
       break;
     case C_Tuple:
     case C_List:
-      n = List_len2(o);
+      n = ListLen(o);
       break;
     case C_Dict:
-      n = List_len2(o) >> 1;
+      n = ListLen(o) >> 1;
       break;
     default:
       opanic(101);
@@ -997,7 +1014,7 @@ byte Len(word o) {
 void Explode(byte len) {
   word o = ogetw(sp);
   sp += 2;
-  byte n = Len(o);
+  byte n = ToByte(Len(o));
   if (n != len) {
     RaiseC("explode_bad_len");
   }
@@ -1013,7 +1030,7 @@ word GetItem(word coll, word key) {
   word value;
   byte cls = ocls(coll);
   if (cls == C_Dict) {
-      value = ChainMapGet(coll, key);
+      value = TrainMapGet(coll, key);
   } else {
       int i = TO_INT(key);
       assert(i>=0);
@@ -1028,7 +1045,7 @@ word GetItem(word coll, word key) {
           break;
         case C_Tuple:
         case C_List: {
-          value = ChainGetNth(coll, i);
+          value = TrainGetNth(coll, i);
         } break;
         default:
           opanic(101);
@@ -1040,10 +1057,10 @@ word PutItem(word coll, word key, word value) {
   switch (ocls(coll)) {
     case C_List: {
       int i = TO_INT(key);
-      ChainPutNth(coll, i, value);
+      TrainPutNth(coll, i, value);
     } break;
     case C_Dict:
-      ChainMapPut(coll, key, value);
+      TrainMapPut(coll, key, value);
       break;
     default:
       opanic(101);

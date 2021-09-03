@@ -1,7 +1,7 @@
 #ifndef _PYTHONINE_DATA_H_
 #define _PYTHONINE_DATA_H_
 
-#include "chain.h"
+#include "train.h"
 #include "octet.h"
 
 typedef signed char cmp_t;
@@ -32,8 +32,9 @@ void TupleAppend(word tup, word value);
 
 // List
 word NewList();
-word ListGetNth(word list, byte nth);
-void ListPutNth(word list, byte nth, word value);
+int ListLen(word list);
+word ListGetNth(word list, int nth);
+void ListPutNth(word list, int nth, word value);
 void ListAppend(word list, word value);
 word NewListIter(word base);
 word ListIterNext(word it);
@@ -41,7 +42,8 @@ word NewChainIter(word base, byte cls);
 
 // Dict
 word NewDict();
-byte DictWhatNth(word chain, word key);
+int DictLen(word dict);
+int DictWhatNth(word chain, word key);
 word DictAddr(word chain, word key);
 word DictGet(word chain, word key);
 word DictGetOrDefault(word chain, word key, word dflt);

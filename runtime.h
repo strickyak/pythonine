@@ -94,7 +94,7 @@ void DoTry(byte catch_loc);
 void DoEndTry(byte end_catch_loc);
 void SetJmp(word a);
 void Implode(byte len, word chain);
-byte Len(word o);
+int Len(word o);
 void Explode(byte len);
 word GetItem(word coll, word key);
 word PutItem(word coll, word key, word value);
@@ -109,10 +109,10 @@ void PleaseCallMeth0(byte meth_isn, word self);
 
 #define FOR_EACH(I, ITEM, X)                           \
   {                                                    \
-    struct ChainIterator iter;                         \
-    ChainIterStart((X), &iter);                        \
-    for (byte I = 0; ChainIterMore((X), &iter); I++) { \
-      word ITEM = ChainIterNext((X), &iter);
+    struct TrainIterator iter;                         \
+    TrainIterStart((X), &iter);                        \
+    for (int I = 0; TrainIterMore(&iter); I++) { \
+      word ITEM = TrainIterNext(&iter);
 #define DO {
 #define DONE \
   }          \

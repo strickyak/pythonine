@@ -1,9 +1,10 @@
-// Tuple, List, and Dict rely on Chain for their implementaiton.
+// Tuple, List, and Dict rely on Train for their implementaiton.
 
 #include "data.h"
 
-#include "chain.h"
+#include "train.h"
 #include "octet.h"
+#include "runtime.h"
 
 word Stdin;
 word Stdout;
@@ -85,33 +86,36 @@ word BufGetStr(word buf) {
 //#   return NewChainWithCap(Tuple_Size, C_Tuple, cap2);
 //# }
 word NewTuple() {
-  return NewChain(Tuple_Size, C_Tuple);
+  return NewTrain(16, C_Tuple);
 }
-word TupleGetNth(word tuple, byte nth) { return ChainGetNth(tuple, nth); }
+word TupleGetNth(word tuple, byte nth) { return TrainGetNth(tuple, nth); }
 void TuplePutNth(word tuple, byte nth, word value) {
-  ChainPutNth(tuple, nth, value);
+  TrainPutNth(tuple, nth, value);
 }
-void TupleAppend(word tuple, word value) { ChainAppend(tuple, value); }
+void TupleAppend(word tuple, word value) { TrainAppend(tuple, value); }
 
 // List
 
-word NewList() { return NewChain(List_Size, C_List); }
-word ListGetNth(word list, byte nth) { return ChainGetNth(list, nth); }
-void ListPutNth(word list, byte nth, word value) {
-  ChainPutNth(list, nth, value);
+word NewList() { return NewTrain(16, C_List); }
+int ListLen(word list) { return TrainLen2(list); }
+word ListGetNth(word list, int nth) { return TrainGetNth(list, nth); }
+void ListPutNth(word list, int nth, word value) {
+  TrainPutNth(list, nth, value);
 }
-void ListAppend(word list, word value) { ChainAppend(list, value); }
+void ListAppend(word list, word value) { TrainAppend(list, value); }
 
 // Dict
-word NewDict() { return NewChain(Dict_Size, C_Dict); }
-byte DictWhatNth(word chain, word key) { return ChainMapWhatNth(chain, key); }
-word DictAddr(word chain, word key) { return ChainMapAddr(chain, key); }
-word DictGet(word chain, word key) { return ChainMapGet(chain, key); }
-word DictGetOrDefault(word chain, word key, word dflt) { return ChainMapGetOrDefault(chain, key, dflt); }
+word NewDict() { return NewTrain(32, C_Dict); }
+int DictLen(word dict) { return TrainLen2(dict) >> 1; }
+int DictWhatNth(word chain, word key) { return TrainMapWhatNth(chain, key); }
+word DictAddr(word chain, word key) { return TrainMapAddr(chain, key); }
+word DictGet(word chain, word key) { return TrainMapGet(chain, key); }
+word DictGetOrDefault(word chain, word key, word dflt) { return TrainMapGetOrDefault(chain, key, dflt); }
 void DictPut(word chain, word key, word value) {
-  return ChainMapPut(chain, key, value);
+  return TrainMapPut(chain, key, value);
 }
 
+#if 0
 word NewChainIter(word base, byte cls) {
   word it = oalloc(ListIter_Size, cls);
   ListIter_base_Put(it, base);
@@ -120,34 +124,29 @@ word NewChainIter(word base, byte cls) {
   ListIter_len2_Put(it, List_len2(base));
   return it;
 }
-word NewListIter(word base) { return NewChainIter(base, C_ListIter); }
+#endif
+word NewListIter(word base) { return NewTrainIter(base, C_ListIter); }
 
 word ListIterNext(word it) {
-  int len2 = ListIter_len2(it);
-  if (!len2) {
+  word train = ListIter_train(it);
+  assert(train);
+  if (ListIter_i(it) >= Train_len2(train)) {
+    train = Train_next(train);
+    ListIter_train_Put(it, train);
+    ListIter_i_Put(it, 0);
+  }
+  if (!train) {
     // Stop the iteration with an exception.
     RaiseC("StopIteration");
   }
-  ListIter_len2_Put(it, len2 - 1);
 
-  word p = ListIter_p(it);
-  int i = ListIter_i(it);
-  word z = ogetw(p + i);
-  i += 2;
-
-  byte cap = ocap(p);
-  if (i == cap - 2) {
-    // overflow
-    ListIter_p_Put(it, ogetw(ListIter_p(it) + cap - 2));
-    ListIter_i_Put(it, 0);
-  } else {
-    // normal advance
-    ListIter_i_Put(it, i);
-  }
-  return z;
+  int j = ListIter_i(it);
+  ListIter_i_Put(it, j+1);
+  word addr = train + Train_Size + j + j;
+  return ogetw(addr);
 }
 
-word NewDictIter(word base) { return NewChainIter(base, C_DictIter); }
+word NewDictIter(word base) { return NewTrainIter(base, C_DictIter); }
 
 word DictIterNext(word it) {
   word key = ListIterNext(it);  // key
@@ -361,15 +360,15 @@ word StrFromInt(int x) {
     neg=1; x = -x;
   }
   if (x<0) RaiseC("2neg");
-  int d0 = x % 10;
+  byte d0 = (byte)(x % 10);
   x = x / 10;
-  int d1 = x % 10;
+  byte d1 = (byte)(x % 10);
   x = x / 10;
-  int d2 = x % 10;
+  byte d2 = (byte)(x % 10);
   x = x / 10;
-  int d3 = x % 10;
+  byte d3 = (byte)(x % 10);
   x = x / 10;
-  int d4 = x % 10;
+  byte d4 = (byte)(x % 10);
 
   char* p = buf;
   if (neg) *p++ = '-';
@@ -409,17 +408,17 @@ word BuiltinStr(word a) {
 }
 
 word SortedList(word a) {
-  byte n = List_len2(a);
+  int n = ListLen(a);
   word z = NewList();
 
-  for (byte i = 0; i<n; i++) {
+  for (int i = 0; i<n; i++) {
     ListAppend(z, ListGetNth(a, i));
   }
   if (n<2) return z;
 
-  byte m = n-1;
-  for (byte i = 0; i<m; i++) {
-    for (byte j = 0; j<m; j++) {
+  int m = n-1;
+  for (int i = 0; i<m; i++) {
+    for (int j = 0; j<m; j++) {
       word u = ListGetNth(z, j);
       word v = ListGetNth(z, j+1);
       if (Compare(u, v) > 0) {
@@ -479,8 +478,8 @@ cmp_t Compare(word a, word b) {
     return Compare(Pair_second(a), Pair_second(b));
   }
   if (ocls(a)==C_Tuple && ocls(b)==C_Tuple) {
-    byte u = (byte) Tuple_len2(a);
-    byte v = (byte) Tuple_len2(b);
+    byte u = (byte) ListLen(a);
+    byte v = (byte) ListLen(b);
     byte w = (u < v) ? u : v; // min
     for (byte i = 0; i<w; i++) {
         cmp_t c = Compare(ListGetNth(a, i), ListGetNth(b, i));
@@ -524,23 +523,13 @@ word DictItems(word a) {
   word z = NewList();
   LoopAllocRoot = z; // Protect tuple allocs inside this list.
   // printf("\n==DictItems== a=%d z=%d\n", a, z);
-  struct ChainIterator it;
+  struct TrainIterator it;
 
-  ChainIterStart(a, &it);
-  while (ChainIterMore(a, &it)) {
-    word key = ChainIterNext(a, &it);
-    word val = ChainIterNext(a, &it);
-#if 1
-    // using Pair.
+  TrainIterStart(a, &it);
+  while (TrainIterMore(&it)) {
+    word key = TrainIterNext(&it);
+    word val = TrainIterNext(&it);
     ListAppend(z, NewPair(key, val));
-#else
-    // using Tuple (huge, with no initial cap).
-    word tup = NewTuple();
-    TupleAppend(tup, key);
-    TupleAppend(tup, val);
-    // printf("\n==DictItems== a=%d z=%d k=%d v=%d tup=%d\n", a, z, key, val, tup);
-    ListAppend(z, tup);
-#endif
   }
   LoopAllocRoot = None;
   return z;

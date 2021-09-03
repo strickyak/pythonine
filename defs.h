@@ -9,6 +9,7 @@
 
 extern void defs_init(void (*marker_fn)());
 
+extern byte ToByte(int x);
 extern bool IS_INT(word x);
 extern bool IS_INT2(word x, word y);
 extern int TO_INT(word x);

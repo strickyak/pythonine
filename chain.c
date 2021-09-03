@@ -1,3 +1,5 @@
+#if 0
+
 #include "chain.h"
 
 #include "_generated_proto.h"
@@ -226,3 +228,5 @@ void ChainMapPut(word chain, word key, word value) {
   }
   oputw(addr, value);
 }
+
+#endif

@@ -3,7 +3,7 @@ C=42
 
 # all except emu
 all: _build _runpy
-# all: _build _octet_test _chain_test _runpy
+# all: _build _octet_test _runpy
 
 test: 1 2 3 4 5 fib 6 7 8 101 102 103 104 105 106 107 108 109 110 111
 	echo
@@ -58,7 +58,7 @@ _build:
 	python2 _big_unix.py < test$T.py > test$T.bc
 	cp test$T.bc bc
 	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test$T.dump | tee ,dump
-	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c osetjmp.c defs.c pb2.c octet.c
+	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c train.c osetjmp.c defs.c pb2.c octet.c
 
 small_unix:
 	python2 compile_proto.py < bc.proto -c > _generated_proto.h
@@ -72,7 +72,7 @@ small_unix:
 	python2 _small_unix.py < test1.py > test1.bc
 	cp test1.bc bc
 	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test1.dump | tee ,dump
-	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c osetjmp.c defs.c pb2.c octet.c
+	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c train.c osetjmp.c defs.c pb2.c octet.c
 	./runpy.bin
 
 small_coco:
@@ -90,22 +90,22 @@ small_coco:
 	python2 _big_unix.py < _small_coco.py > _small_coco.bc
 	cp _small_coco.bc bc
 	python2 print_pb.py bc.proto _generated_prim.h < bc | tee _small_coco.dump | tee ,dump
-	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c chain.c osetjmp.c defs.c pb2.c octet.c
+	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c train.c osetjmp.c defs.c pb2.c octet.c
 	:
 	./runpy.bin < test1.py > test1.by_small_coco.bc
 
 _runpy:
 	./runpy.bin
 
-_chain_test:
+_test_train:
 	python2 generate_prim.py < prim.txt > _generated_prim.h
-	cc -DDONT_SAY -g -o chain_test.bin chain_test.c osetjmp.c defs.c data.c chain.c octet.c
-	./chain_test.bin
-
-_train_test:
-	python2 generate_prim.py < prim.txt > _generated_prim.h
-	cc -I. -DDONT_SAY -g -o train_test.bin testc/test_train.c osetjmp.c defs.c data.c train.c chain.c octet.c runtime.c readbuf.c pb2.c
+	cc -I. -DDONT_SAY -g -o train_test.bin testc/test_train.c osetjmp.c defs.c data.c train.c octet.c runtime.c readbuf.c pb2.c
 	./train_test.bin
+
+_test_dict:
+	python2 generate_prim.py < prim.txt > _generated_prim.h
+	cc -I. -DDONT_SAY -g -o dict_test.bin testc/test_dict.c osetjmp.c defs.c data.c train.c octet.c runtime.c readbuf.c pb2.c
+	./dict_test.bin
 
 _octet_test:
 	cc -g -o octet_test.bin octet_test.c octet.c
@@ -135,7 +135,7 @@ SDCARD=sdb
 
 emu: __always__
 	rm -f runpy
-	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c chain.c pb2.c arith.c osetjmp.c defs.c octet.c
+	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -152,7 +152,7 @@ emu: __always__
 
 lemu: __always__
 	rm -f runpy
-	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c chain.c pb2.c arith.c osetjmp.c defs.c octet.c
+	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -169,7 +169,7 @@ lemu: __always__
 
 temu: __always__
 	rm -f runpy
-	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c chain.c pb2.c arith.c osetjmp.c defs.c octet.c
+	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
