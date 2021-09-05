@@ -4,7 +4,7 @@
 #include "octet.h"
 
 #ifndef STACK_GAP
-#define STACK_GAP 300
+#define STACK_GAP 2000
 #endif
 
 extern void defs_init(void (*marker_fn)());
@@ -14,6 +14,5 @@ extern bool IS_INT(word x);
 extern bool IS_INT2(word x, word y);
 extern int TO_INT(word x);
 extern word FROM_INT(int x);
-void opanic(byte x);
 
 #endif  // PYTHONINE_DEFS_H_

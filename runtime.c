@@ -316,6 +316,8 @@ RUN_LOOP:
   VERB("%s> ", CodeNames[opcode]);
 #if CAREFUL
   assert(opcode < CodeNames_SIZE);
+#endif
+#if UNIX
   printf("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
        function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
        ogetb(ip + 2), fp, (sp - fp) >> 1);
@@ -413,9 +415,9 @@ void SlurpGlobal(struct ReadBuf* bp, word bc, word ilist) {
         }
         g_num = 1 + DictWhatNth(GlobalDict, s);
         assert(g_num != INF);
-        printf("\nS_GLOBAL: ith=%d i_num=%d g_num=%d s=", ith, i_num, g_num);
-        Show(s);
-        printf("\n");
+        // printf("\nS_GLOBAL: ith=%d i_num=%d g_num=%d s=", ith, i_num, g_num);
+        // Show(s);
+        // printf("\n");
         // osaylabel(bc, "GlobalPack_name_i", ith);
       } break;
       case GlobalPack_patch: {
@@ -456,10 +458,10 @@ void SlurpFuncPack(struct ReadBuf* bp, word ilist, word dict) {
         pb_next(bp);
         SlurpCodePack(bp, &bc);
         DictPut(dict, name_str, bc);
-        printf("\nS_FuncPack pack:");
-        Show(name_str);
-        Show(bc);
-        Show(dict);
+        // printf("\nS_FuncPack pack:");
+        // Show(name_str);
+        // Show(bc);
+        // Show(dict);
         // osaylabel(bc, "FuncPack_name_i", ith);
       } break;
       default:
@@ -491,18 +493,18 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
         // Get the i_numth interned string.
         name_str = TrainGetNth(InternList, i_num);
         assert(name_str);
-        printf("SLURPING CLASS: [[[");
-        SayObj(name_str, 2);
+        // printf("SLURPING CLASS: [[[");
+        // SayObj(name_str, 2);
         Class_className_Put(cls, name_str);
-        SayObj(cls, 2);
-    printf("   classNum: %d\n", Class_classNum(cls));
-    printf("   className: ");
-    Show(Class_className(cls));
-    printf("   methDict: ");
-    SayObj(Class_methDict(cls), 3);
-    printf("   fieldList: ");
-    SayObj(Class_fieldList(cls), 3);
-        printf("]]]\n");
+        // SayObj(cls, 2);
+    // printf("   classNum: %d\n", Class_classNum(cls));
+    // printf("   className: ");
+    // Show(Class_className(cls));
+    // printf("   methDict: ");
+    // SayObj(Class_methDict(cls), 3);
+    // printf("   fieldList: ");
+    // SayObj(Class_fieldList(cls), 3);
+        // printf("]]]\n");
       } break;
       case ClassPack_field_i: {  // For a field.
         word field_ith = pb_int(bp);
@@ -511,7 +513,7 @@ void SlurpClassPack(struct ReadBuf* bp, word ilist) {
         word field_str = TrainGetNth(InternList, field_i_num);
         assert(field_str);
         // printf("SLURPING FIELD <<<");
-        SayObj(field_str, 2);
+        // SayObj(field_str, 2);
         // printf(">>>\n");
         TrainAppend(field_list, field_str);
       } break;

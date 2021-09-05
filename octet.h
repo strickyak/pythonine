@@ -103,7 +103,6 @@ void osaylabel(word addr, const char* label, int arg);
 void osayhexlabel(word p, word len, char* label);
 
 extern byte osize2bucket(byte size);
-extern void opanic(byte);
 extern void ozero(word begin, word len);
 extern void oassertzero(word begin, word len);
 void omemcpy(word d, word s, byte n);
@@ -129,6 +128,7 @@ extern byte ORam[1 << 16];
 
 #ifdef unix
 
+#if 0
 #define assert0(C, F)                       \
   {                                         \
     word _c_ = (C);                         \
@@ -164,19 +164,13 @@ extern byte ORam[1 << 16];
       assert(0);                            \
     }                                       \
   }
+#endif
 
-#else  // unix
+#else
 
 asm fatal_coredump();
-
 void ofatal(const char* f, word x, word y);
-#define assert0(C, F) \
-  if (!(C)) ofatal((F), 0, 0)
-#define assert1(C, F, X) \
-  if (!(C)) ofatal((F), (X), 0)
-#define assert2(C, F, X, Y) \
-  if (!(C)) ofatal((F), (X), (Y))
 
-#endif  // unix
+#endif
 
 #endif  // OCTET_H_

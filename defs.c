@@ -28,6 +28,7 @@ word FROM_INT(int x) {
   return 1u | ((word)x << 1);
 }
 
+#if 0
 void opanic(byte x) {
 #if unix
   fflush(stdout);
@@ -37,6 +38,7 @@ void opanic(byte x) {
 #endif
   assert(0);
 }
+#endif
 
 void defs_init(void (*marker_fn)()) {
 #if unix

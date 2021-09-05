@@ -135,6 +135,7 @@ void oassertzero(word begin, word len) {
 }
 #endif
 
+// Returns 0 if it cannot carve.
 word ocarve(byte len, byte cls) {
 #if CAREFUL
   if (!cls) opanic(OE_ZERO_CLASS);
@@ -157,9 +158,15 @@ word ocarve(byte len, byte cls) {
   V_OCTET("carve: delta=%x final=%x fpg=%x\n", delta, final, final_plus_guard);
 
   // detect out of memory.
-  if (final_plus_guard >= ORamEnd) return 0;
+  if (final_plus_guard >= ORamEnd) {
+    V_OCTET("carve: oom -> 0\n");
+    return 0;
+  }
   // detect overflow (if ORamEnd is very large).
-  if (final_plus_guard < ORamUsed) return 0;
+  if (final_plus_guard < ORamUsed) {
+    V_OCTET("carve: ov -> 0\n");
+    return 0;
+  }
 
   word p = ORamUsed + DHDR;
 #if GUARD
@@ -179,44 +186,56 @@ word ocarve(byte len, byte cls) {
 #if CAREFUL
   ocheckguards(p);
 #endif
+  V_OCTET("carve: ov -> %d\n", p);
   return p;
 }
 
 void ocheckguards(word p) {
 #if CAREFUL
 #if GUARD
+  if (p < ORamBegin) printf("ocheckg: p=%d\n", p);
+  if (p > ORamUsed) printf("ocheckg: p=%d\n", p);
+  assert (p > ORamBegin);
+  assert (p < ORamUsed);
+  if (ogetb(p - 4) != GUARD_ONE) printf("ocheckg: p=%d\n", p);
+  if (ogetb(p - 1) != GUARD_TWO) printf("ocheckg: p=%d\n", p);
   assert(ogetb(p - 4) == GUARD_ONE);
   assert(ogetb(p - 1) == GUARD_TWO);
   byte cap = (0x7F & ogetb(p - DCAP)) << 1;  // don't call ocap()
+  if (!cap) printf("ocheckg: p=%d\n", p);
   assert(cap);
   word final = p + cap;
+  if (ogetb(final) != GUARD_ONE) printf("ocheckg: p=%d\n", p);
   assert(ogetb(final) == GUARD_ONE);
 #endif
 #endif
 }
-word oalloc_try(byte len, byte cls) {
+// returns 0 if it fails.
+word oalloc_try(byte len, byte cls, bool try_bigger) {
   if (!cls) opanic(OE_ZERO_CLASS);
-  byte buck = osize2bucket(len);
-  V_OCTET("try: cls=%d. len=%d. buck=%d.\n", cls, len, buck);
-  // Get p from the head of the linked list.
-  word p = OBucket[buck];
-  if (p) {
+  byte best_bucket = osize2bucket(len);
+  for (byte buck = best_bucket; buck < O_NUM_BUCKETS; buck++) {
+      V_OCTET("try: cls=%d. len=%d. buck=%d.\n", cls, len, buck);
+      // Get p from the head of the linked list.
+      word p = OBucket[buck];
+      if (p) {
 #if GUARD
-    ocheckguards(p);
+        ocheckguards(p);
 #endif
-    // Remove p from the head of the linked list.
-    OBucket[buck] = ogetw(p);  // next link is at p.
-    oputw(p, 0);               // Clear where the link was.
-    oputb(p - DCLS, cls);
-    word cap = ocap(p);
+        // Remove p from the head of the linked list.
+        OBucket[buck] = ogetw(p);  // next link is at p.
+        oputw(p, 0);               // Clear where the link was.
+        oputb(p - DCLS, cls);
+        word cap = ocap(p);
 #if CAREFUL
-    assert(cap >= len);
+        assert(cap >= len);
 #endif
-    //#if DEBUG
-    // oassertzero(p, cap);
-    //#endif
-    V_OCTET("reuse: buck=%d cap=%d p=%d cls=%d\n", buck, cap, p, cls);
-    return p;
+        if (buck != best_bucket) V_OCTET("UPGRADE len %d to cap %d\n", len, cap);
+        V_OCTET("reuse: buck=%d cap=%d p=%d cls=%d\n", buck, cap, p, cls);
+        return p;
+      } else if (!try_bigger) {
+        break;
+      }
   }
 
   // Carve a new one.
@@ -225,12 +244,12 @@ word oalloc_try(byte len, byte cls) {
 
 word oalloc(byte len, byte cls) {
   // First try.
-  word p = oalloc_try(len, cls);
+  word p = oalloc_try(len, cls, false);
   if (!p) {
     // Garbage collect, and try again.
     ogc();
     // Second try.
-    p = oalloc_try(len, cls);
+    p = oalloc_try(len, cls, true);
   }
   V_OCTET("oalloc %d %d -> %d\n", len, cls, p);
   if (!p) {
@@ -243,9 +262,12 @@ word oalloc(byte len, byte cls) {
 #endif
   ozero(p, ocap(p));  // Clear payload.
 
-  // Grace period for 2 recent objs, against GC:
+  // Grace period against GC for 2 recent objs.
   OGrace2 = OGrace1;
   OGrace1 = p;
+#if CAREFUL
+  ocheckguards(p);  // extra careful
+#endif
   return p;
 }
 
@@ -266,8 +288,15 @@ void ofree(word addr) {
   if (OGrace2 == addr) OGrace2=0;
 }
 
-void omark(word addr) {
-  if (!ovalidaddr(addr)) return;
+struct prev {
+  word obj;
+  struct prev* next;
+};
+
+word omark_(word addr, word depth, struct prev* prev) {
+TAILCALL:
+  word max_depth = depth;
+  if (!ovalidaddr(addr)) return max_depth;
 
   byte cls = ogetb(addr - DCLS);
   if (!cls) opanic(OE_ZERO_CLASS);
@@ -275,25 +304,52 @@ void omark(word addr) {
 #if GUARD
   ocheckguards(addr);
 #endif
-
-  word cap_ptr = addr - DCAP;
-  byte raw_cap = ogetb(cap_ptr);
-  oputb(cap_ptr, 0x80u | raw_cap);
-
-  if (cls > O_LAST_NONPTR_CLASS) {
-    // The payload is pointers.
-    word len = ocap(addr);
-    for (word i2 = 0; i2 < len; i2 += 2) {
-      word q = ogetw(addr + i2);
-      if (ovalidaddr(q)) {
-        // Looks like q is an object pointer.
-        // See if it is marked yet.
-        byte qmark = 0x80 & ogetb(q - DCAP);
-        // If not, recurse to mark and visit the object.
-        if (!qmark) omark(q);
+  {
+      struct prev item;
+      item.obj = addr;
+      item.next = prev;
+      if (depth > 20) {
+        printf("\nPrev: ");
+        for (struct prev* p = &item; p; p = p->next) {
+          printf("%04x:%d.:%d. ", item.obj, ocap(item.obj), ocls(item.obj));
+        }
       }
-    }
+
+      word cap_ptr = addr - DCAP;
+      byte raw_cap = ogetb(cap_ptr);
+      oputb(cap_ptr, 0x80u | raw_cap);
+
+      if (cls > O_LAST_NONPTR_CLASS) {
+        // The payload is pointers.
+        word len = ocap(addr);
+        for (word i2 = 0; i2 < len; i2 += 2) {
+          word q = ogetw(addr + i2);
+          if (ovalidaddr(q)) {
+            // Looks like q is an object pointer.
+            // See if it is marked yet.
+            byte qmark = 0x80 & ogetb(q - DCAP);
+            // If not, recurse to mark and visit the object.
+            if (!qmark) {
+                if (i2+2 == len) {
+                  addr = q;
+                  goto TAILCALL;
+                }
+                word d = omark_(q, depth+1, &item);
+                max_depth = (d > max_depth) ? d : max_depth; // max
+            }
+          }
+        }
+      }
   }
+  return max_depth;
+}
+void omark(word addr) {
+  word max_depth = 0;
+  if (ovalidaddr(addr)) {
+    word d = omark_(addr, 0, NULL);
+    max_depth = (d > max_depth) ? d : max_depth; // max
+  }
+  printf("^%d^", max_depth);
 }
 
 void ogc() {
@@ -315,9 +371,7 @@ void ogc() {
     byte cls = ocls(p);
     byte cap = ocap(p);
     byte mark_bit = 0x80 & ogetb(p - DCAP);
-    // If it's unused (its class is 0 or mark bit is not set):
-    // TODO: !cls doesn't mean anything.
-    if (/*!cls ||*/ !mark_bit) {
+    if (!(0x80 & ogetb(p - DCAP))) {
       // avoid writing if already OK, to avoid MOOH VGA damage.
       if (ogetb(p-DCLS)) oputb(p - DCLS, 0);  // Clear class.
       byte buck = osize2bucket(cap);
@@ -414,8 +468,6 @@ void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
     }
     p += (word)cap + (word)DHDR;
   }
-  // word OBucket[O_NUM_BUCKETS];
-  // byte OBucketCap[] = {2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 254};
   {
     for (byte i = 0; i < O_NUM_BUCKETS; i++) {
       int count = 0;
@@ -475,6 +527,7 @@ int omemcmp(word pchar1, byte len1, word pchar2, byte len2) {
   return 0;
 }
 
+#if 0
 void ofatal(const char* f, word x, word y) {
 #if unix
   fflush(stdout);
@@ -489,6 +542,7 @@ void ofatal(const char* f, word x, word y) {
 #endif
   exit(13);
 }
+#endif
 
 #if !unix
 asm fatal_coredump() {

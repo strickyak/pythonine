@@ -19,8 +19,8 @@
                         abort(); } } while (0)
 #else
 
-#define CAREFUL 0
-#define GUARD 0
+#define CAREFUL 1
+#define GUARD 1
 
 #define assert(cond) do { if (!(cond)) { \
                         printf("@@@ ASSERT FAILED %s:%u: %s\n", __FILE__, __LINE__, #cond); \
@@ -38,5 +38,13 @@
 #define fflush(F) /*nothing*/
 
 #endif
+
+#define assert0(C, F) \
+  if (!(C)) {printf(F); fflush(stdout); assert(0);}
+#define assert1(C, F, X) \
+  if (!(C)) {printf((F), (X)); fflush(stdout); assert(0);}
+#define assert2(C, F, X, Y) \
+  if (!(C)) {printf((F), (X), (Y)); fflush(stdout); assert(0);}
+#define opanic(X) assert1(0, "\n*** opanic(%d)\n", (X))
 
 #endif
