@@ -155,6 +155,14 @@ emu: __always__
 	ls -l runpy
 
 
+kmem: __always__
+	cd tool && make kmem
+	os9 copy -r tool/kmem /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/kmem
+	os9 attr -per /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/kmem
+	(echo 'echo Nando Kmem') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
+	(set -x ; cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>/dev/null)
+
+
 lemu: __always__
 	rm -f runpy
 	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
