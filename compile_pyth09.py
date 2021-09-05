@@ -1543,6 +1543,7 @@ class Compiler(object):
         self.assignTo(t.dest)
         prev_continue_to = self.continue_to
         self.continue_to = while_top
+        prev_break_patches = self.break_patches
         self.break_patches = []
         t.block.visit(self)
         self.ops.append('Branch')
@@ -1571,6 +1572,8 @@ class Compiler(object):
         self.ops[patch_end_try] = len(self.ops)  # to the end.
         for bp in self.break_patches:
             self.ops[bp] = len(self.ops)  # to the end.
+        self.break_patches = prev_break_patches 
+        self.continue_to = prev_continue_to 
 
     def visitTry(self, t):
         self.ops.append('Try')
@@ -1615,6 +1618,7 @@ class Compiler(object):
 
         prev_continue_to = self.continue_to
         self.continue_to = start
+        prev_break_patches = self.break_patches
         self.break_patches = []
         t.block.visit(self)
 
@@ -1626,6 +1630,7 @@ class Compiler(object):
             self.ops[bp] = len(self.ops)  # to the end.
 
         self.continue_to = prev_continue_to
+        self.break_patches = prev_break_patches 
 
     def visitGlobal(self, t):
         pass
