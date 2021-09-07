@@ -90,35 +90,11 @@ def Run():
         target = LineNum[0]
         LineNum[0] = 0
         for (num, stmt) in prog:
-            print 'ln', LineNum[0], 't', target, '[', num, stmt, ']', chr(10)
             if num >= target:
                 stmt.execute()
             if LineNum[0]:
                 break
-        print 'ln', LineNum[0], 't', target
     print 'STOP'
-    print LineNum
-
-##def Run():
-##    LineNum[0] = 1
-##    while True:
-##        x, y = Nearest(LineNum[0])
-##        ## print '[',x,y,']'
-##        if x <= 0:
-##            break
-##        LineNum[0] = x + 1
-##        y.execute()
-##    print '[STOP]'
-##
-##def Nearest(n):
-##    x, y = 15000, 0
-##    for (num, stmt) in Program.items():
-##        if num >= n and num < x:
-##            x, y = num, stmt
-##    if x == 15000:
-##        x = 0
-##    return x, y
-
 
 # Lexical Token types.
 T_EOL = 0
