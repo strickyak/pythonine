@@ -294,8 +294,9 @@ struct prev {
 };
 
 word omark_(word addr, word depth, struct prev* prev) {
+  word max_depth;
 TAILCALL:
-  word max_depth = depth;
+  max_depth = depth;
   if (!ovalidaddr(addr)) return max_depth;
 
   byte cls = ogetb(addr - DCLS);
@@ -349,7 +350,7 @@ void omark(word addr) {
     word d = omark_(addr, 0, NULL);
     max_depth = (d > max_depth) ? d : max_depth; // max
   }
-  printf("^%d^", max_depth);
+  // printf("^%d^", max_depth);
 }
 
 void ogc() {

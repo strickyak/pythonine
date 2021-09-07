@@ -1,3 +1,7 @@
+break from within try: block (or multiple try: blocks) does not pop the Try structures from the frame.
+
+=================
+
 Sorting backwards?  (the listing in test_basic.py)
 
 Integer relops broken?  (doesn't seem so)

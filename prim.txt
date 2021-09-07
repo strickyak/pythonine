@@ -625,6 +625,19 @@ code GetAndClearSignal
   z = FROM_INT(signalled);
   signalled = 0;
 ]
+code For
+[
+  DoFor();
+]
+code Next
+[
+  DoNext();
+]
+code HandleStopIteration
+  arg end_while
+[
+  DoHandleStopIteration(end_while);
+]
 
 # # # # # #
 

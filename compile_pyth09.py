@@ -1521,33 +1521,21 @@ class Compiler(object):
 
     def visitFor(self, t):
         coll = t.coll.visit(self)
-        self.ops.append('CallMeth')
-        isn = self.PatchIntern('__iter__', len(self.ops))
-        self.ops.append(isn)
-        self.ops.append(1)  # one arg (self) to `__iter__`
-        self.ops.append('LocalPut')
-        self.ops.append(self.localVars.index(t.iterTemp))
+        self.ops.append('For')
+
+        while_top = len(self.ops)
+        prev_continue_to = self.continue_to
+        self.continue_to = while_top
+        prev_break_patches = self.break_patches
+        self.break_patches = []
+        self.ops.append('Dup')
 
         self.ops.append('Try')
         patch_try = len(self.ops)
         self.ops.append(0)  # to the Catch.
 
-        while_top = len(self.ops)
-        self.ops.append('LocalGet')
-        self.ops.append(self.localVars.index(t.iterTemp))
-        self.ops.append('CallMeth')
-        isn = self.PatchIntern('next', len(self.ops))
-        self.ops.append(isn)
-        self.ops.append(1)  # one arg (self) to `next`
-
+        self.ops.append('Next')
         self.assignTo(t.dest)
-        prev_continue_to = self.continue_to
-        self.continue_to = while_top
-        prev_break_patches = self.break_patches
-        self.break_patches = []
-        t.block.visit(self)
-        self.ops.append('Branch')
-        self.ops.append(while_top)
 
         self.ops.append('EndTry')  # NOT REACHED.
         patch_end_try = len(self.ops)  # NOT USED.
@@ -1555,25 +1543,26 @@ class Compiler(object):
 
         self.ops[patch_try] = len(self.ops)
         self.ops.append('Catch')
-        self.ops.append('Dup')  # create an extra copy
 
-        TStr('StopIteration').visit(self)
-        self.ops.append('NE')  # cool if it is StopIteration
+        self.ops.append('Dup')  // to match the Drop.
+        self.ops.append('HandleStopIteration')
+        self.break_patches.append(len(self.ops))
+        self.ops.append('0')
 
-        self.ops.append('BranchIfFalse') # continue at the final Drop.
-        patch_branch = len(self.ops)
-        self.ops.append(0)  # to the end.
+        self.ops[patch_end_try] = len(self.ops)  # comefrom end_try
 
-        self.ops.append('Raise') # not StopIteration: raise that extra copy
+        t.block.visit(self)
 
-        self.ops[patch_branch] = len(self.ops)
-        self.ops.append('Drop')  # drop the extra copy.
+        self.ops.append('Branch')
+        self.ops.append(while_top)
 
-        self.ops[patch_end_try] = len(self.ops)  # to the end.
         for bp in self.break_patches:
             self.ops[bp] = len(self.ops)  # to the end.
         self.break_patches = prev_break_patches 
         self.continue_to = prev_continue_to 
+
+        self.ops.append('Drop')
+
 
     def visitTry(self, t):
         self.ops.append('Try')

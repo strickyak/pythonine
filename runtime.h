@@ -36,6 +36,12 @@ extern word Builtins;
 extern word GlobalDict;  // todo: Modules.
 extern word InternList;
 extern word ClassList;
+extern word MessageList;
+extern word DunderInitStr;
+extern word DunderInitIsn;
+extern word DunderIterIsn;
+extern word NextIsn;
+extern word StopIterationStr;
 
 extern word function;
 extern word ip;  // Stores in Frame as ip - function.
@@ -90,6 +96,9 @@ void Construct(byte cls_num, byte nargs);
 void Call(byte nargs, word fn);
 void CallMeth(byte meth_isn, byte nargs);
 void Return(word retval);
+void DoFor();
+void DoNext();
+void DoHandleStopIteration(byte end_while);
 void DoTry(byte catch_loc);
 void DoEndTry(byte end_catch_loc);
 void SetJmp(word a);

@@ -20,7 +20,10 @@ word InternList;
 word ClassList;
 word MessageList;
 word DunderInitStr;
-byte DunderInitIsn;
+word DunderInitIsn;
+word DunderIterIsn;
+word NextIsn;
+word StopIterationStr;
 
 byte* codes;     // ????
 word codes_obj;  // ????
@@ -317,7 +320,7 @@ RUN_LOOP:
 #if CAREFUL
   assert(opcode < CodeNames_SIZE);
 #endif
-#if UNIX
+#if unix
   printf("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
        function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
        ogetb(ip + 2), fp, (sp - fp) >> 1);
@@ -664,6 +667,9 @@ void RuntimeInit() {
 
   DunderInitIsn = InternString(StrFromC("__init__"));
   DunderInitStr = TrainGetNth(InternList, DunderInitIsn);
+  DunderIterIsn = InternString(StrFromC("__iter__"));
+  NextIsn = InternString(StrFromC("next"));
+  StopIterationStr = TrainGetNth(InternList, InternString(StrFromC("StopIteration")));
 
   // Reserve builtin class slots, with None.
   TrainAppend(ClassList, None);  // unused 0.
@@ -931,6 +937,41 @@ void Return(word retval) {
   }
   oputw(sp, retval);
 }
+#if 0
+void MaybePrintDepth() {
+  word nf=0, nt=0;
+  printf("DEPTH: ");
+  for (word p = fp; p; p = Frame_prev_frame(p)) {
+    printf("[%d]", p);
+    nf++;
+    for (word t = Frame_tries(p); t; t = Try_next(t)) {
+      printf("%d,", t);
+      nt++;
+    }
+  }
+  printf("  DEPTH: nf=%d nt=%d\n", nf, nt);
+}
+#endif
+void DoFor() {
+  word a = PopSp();
+  word isn = DunderIterIsn;
+  PleaseCallMeth0(isn, a);
+}
+void DoNext() {
+  word a = PopSp();
+  word isn = NextIsn;
+  PleaseCallMeth0(isn, a);
+}
+void DoHandleStopIteration(byte end_while) {
+  word ex = PopSp();
+ if (!Compare(ex, StopIterationStr)) {
+   // accept "StopIteration" and break the while loop.
+   ip = function + end_while;
+ } else {
+   Raise(ex);  // re-raise the exception.
+ }
+}
+
 void DoTry(byte catch_loc) {
   word try = oalloc(Try_Size, C_Try);
   Try_catch_loc_Put(try, catch_loc);
@@ -939,6 +980,7 @@ void DoTry(byte catch_loc) {
   word next = Frame_tries(fp);
   Try_next_Put(try, next);
   Frame_tries_Put(fp, try);
+  // MaybePrintDepth();
 }
 void DoEndTry(byte end_catch_loc) {
   // Called at the end of a try.
@@ -947,6 +989,7 @@ void DoEndTry(byte end_catch_loc) {
   word try = Frame_tries(fp);
   word next = Try_next(try);
   Frame_tries_Put(fp, next);
+  ofree(try);
   ip = function + end_catch_loc;
 }
 void RaiseC(const char* msg) {
@@ -954,12 +997,15 @@ void RaiseC(const char* msg) {
   Raise(StrFromC(msg));
 }
 void Raise(word ex) {
+  assert(fp);  // Should be in a RunLoop
+  #if 0
   if (!fp) {
     printf("\nException Outside RunLoop: ");
     SayObj(ex, 3);
     osay(ex);
     exit(13);
   }
+  #endif
   Break("RAISE");
   for (word p = fp; p; p = Frame_prev_frame(p)) {
     word try = Frame_tries(p);
@@ -977,6 +1023,7 @@ void Raise(word ex) {
       PushSp(ex);
 
       ip = function + Try_catch_loc(try);
+      ofree(try);
       Break("LONGJMP");
       olongjmp(run_loop_jmp_buf, CONTINUE);
     }
