@@ -1027,6 +1027,7 @@ class Compiler(object):
         self.tempVars = []  # not used yet
         self.continue_to = None
         self.break_patches = None
+        self.try_blocks_pending = 0
 
     def AddIntern(self, s):
         ## self.interns :: s -> (i, patches)
@@ -1551,7 +1552,10 @@ class Compiler(object):
 
         self.ops[patch_end_try] = len(self.ops)  # comefrom end_try
 
+        prev_tbp = self.try_blocks_pending
+        self.try_blocks_pending = 0
         t.block.visit(self)
+        self.try_blocks_pending = prev_tbp
 
         self.ops.append('Branch')
         self.ops.append(while_top)
@@ -1569,7 +1573,9 @@ class Compiler(object):
         patch_try = len(self.ops)
         self.ops.append(0)  # to the Catch.
 
+        self.try_blocks_pending += 1
         t.try_block.visit(self)
+        self.try_blocks_pending -= 1
 
         self.ops.append('EndTry')
         patch_catch = len(self.ops)
@@ -1586,6 +1592,9 @@ class Compiler(object):
     def visitBreak(self, t):
         if self.break_patches is None:
             raise Exception('bad_break')
+        if self.try_blocks_pending:
+            self.ops.append('ShedTryBlocks')
+            self.ops.append(self.try_blocks_pending)
         self.ops.append('Branch')
         self.break_patches.append(len(self.ops))
         self.ops.append(0)
@@ -1609,7 +1618,11 @@ class Compiler(object):
         self.continue_to = start
         prev_break_patches = self.break_patches
         self.break_patches = []
+
+        prev_tbp = self.try_blocks_pending
+        self.try_blocks_pending = 0
         t.block.visit(self)
+        self.try_blocks_pending = prev_tbp
 
         self.ops.append('Branch')
         self.ops.append(start)

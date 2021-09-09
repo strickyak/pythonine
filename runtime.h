@@ -101,6 +101,7 @@ void DoNext();
 void DoHandleStopIteration(byte end_while);
 void DoTry(byte catch_loc);
 void DoEndTry(byte end_catch_loc);
+void ShedTryBlocks(byte n);
 void SetJmp(word a);
 void Implode(byte len, word chain);
 int Len(word o);

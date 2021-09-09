@@ -638,6 +638,11 @@ code HandleStopIteration
 [
   DoHandleStopIteration(end_while);
 ]
+code ShedTryBlocks
+  arg n
+[
+  ShedTryBlocks(n);
+]
 
 # # # # # #
 

@@ -971,6 +971,15 @@ void DoHandleStopIteration(byte end_while) {
    Raise(ex);  // re-raise the exception.
  }
 }
+void ShedTryBlocks(byte n) {
+  assert(fp);
+  for (byte i=0; i<n; i++) {
+    word t = Frame_tries(fp);
+    assert(t);
+    Frame_tries_Put(fp, Try_next(t));
+    ofree(t);
+  }
+}
 
 void DoTry(byte catch_loc) {
   word try = oalloc(Try_Size, C_Try);
