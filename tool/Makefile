@@ -1,7 +1,7 @@
 all: kmem emulate
 
-kmem: kmem.c
-	/opt/yak/cmoc/bin/cmoc --os9 kmem.c
+kmem: kmem.c mmap.h mmap.c
+	/opt/yak/cmoc/bin/cmoc --os9 kmem.c mmap.c
 
 emulate:
 	os9 copy -r kmem /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/kmem
