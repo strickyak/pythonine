@@ -79,7 +79,7 @@ int main() {
         byte b = BlockNum[k];
         printf("POKE: k=%d MAP start: %d \n", k, b );
         Disable();
-        Poke(0xFFA0 + 8 + 6, b);
+        POKE(0xFFA0 + 8 + 6, b);
         assert( *(byte*)0xC000 == 0xDE ^ b);
         Enable();
   }

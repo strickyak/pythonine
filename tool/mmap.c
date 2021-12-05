@@ -5,24 +5,16 @@
 #define F_ClrBlk 0x50
 #define F_MapBlk 0x4F
 
-void Disable() {
+asm void Disable() {
   asm {
     orcc    #$50
   }
 }
 
-void Enable() {
+asm void Enable() {
   asm {
-    orcc    #$AF
+    andcc    #$AF
   }
-}
-
-byte Peek(word addr) {
-    return *(byte*)addr;
-}
-
-void Poke(word addr, byte val) {
-    *(byte*)addr = val;
 }
 
 byte AllocateBlock(byte num_blks, word* start_blk_out) {
