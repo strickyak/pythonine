@@ -10,7 +10,7 @@ and Basic09.
 Currently compilation of .py files is only on Linux.  It compiles to
 a bytecode file, which you must then copy to your Nitr/OS9 machine,
 and run with the bytecode interpreter `runpy`.  Only a small subset of
-python 2.3 is supported.
+python2 is supported.
 
 ## v0.1: Premade
 
@@ -76,3 +76,14 @@ to the Basic prompt.
 ## Next Version
 
 v0.2 is in progress.
+
+## Relationship to MicroPython: None.
+
+This is an original project, from scratch, and bears no relationship to
+MicroPython or CircuitPython.  As I understand them, they are a significant
+subset of Python3, and require around 256kB of RAM.
+
+This project is a tiny subset of Python2, designed to run in less than
+64kB of RAM.
+
+## License: MIT
