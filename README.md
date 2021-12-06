@@ -85,7 +85,7 @@ v0.2 is in progress.
 
 This is an original project, from scratch, and bears no relationship to
 MicroPython or CircuitPython.  As I understand them, they are a significant
-subset of Python3, and require around 256kB of RAM.
+subset of Python3, and require around 250kB of memory.
 
 This project is a tiny subset of Python2, designed to run in less than
 64kB of RAM.
