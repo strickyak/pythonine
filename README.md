@@ -23,6 +23,10 @@ Direct Page is $00.  This is always the case on OS9 Level 2, and never
 the case on OS9 Level 1.  So this can only run on Level 2.  It's going
 to need almost the full 64k memory space, anyway.
 
+If you want to see what is inside the bytecode file, you can browse
+`premade/bc.listing`.  It uses my own tiny protocol buffer format
+(message defs in `bc.proto`) and my own bytecodes (defined in `prim.txt`).
+
 ## v0.1: make test
 
 Try `make test`, but it won't work for you.  You'll have to fix paths
