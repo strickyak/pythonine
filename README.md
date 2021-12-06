@@ -34,21 +34,22 @@ wait for v0.2.
 V0.1 is roughly what I demoed at VCF-SE 2021 (Vintage Computer Festival
 -- Southeast, Atlanta, September 2021).  Compile `v0.1/test_basic.py`
 into bytecodes `bc` and the runtime into the OS9 binary module `runpy`.
-Then copy these onto and OS9 Level 2 (v3.3.0) disk, with `runpy` in the
+Then copy these onto an OS9 Level 2 (v3.3.0) disk, with `runpy` in the
 `CMDS` directory, and `bc` in the Current Working Directory.  Do not
 allow any character translations; both files are binary.  After booting
-int a shell, run `runpy #128`.  It is hard-wired to load `bc` (which
+into a shell, run `runpy #128`.  It is hard-wired to load `bc` (which
 takes a long time).
 
 How I build them:
 
 ```
 make T=_basic _build _runpy  # (then hit ^C after it runs a while)
-make T=_basic emu
+make T=_basic emu            # (optional, to try it in my emulator)
 ```
 
-They run a small version of BASIC that I wrote, very slowly.  It preloads
-this BASIC program, to check the Collatz conjecture:
+They run (very slowly) a small version of Basic that I wrote in the
+currently-supported subset of Python.  It preloads this Basic program,
+to check the Collatz conjecture:
 
 ```
 10 REM Prove the Collatz Conjecture
@@ -65,10 +66,12 @@ this BASIC program, to check the Collatz conjecture:
 520 GOTO 110
 ```
 
-At the prompt, you can type `LIST` or `RUN` or `SHELL`.
-Or you can define/redefine a line by starting with a line number.
-Or you can type a `PRINT` statement.  But the Basic only supports the
-five statement types used above, and only in the trivial way demonstrated.
+At the prompt, you can type `LIST` or `RUN` or `SHELL` or `BYE`.  Or you
+can define/redefine a line by starting with a line number.  Or you
+can type a `PRINT` statement.  But the Basic only supports the five
+statement types used above, and only in the trivial way demonstrated.
+There is not (yet) any way to interrupt a running program and get back
+to the Basic prompt.
 
 ## Next Version
 
