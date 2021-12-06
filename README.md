@@ -1,4 +1,4 @@
-# pythonine -- a tiny python for 6809 with OS9 Level2
+# pythonine -- a tiny python for 6809 with Nitr/OS9 Level2
 
 This is a tiny python for a 64k memory space.  Initially I'm targeting
 Motorola 6809 under OS9 Level2 or NitrOS9 Level2.
@@ -7,13 +7,29 @@ _Etymology:_ Programmers use the word "pythonic", while in biology the
 adjective is "pythonine".  And the pun is that it ends in "09" like 6809
 and Basic09.
 
-## v0.1
+Currently compilation of .py files is only on Linux.  It compiles to
+a bytecode file, which you must then copy to your Nitr/OS9 machine,
+and run with the bytecode interpreter `runpy`.  Only a small subset of
+python 2.3 is supported.
+
+## v0.1: Premade
+
+Premade binary `runpy` and bytecode file `bc` are in the `v0.1/premade`
+directory.  Section "Basic Demo" below tells you to copy `runpy` to your
+`CMDS` directory, and `bc` to your current OS9 working directory.
+
+As an optimization (in both time and space), the binary assumes that the
+Direct Page is $00.  This is always the case on OS9 Level 2, and never
+the case on OS9 Level 1.  So this can only run on Level 2.  It's going
+to need almost the full 64k memory space, anyway.
+
+## v0.1: make test
 
 Try `make test`, but it won't work for you.  You'll have to fix paths
 or mimic my environment, and that won't be easy.  It might be better to
 wait for v0.2.
 
-## v0.1 Basic Demo
+## v0.1: Basic Demo
 
 V0.1 is roughly what I demoed at VCF-SE 2021 (Vintage Computer Festival
 -- Southeast, Atlanta, September 2021).  Compile `v0.1/test_basic.py`
