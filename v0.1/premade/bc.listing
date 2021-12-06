@@ -1,0 +1,3056 @@
+   0. (0a) 1 CodePack_bytecode: str '\x00\x00\x00\xff\xff\xffC\x10\x003\x00\x10\t\x0f\n&\x00%\x03\x00\x10\x11\x03\x01\x10\x12\x03\x02\x10\x13\x03\x03\x10\x14\x03\x04\x10\x153\x00\x10\x1d3\x00\x10\x1e\x03\x012\x01\x10\x1f\x0f"&\x00%\x0f!&\x00%\x05I\x0c*'
+    [ 6] 67  SpecialStderr
+    [ 7] 16  GlobalPut 0
+    [ 9] 51  NewDict 0
+    [11] 16  GlobalPut 9
+    [13] 15  GlobalGet 10
+    [15] 38  Call 0
+    [17] 37  Drop
+    [18]  3  LitInt 0
+    [20] 16  GlobalPut 17
+    [22]  3  LitInt 1
+    [24] 16  GlobalPut 18
+    [26]  3  LitInt 2
+    [28] 16  GlobalPut 19
+    [30]  3  LitInt 3
+    [32] 16  GlobalPut 20
+    [34]  3  LitInt 4
+    [36] 16  GlobalPut 21
+    [38] 51  NewDict 0
+    [40] 16  GlobalPut 29
+    [42] 51  NewDict 0
+    [44] 16  GlobalPut 30
+    [46]  3  LitInt 1
+    [48] 50  NewList 1
+    [50] 16  GlobalPut 31
+    [52] 15  GlobalGet 34
+    [54] 38  Call 0
+    [56] 37  Drop
+    [57] 15  GlobalGet 33
+    [59] 38  Call 0
+    [61] 37  Drop
+    [62]  5  LitStr 73
+    [64] 12  SimplePrint
+    [65] 42  RetNone
+   0. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'E'
+     ;
+   1. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Add'
+     ;
+   2. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Sub'
+     ;
+   3. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Mul'
+     ;
+   4. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Div'
+     ;
+   5. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Mod'
+     ;
+   6. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'EQ'
+     ;
+   7. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'LT'
+     ;
+   8. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'GT'
+     ;
+   9. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'BinaryOps'
+     ;
+   10. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'initBinaryOps'
+     ;
+   11. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'XInt'
+     ;
+   12. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str '__init__'
+     ;
+   13. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str '__str__'
+     ;
+   14. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'eval'
+     ;
+   15. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'num'
+     ;
+   16. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'XVar'
+     ;
+   17. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'var'
+     ;
+   18. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'XBinary'
+     ;
+   19. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'a'
+     ;
+   20. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'b'
+     ;
+   21. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'op'
+     ;
+   22. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'XCall'
+     ;
+   23. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'args'
+     ;
+   24. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'fn'
+     ;
+   25. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'List'
+     ;
+   26. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Run'
+     ;
+   27. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'T_EOL'
+     ;
+   28. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'T_INT'
+     ;
+   29. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'T_STR'
+     ;
+   30. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'T_WORD'
+     ;
+   31. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'T_ETC'
+     ;
+   32. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Parser'
+     ;
+   33. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Lex'
+     ;
+   34. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Lex_1'
+     ;
+   35. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Lex_2'
+     ;
+   36. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Lex_3'
+     ;
+   37. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parsePrim'
+     ;
+   38. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parsePrimEtc'
+     ;
+   39. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parseProduct'
+     ;
+   40. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parseSum'
+     ;
+   41. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parseRel'
+     ;
+   42. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parseExpr'
+     ;
+   43. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parseLET'
+     ;
+   44. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parseREM'
+     ;
+   45. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parsePRINT'
+     ;
+   46. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parseGOTO'
+     ;
+   47. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parseIF'
+     ;
+   48. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parseStatementOrNone'
+     ;
+   49. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'parseNumberedStatement'
+     ;
+   50. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'i'
+     ;
+   51. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'line'
+     ;
+   52. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'n'
+     ;
+   53. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 't'
+     ;
+   54. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'x'
+     ;
+   55. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Insert'
+     ;
+   56. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'REM'
+     ;
+   57. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'execute'
+     ;
+   58. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'remark'
+     ;
+   59. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'LET'
+     ;
+   60. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'expr'
+     ;
+   61. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'PRINT'
+     ;
+   62. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'tail'
+     ;
+   63. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'GOTO'
+     ;
+   64. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'IF'
+     ;
+   65. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'pred'
+     ;
+   66. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'target'
+     ;
+   67. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Vars'
+     ;
+   68. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Program'
+     ;
+   69. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'LineNum'
+     ;
+   70. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Command'
+     ;
+   71. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Loop'
+     ;
+   72. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'Init'
+     ;
+   73. (13) 2 CodePack_interns: message:
+     0. (5a) 11 InternPack_s: str 'BYE!'
+     0. (61) 12 InternPack_patch: int 63
+     ;
+   0. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 0
+     0. (71) 14 GlobalPack_patch: int 8
+     ;
+   1. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 1
+     ;
+   2. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 2
+     ;
+   3. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 3
+     ;
+   4. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 4
+     ;
+   5. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 5
+     ;
+   6. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 6
+     ;
+   7. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 7
+     ;
+   8. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 8
+     ;
+   9. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 9
+     0. (71) 14 GlobalPack_patch: int 12
+     ;
+   10. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 10
+     0. (71) 14 GlobalPack_patch: int 14
+     ;
+   11. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 11
+     ;
+   12. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 16
+     ;
+   13. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 18
+     ;
+   14. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 22
+     ;
+   15. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 25
+     ;
+   16. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 26
+     ;
+   17. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 27
+     0. (71) 14 GlobalPack_patch: int 21
+     ;
+   18. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 28
+     0. (71) 14 GlobalPack_patch: int 25
+     ;
+   19. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 29
+     0. (71) 14 GlobalPack_patch: int 29
+     ;
+   20. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 30
+     0. (71) 14 GlobalPack_patch: int 33
+     ;
+   21. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 31
+     0. (71) 14 GlobalPack_patch: int 37
+     ;
+   22. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 32
+     ;
+   23. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 55
+     ;
+   24. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 56
+     ;
+   25. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 59
+     ;
+   26. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 61
+     ;
+   27. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 63
+     ;
+   28. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 64
+     ;
+   29. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 67
+     0. (71) 14 GlobalPack_patch: int 41
+     ;
+   30. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 68
+     0. (71) 14 GlobalPack_patch: int 45
+     ;
+   31. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 69
+     0. (71) 14 GlobalPack_patch: int 51
+     ;
+   32. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 70
+     ;
+   33. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 71
+     0. (71) 14 GlobalPack_patch: int 58
+     ;
+   34. (1b) 3 CodePack_globals: message:
+     0. (69) 13 GlobalPack_name_i: int 72
+     0. (71) 14 GlobalPack_patch: int 53
+     ;
+   0. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 1
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x00!\x01\x07(*'
+        [ 6] 33  ArgGet 0
+        [ 8] 33  ArgGet 1
+        [10]  7  Plus
+        [11] 40  Return
+        [12] 42  RetNone
+       ;
+     ;
+   1. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 70
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str "\x01\x04\x00\xff\xff\xff9Q!\x00\x0f\x00&\x01$\x02#\x02'\x01\x01%#\x02-\x02\x0f\x01\x1b\x125#\x02'\x04\x01=\x02$\x01$\x03#\x03#\x01\x0f\x02&\x02%\x11O#\x02'\x06\x01$\x03#\x03\x12H#\x03'\x07\x01%\x11O\x05\x08\x0f\x03&\x01<:Z;$\x00\x05\n\x0c#\x00\x0c*"
+        [ 6] 57  Try 81
+        [ 8] 33  ArgGet 0
+        [10] 15  GlobalGet 0
+        [12] 38  Call 1
+        [14] 36  LocalPut 2
+        [16] 35  LocalGet 2
+        [18] 39  CallMeth 1 1
+        [21] 37  Drop
+        [22] 35  LocalGet 2
+        [24] 45  MemberGet 2
+        [26] 15  GlobalGet 1
+        [28] 27  EQ
+        [29] 18  BranchIfFalse 53
+        [31] 35  LocalGet 2
+        [33] 39  CallMeth 4 1
+        [36] 61  Explode 2
+        [38] 36  LocalPut 1
+        [40] 36  LocalPut 3
+        [42] 35  LocalGet 3
+        [44] 35  LocalGet 1
+        [46] 15  GlobalGet 2
+        [48] 38  Call 2
+        [50] 37  Drop
+        [51] 17  Branch 79
+        [53] 35  LocalGet 2
+        [55] 39  CallMeth 6 1
+        [58] 36  LocalPut 3
+        [60] 35  LocalGet 3
+        [62] 18  BranchIfFalse 72
+        [64] 35  LocalGet 3
+        [66] 39  CallMeth 7 1
+        [69] 37  Drop
+        [70] 17  Branch 79
+        [72]  5  LitStr 8
+        [74] 15  GlobalGet 3
+        [76] 38  Call 1
+        [78] 60  Raise
+        [79] 58  EndTry 90
+        [81] 59  Catch
+        [82] 36  LocalPut 0
+        [84]  5  LitStr 10
+        [86] 12  SimplePrint
+        [87] 35  LocalGet 0
+        [89] 12  SimplePrint
+        [90] 42  RetNone
+       0. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Parser'
+         ;
+       1. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Lex'
+         0. (61) 12 InternPack_patch: int 19
+         ;
+       2. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 't'
+         0. (61) 12 InternPack_patch: int 25
+         ;
+       3. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'T_INT'
+         ;
+       4. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'parseNumberedStatement'
+         0. (61) 12 InternPack_patch: int 34
+         ;
+       5. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Insert'
+         ;
+       6. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'parseStatementOrNone'
+         0. (61) 12 InternPack_patch: int 56
+         ;
+       7. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'execute'
+         0. (61) 12 InternPack_patch: int 67
+         ;
+       8. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'not_a_statement'
+         0. (61) 12 InternPack_patch: int 73
+         ;
+       9. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Exception'
+         ;
+       10. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str ' *** ERR'
+         0. (61) 12 InternPack_patch: int 85
+         ;
+       0. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 0
+         0. (71) 14 GlobalPack_patch: int 11
+         ;
+       1. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 3
+         0. (71) 14 GlobalPack_patch: int 27
+         ;
+       2. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 5
+         0. (71) 14 GlobalPack_patch: int 47
+         ;
+       3. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 9
+         0. (71) 14 GlobalPack_patch: int 75
+         ;
+       ;
+     ;
+   2. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 4
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x00!\x01\n(*'
+        [ 6] 33  ArgGet 0
+        [ 8] 33  ArgGet 1
+        [10] 10  Div
+        [11] 40  Return
+        [12] 42  RetNone
+       ;
+     ;
+   3. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 6
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x00!\x01\x1b(*'
+        [ 6] 33  ArgGet 0
+        [ 8] 33  ArgGet 1
+        [10] 27  EQ
+        [11] 40  Return
+        [12] 42  RetNone
+       ;
+     ;
+   4. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 8
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x00!\x01\x1e(*'
+        [ 6] 33  ArgGet 0
+        [ 8] 33  ArgGet 1
+        [10] 30  GT
+        [11] 40  Return
+        [12] 42  RetNone
+       ;
+     ;
+   5. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 72
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x00\x00\x00\xff\xff\xff\x05\x00\x0f\x00&\x01%\x05\x02\x0f\x00&\x01%\x05\x03\x0f\x00&\x01%\x05\x04\x0f\x00&\x01%\x05\x05\x0f\x00&\x01%\x05\x06\x0f\x00&\x01%\x05\x07\x0f\x00&\x01%\x05\x08\x0f\x00&\x01%\x05\t\x0f\x00&\x01%\x05\n\x0f\x00&\x01%\x05\x0b\x0f\x00&\x01%\x05\x0c\x0f\x00&\x01%*'
+        [ 6]  5  LitStr 0
+        [ 8] 15  GlobalGet 0
+        [10] 38  Call 1
+        [12] 37  Drop
+        [13]  5  LitStr 2
+        [15] 15  GlobalGet 0
+        [17] 38  Call 1
+        [19] 37  Drop
+        [20]  5  LitStr 3
+        [22] 15  GlobalGet 0
+        [24] 38  Call 1
+        [26] 37  Drop
+        [27]  5  LitStr 4
+        [29] 15  GlobalGet 0
+        [31] 38  Call 1
+        [33] 37  Drop
+        [34]  5  LitStr 5
+        [36] 15  GlobalGet 0
+        [38] 38  Call 1
+        [40] 37  Drop
+        [41]  5  LitStr 6
+        [43] 15  GlobalGet 0
+        [45] 38  Call 1
+        [47] 37  Drop
+        [48]  5  LitStr 7
+        [50] 15  GlobalGet 0
+        [52] 38  Call 1
+        [54] 37  Drop
+        [55]  5  LitStr 8
+        [57] 15  GlobalGet 0
+        [59] 38  Call 1
+        [61] 37  Drop
+        [62]  5  LitStr 9
+        [64] 15  GlobalGet 0
+        [66] 38  Call 1
+        [68] 37  Drop
+        [69]  5  LitStr 10
+        [71] 15  GlobalGet 0
+        [73] 38  Call 1
+        [75] 37  Drop
+        [76]  5  LitStr 11
+        [78] 15  GlobalGet 0
+        [80] 38  Call 1
+        [82] 37  Drop
+        [83]  5  LitStr 12
+        [85] 15  GlobalGet 0
+        [87] 38  Call 1
+        [89] 37  Drop
+        [90] 42  RetNone
+       0. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '10 REM Prove the Collatz Conjecture'
+         0. (61) 12 InternPack_patch: int 7
+         ;
+       1. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Command'
+         ;
+       2. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '30 LET a = 0                # Loop for natural nums with A'
+         0. (61) 12 InternPack_patch: int 14
+         ;
+       3. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '50 LET a = a + 1'
+         0. (61) 12 InternPack_patch: int 21
+         ;
+       4. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '80 PRINT'
+         0. (61) 12 InternPack_patch: int 28
+         ;
+       5. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '100 LET b = a               # start testing a chain with A'
+         0. (61) 12 InternPack_patch: int 35
+         ;
+       6. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '110 PRINT b'
+         0. (61) 12 InternPack_patch: int 42
+         ;
+       7. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '120 IF b < 2 THEN 50        # next a'
+         0. (61) 12 InternPack_patch: int 49
+         ;
+       8. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '130 IF b % 2 = 0 THEN 500'
+         0. (61) 12 InternPack_patch: int 56
+         ;
+       9. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '200 LET b = 3 * b + 1       # if odd'
+         0. (61) 12 InternPack_patch: int 63
+         ;
+       10. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '220 GOTO 110'
+         0. (61) 12 InternPack_patch: int 70
+         ;
+       11. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '500 LET b = b / 2           # if even'
+         0. (61) 12 InternPack_patch: int 77
+         ;
+       12. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '520 GOTO 110'
+         0. (61) 12 InternPack_patch: int 84
+         ;
+       0. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 1
+         0. (71) 14 GlobalPack_patch: int 9
+         1. (71) 14 GlobalPack_patch: int 16
+         2. (71) 14 GlobalPack_patch: int 23
+         3. (71) 14 GlobalPack_patch: int 30
+         4. (71) 14 GlobalPack_patch: int 37
+         5. (71) 14 GlobalPack_patch: int 44
+         6. (71) 14 GlobalPack_patch: int 51
+         7. (71) 14 GlobalPack_patch: int 58
+         8. (71) 14 GlobalPack_patch: int 65
+         9. (71) 14 GlobalPack_patch: int 72
+         10. (71) 14 GlobalPack_patch: int 79
+         11. (71) 14 GlobalPack_patch: int 86
+         ;
+       ;
+     ;
+   6. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 55
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x01\x0f\x00!\x006*'
+        [ 6] 33  ArgGet 1
+        [ 8] 15  GlobalGet 0
+        [10] 33  ArgGet 0
+        [12] 54  PutItem
+        [13] 42  RetNone
+       0. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Program'
+         ;
+       0. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 0
+         0. (71) 14 GlobalPack_patch: int 9
+         ;
+       ;
+     ;
+   7. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 7
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x00!\x01\x1d(*'
+        [ 6] 33  ArgGet 0
+        [ 8] 33  ArgGet 1
+        [10] 29  LT
+        [11] 40  Return
+        [12] 42  RetNone
+       ;
+     ;
+   8. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 25
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str "\x00\x03\x00\xff\xff\xff\x03\r8\x0c\x0f\x00'\x01\x01LP,9\x1dQ=\x02$\x01$\x02:!;,R6#\x02\x124#\x01\x0c#\x02'\x02\x01\x0c\x03\r8\x0c\x114\x11\x11%*"
+        [ 6]  3  LitInt 13
+        [ 8] 56  Chr
+        [ 9] 12  SimplePrint
+        [10] 15  GlobalGet 0
+        [12] 39  CallMeth 1 1
+        [15] 76  Sorted
+        [16] 80  For
+        [17] 44  Dup
+        [18] 57  Try 29
+        [20] 81  Next
+        [21] 61  Explode 2
+        [23] 36  LocalPut 1
+        [25] 36  LocalPut 2
+        [27] 58  EndTry 33
+        [29] 59  Catch
+        [30] 44  Dup
+        [31] 82  HandleStopIteration 54
+        [33] 35  LocalGet 2
+        [35] 18  BranchIfFalse 52
+        [37] 35  LocalGet 1
+        [39] 12  SimplePrint
+        [40] 35  LocalGet 2
+        [42] 39  CallMeth 2 1
+        [45] 12  SimplePrint
+        [46]  3  LitInt 13
+        [48] 56  Chr
+        [49] 12  SimplePrint
+        [50] 17  Branch 52
+        [52] 17  Branch 17
+        [54] 37  Drop
+        [55] 42  RetNone
+       0. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Program'
+         ;
+       1. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'items'
+         0. (61) 12 InternPack_patch: int 13
+         ;
+       2. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '__str__'
+         0. (61) 12 InternPack_patch: int 43
+         ;
+       0. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 0
+         0. (71) 14 GlobalPack_patch: int 11
+         ;
+       ;
+     ;
+   9. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 71
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str "\x00\x01\x00\xff\xff\xffE\x12\x8b\x05\x00\x0cA'\x01\x01$\x00#\x00\x14\x12\x1b\x11\x8b\x11\x1b#\x00'\x02\x01'\x03\x01$\x00\x03\x01#\x00\x05\x04\x1b\x13=#\x00\x05\x05\x1b\x13=#\x00\x05\x06\x1b\x13=\x14\x12C\x11\x8b\x11\x89\x03\x01#\x00\x05\x07\x1b\x13T#\x00\x05\x08\x1b\x13T\x14\x12]\x0f\x00&\x00%\x11\x89\x03\x01#\x00\x05\n\x1b\x13n#\x00\x05\x0b\x1b\x13n\x14\x12w\x0f\x01&\x00%\x11\x89#\x00\x05\r\x1b\x12\x82N%\x11\x89#\x00\x0f\x02&\x01%\x11\x06*"
+        [ 6] 69  SpecialTrue
+        [ 7] 18  BranchIfFalse 139
+        [ 9]  5  LitStr 0
+        [11] 12  SimplePrint
+        [12] 65  SpecialStdin
+        [13] 39  CallMeth 1 1
+        [16] 36  LocalPut 0
+        [18] 35  LocalGet 0
+        [20] 20  Not
+        [21] 18  BranchIfFalse 27
+        [23] 17  Branch 139
+        [25] 17  Branch 27
+        [27] 35  LocalGet 0
+        [29] 39  CallMeth 2 1
+        [32] 39  CallMeth 3 1
+        [35] 36  LocalPut 0
+        [37]  3  LitInt 1
+        [39] 35  LocalGet 0
+        [41]  5  LitStr 4
+        [43] 27  EQ
+        [44] 19  BranchIfTrue 61
+        [46] 35  LocalGet 0
+        [48]  5  LitStr 5
+        [50] 27  EQ
+        [51] 19  BranchIfTrue 61
+        [53] 35  LocalGet 0
+        [55]  5  LitStr 6
+        [57] 27  EQ
+        [58] 19  BranchIfTrue 61
+        [60] 20  Not
+        [61] 18  BranchIfFalse 67
+        [63] 17  Branch 139
+        [65] 17  Branch 137
+        [67]  3  LitInt 1
+        [69] 35  LocalGet 0
+        [71]  5  LitStr 7
+        [73] 27  EQ
+        [74] 19  BranchIfTrue 84
+        [76] 35  LocalGet 0
+        [78]  5  LitStr 8
+        [80] 27  EQ
+        [81] 19  BranchIfTrue 84
+        [83] 20  Not
+        [84] 18  BranchIfFalse 93
+        [86] 15  GlobalGet 0
+        [88] 38  Call 0
+        [90] 37  Drop
+        [91] 17  Branch 137
+        [93]  3  LitInt 1
+        [95] 35  LocalGet 0
+        [97]  5  LitStr 10
+        [99] 27  EQ
+        [100] 19  BranchIfTrue 110
+        [102] 35  LocalGet 0
+        [104]  5  LitStr 11
+        [106] 27  EQ
+        [107] 19  BranchIfTrue 110
+        [109] 20  Not
+        [110] 18  BranchIfFalse 119
+        [112] 15  GlobalGet 1
+        [114] 38  Call 0
+        [116] 37  Drop
+        [117] 17  Branch 137
+        [119] 35  LocalGet 0
+        [121]  5  LitStr 13
+        [123] 27  EQ
+        [124] 18  BranchIfFalse 130
+        [126] 78  ForkShellAndWait
+        [127] 37  Drop
+        [128] 17  Branch 137
+        [130] 35  LocalGet 0
+        [132] 15  GlobalGet 2
+        [134] 38  Call 1
+        [136] 37  Drop
+        [137] 17  Branch 6
+        [139] 42  RetNone
+       0. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '  -->'
+         0. (61) 12 InternPack_patch: int 10
+         ;
+       1. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'readline'
+         0. (61) 12 InternPack_patch: int 14
+         ;
+       2. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'rstrip'
+         0. (61) 12 InternPack_patch: int 30
+         ;
+       3. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'upper'
+         0. (61) 12 InternPack_patch: int 33
+         ;
+       4. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Q'
+         0. (61) 12 InternPack_patch: int 42
+         ;
+       5. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'B'
+         0. (61) 12 InternPack_patch: int 49
+         ;
+       6. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'BYE'
+         0. (61) 12 InternPack_patch: int 56
+         ;
+       7. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'L'
+         0. (61) 12 InternPack_patch: int 72
+         ;
+       8. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'LIST'
+         0. (61) 12 InternPack_patch: int 79
+         ;
+       9. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'List'
+         ;
+       10. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'R'
+         0. (61) 12 InternPack_patch: int 98
+         ;
+       11. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'RUN'
+         0. (61) 12 InternPack_patch: int 105
+         ;
+       12. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Run'
+         ;
+       13. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'SHELL'
+         0. (61) 12 InternPack_patch: int 122
+         ;
+       14. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Command'
+         ;
+       0. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 9
+         0. (71) 14 GlobalPack_patch: int 87
+         ;
+       1. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 12
+         0. (71) 14 GlobalPack_patch: int 113
+         ;
+       2. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 14
+         0. (71) 14 GlobalPack_patch: int 133
+         ;
+       ;
+     ;
+   10. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 5
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x00!\x01\x0b(*'
+        [ 6] 33  ArgGet 0
+        [ 8] 33  ArgGet 1
+        [10] 11  Mod
+        [11] 40  Return
+        [12] 42  RetNone
+       ;
+     ;
+   11. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 3
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x00!\x01\t(*'
+        [ 6] 33  ArgGet 0
+        [ 8] 33  ArgGet 1
+        [10]  9  Times
+        [11] 40  Return
+        [12] 42  RetNone
+       ;
+     ;
+   12. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 26
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str "\x00\x05\x00\xff\xff\xff\x0f\x00'\x01\x01L$\x02\x03\x01\x0f\x01\x03\x006\x0f\x01\x03\x005\x12\\\x0f\x01\x03\x005$\x04\x03\x00\x0f\x01\x03\x006#\x02P,99Q=\x02$\x01$\x03:=;,RY#\x01#\x04 \x12L#\x03'\x03\x01%\x11L\x0f\x01\x03\x005\x12W\x11Y\x11W\x11-%\x11\x15\x05\x04\x0c*"
+        [ 6] 15  GlobalGet 0
+        [ 8] 39  CallMeth 1 1
+        [11] 76  Sorted
+        [12] 36  LocalPut 2
+        [14]  3  LitInt 1
+        [16] 15  GlobalGet 1
+        [18]  3  LitInt 0
+        [20] 54  PutItem
+        [21] 15  GlobalGet 1
+        [23]  3  LitInt 0
+        [25] 53  GetItem
+        [26] 18  BranchIfFalse 92
+        [28] 15  GlobalGet 1
+        [30]  3  LitInt 0
+        [32] 53  GetItem
+        [33] 36  LocalPut 4
+        [35]  3  LitInt 0
+        [37] 15  GlobalGet 1
+        [39]  3  LitInt 0
+        [41] 54  PutItem
+        [42] 35  LocalGet 2
+        [44] 80  For
+        [45] 44  Dup
+        [46] 57  Try 57
+        [48] 81  Next
+        [49] 61  Explode 2
+        [51] 36  LocalPut 1
+        [53] 36  LocalPut 3
+        [55] 58  EndTry 61
+        [57] 59  Catch
+        [58] 44  Dup
+        [59] 82  HandleStopIteration 89
+        [61] 35  LocalGet 1
+        [63] 35  LocalGet 4
+        [65] 32  GE
+        [66] 18  BranchIfFalse 76
+        [68] 35  LocalGet 3
+        [70] 39  CallMeth 3 1
+        [73] 37  Drop
+        [74] 17  Branch 76
+        [76] 15  GlobalGet 1
+        [78]  3  LitInt 0
+        [80] 53  GetItem
+        [81] 18  BranchIfFalse 87
+        [83] 17  Branch 89
+        [85] 17  Branch 87
+        [87] 17  Branch 45
+        [89] 37  Drop
+        [90] 17  Branch 21
+        [92]  5  LitStr 4
+        [94] 12  SimplePrint
+        [95] 42  RetNone
+       0. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Program'
+         ;
+       1. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'items'
+         0. (61) 12 InternPack_patch: int 9
+         ;
+       2. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'LineNum'
+         ;
+       3. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'execute'
+         0. (61) 12 InternPack_patch: int 71
+         ;
+       4. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'STOP'
+         0. (61) 12 InternPack_patch: int 93
+         ;
+       0. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 0
+         0. (71) 14 GlobalPack_patch: int 7
+         ;
+       1. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 2
+         0. (71) 14 GlobalPack_patch: int 17
+         1. (71) 14 GlobalPack_patch: int 22
+         2. (71) 14 GlobalPack_patch: int 29
+         3. (71) 14 GlobalPack_patch: int 38
+         4. (71) 14 GlobalPack_patch: int 77
+         ;
+       ;
+     ;
+   13. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 2
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x00!\x01\x08(*'
+        [ 6] 33  ArgGet 0
+        [ 8] 33  ArgGet 1
+        [10]  8  Minus
+        [11] 40  Return
+        [12] 42  RetNone
+       ;
+     ;
+   14. (23) 4 CodePack_funcpacks: message:
+     0. (51) 10 FuncPack_name_i: int 10
+     0. (7b) 15 FuncPack_pack: message:
+       0. (0a) 1 CodePack_bytecode: str '\x00\x00\x00\xff\xff\xff\x0f\x00\x0f\x01\x05\x026\x0f\x02\x0f\x01\x05\x046\x0f\x03\x0f\x01\x05\x066\x0f\x04\x0f\x01\x05\x086\x0f\x05\x0f\x01\x05\n6\x0f\x06\x0f\x01\x05\x0c6\x0f\x07\x0f\x01\x05\x0e6\x0f\x08\x0f\x01\x05\x106*'
+        [ 6] 15  GlobalGet 0
+        [ 8] 15  GlobalGet 1
+        [10]  5  LitStr 2
+        [12] 54  PutItem
+        [13] 15  GlobalGet 2
+        [15] 15  GlobalGet 1
+        [17]  5  LitStr 4
+        [19] 54  PutItem
+        [20] 15  GlobalGet 3
+        [22] 15  GlobalGet 1
+        [24]  5  LitStr 6
+        [26] 54  PutItem
+        [27] 15  GlobalGet 4
+        [29] 15  GlobalGet 1
+        [31]  5  LitStr 8
+        [33] 54  PutItem
+        [34] 15  GlobalGet 5
+        [36] 15  GlobalGet 1
+        [38]  5  LitStr 10
+        [40] 54  PutItem
+        [41] 15  GlobalGet 6
+        [43] 15  GlobalGet 1
+        [45]  5  LitStr 12
+        [47] 54  PutItem
+        [48] 15  GlobalGet 7
+        [50] 15  GlobalGet 1
+        [52]  5  LitStr 14
+        [54] 54  PutItem
+        [55] 15  GlobalGet 8
+        [57] 15  GlobalGet 1
+        [59]  5  LitStr 16
+        [61] 54  PutItem
+        [62] 42  RetNone
+       0. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Add'
+         ;
+       1. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'BinaryOps'
+         ;
+       2. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '+'
+         0. (61) 12 InternPack_patch: int 11
+         ;
+       3. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Sub'
+         ;
+       4. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '-'
+         0. (61) 12 InternPack_patch: int 18
+         ;
+       5. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Mul'
+         ;
+       6. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '*'
+         0. (61) 12 InternPack_patch: int 25
+         ;
+       7. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Div'
+         ;
+       8. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '/'
+         0. (61) 12 InternPack_patch: int 32
+         ;
+       9. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'Mod'
+         ;
+       10. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '%'
+         0. (61) 12 InternPack_patch: int 39
+         ;
+       11. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'EQ'
+         ;
+       12. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '='
+         0. (61) 12 InternPack_patch: int 46
+         ;
+       13. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'LT'
+         ;
+       14. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '<'
+         0. (61) 12 InternPack_patch: int 53
+         ;
+       15. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str 'GT'
+         ;
+       16. (13) 2 CodePack_interns: message:
+         0. (5a) 11 InternPack_s: str '>'
+         0. (61) 12 InternPack_patch: int 60
+         ;
+       0. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 0
+         0. (71) 14 GlobalPack_patch: int 7
+         ;
+       1. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 1
+         0. (71) 14 GlobalPack_patch: int 9
+         1. (71) 14 GlobalPack_patch: int 16
+         2. (71) 14 GlobalPack_patch: int 23
+         3. (71) 14 GlobalPack_patch: int 30
+         4. (71) 14 GlobalPack_patch: int 37
+         5. (71) 14 GlobalPack_patch: int 44
+         6. (71) 14 GlobalPack_patch: int 51
+         7. (71) 14 GlobalPack_patch: int 58
+         ;
+       2. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 3
+         0. (71) 14 GlobalPack_patch: int 14
+         ;
+       3. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 5
+         0. (71) 14 GlobalPack_patch: int 21
+         ;
+       4. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 7
+         0. (71) 14 GlobalPack_patch: int 28
+         ;
+       5. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 9
+         0. (71) 14 GlobalPack_patch: int 35
+         ;
+       6. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 11
+         0. (71) 14 GlobalPack_patch: int 42
+         ;
+       7. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 13
+         0. (71) 14 GlobalPack_patch: int 49
+         ;
+       8. (1b) 3 CodePack_globals: message:
+         0. (69) 13 GlobalPack_name_i: int 15
+         0. (71) 14 GlobalPack_patch: int 56
+         ;
+       ;
+     ;
+   0. (2b) 5 CodePack_classpacks: message:
+     0. (89) 17 ClassPack_name_i: int 63
+     0. (91) 18 ClassPack_field_i: int 60
+     0. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 12
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x010\x00)'
+          [ 6] 33  ArgGet 1
+          [ 8] 48  SelfMemberPut 0
+          [10] 41  RetSelf
+         ;
+       ;
+     1. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 13
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff\x05\x00.\x00'\x01\x01\x07(*"
+          [ 6]  5  LitStr 0
+          [ 8] 46  SelfMemberGet 0
+          [10] 39  CallMeth 1 1
+          [13]  7  Plus
+          [14] 40  Return
+          [15] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'GOTO '
+           0. (61) 12 InternPack_patch: int 7
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '__str__'
+           0. (61) 12 InternPack_patch: int 11
+           ;
+         ;
+       ;
+     2. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 57
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff.\x00'\x00\x01\x0f\x00\x03\x006*"
+          [ 6] 46  SelfMemberGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 15  GlobalGet 0
+          [13]  3  LitInt 0
+          [15] 54  PutItem
+          [16] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'eval'
+           0. (61) 12 InternPack_patch: int 9
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'LineNum'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 12
+           ;
+         ;
+       ;
+     ;
+   1. (2b) 5 CodePack_classpacks: message:
+     0. (89) 17 ClassPack_name_i: int 64
+     0. (91) 18 ClassPack_field_i: int 65
+     1. (91) 18 ClassPack_field_i: int 66
+     0. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 12
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x03\x00\x00\xff\xff\xff!\x010\x00!\x020\x01)'
+          [ 6] 33  ArgGet 1
+          [ 8] 48  SelfMemberPut 0
+          [10] 33  ArgGet 2
+          [12] 48  SelfMemberPut 1
+          [14] 41  RetSelf
+         ;
+       ;
+     1. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 13
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff\x05\x00.\x00'\x01\x01\x07\x05\x02\x07.\x02'\x01\x01\x07(*"
+          [ 6]  5  LitStr 0
+          [ 8] 46  SelfMemberGet 0
+          [10] 39  CallMeth 1 1
+          [13]  7  Plus
+          [14]  5  LitStr 2
+          [16]  7  Plus
+          [17] 46  SelfMemberGet 2
+          [19] 39  CallMeth 1 1
+          [22]  7  Plus
+          [23] 40  Return
+          [24] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'IF '
+           0. (61) 12 InternPack_patch: int 7
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '__str__'
+           0. (61) 12 InternPack_patch: int 11
+           1. (61) 12 InternPack_patch: int 20
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str ' THEN '
+           0. (61) 12 InternPack_patch: int 15
+           ;
+         ;
+       ;
+     2. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 57
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff.\x00'\x00\x01\x12\x19.\x02'\x00\x01\x0f\x00\x03\x006\x11\x19*"
+          [ 6] 46  SelfMemberGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 18  BranchIfFalse 25
+          [13] 46  SelfMemberGet 2
+          [15] 39  CallMeth 0 1
+          [18] 15  GlobalGet 0
+          [20]  3  LitInt 0
+          [22] 54  PutItem
+          [23] 17  Branch 25
+          [25] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'eval'
+           0. (61) 12 InternPack_patch: int 9
+           1. (61) 12 InternPack_patch: int 16
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'LineNum'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 19
+           ;
+         ;
+       ;
+     ;
+   2. (2b) 5 CodePack_classpacks: message:
+     0. (89) 17 ClassPack_name_i: int 59
+     0. (91) 18 ClassPack_field_i: int 60
+     1. (91) 18 ClassPack_field_i: int 17
+     0. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 12
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x03\x00\x00\xff\xff\xff!\x01'\x00\x010\x01!\x020\x00)"
+          [ 6] 33  ArgGet 1
+          [ 8] 39  CallMeth 0 1
+          [11] 48  SelfMemberPut 1
+          [13] 33  ArgGet 2
+          [15] 48  SelfMemberPut 0
+          [17] 41  RetSelf
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'upper'
+           0. (61) 12 InternPack_patch: int 9
+           ;
+         ;
+       ;
+     1. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 13
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff\x05\x00.\x02\x07\x05\x01\x07.\x00'\x02\x01\x07(*"
+          [ 6]  5  LitStr 0
+          [ 8] 46  SelfMemberGet 2
+          [10]  7  Plus
+          [11]  5  LitStr 1
+          [13]  7  Plus
+          [14] 46  SelfMemberGet 0
+          [16] 39  CallMeth 2 1
+          [19]  7  Plus
+          [20] 40  Return
+          [21] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'LET '
+           0. (61) 12 InternPack_patch: int 7
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str ' = '
+           0. (61) 12 InternPack_patch: int 12
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '__str__'
+           0. (61) 12 InternPack_patch: int 17
+           ;
+         ;
+       ;
+     2. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 57
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff.\x00'\x00\x01\x0f\x00.\x026*"
+          [ 6] 46  SelfMemberGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 15  GlobalGet 0
+          [13] 46  SelfMemberGet 2
+          [15] 54  PutItem
+          [16] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'eval'
+           0. (61) 12 InternPack_patch: int 9
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Vars'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 12
+           ;
+         ;
+       ;
+     ;
+   3. (2b) 5 CodePack_classpacks: message:
+     0. (89) 17 ClassPack_name_i: int 61
+     0. (91) 18 ClassPack_field_i: int 60
+     1. (91) 18 ClassPack_field_i: int 62
+     0. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 12
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x03\x00\x00\xff\xff\xff!\x010\x00!\x020\x01)'
+          [ 6] 33  ArgGet 1
+          [ 8] 48  SelfMemberPut 0
+          [10] 33  ArgGet 2
+          [12] 48  SelfMemberPut 1
+          [14] 41  RetSelf
+         ;
+       ;
+     1. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 13
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff.\x00G\x1b\x12\x11\x05\x00(\x11\x1a\x05\x00.\x00'\x01\x01\x07(*"
+          [ 6] 46  SelfMemberGet 0
+          [ 8] 71  SpecialNone
+          [ 9] 27  EQ
+          [10] 18  BranchIfFalse 17
+          [12]  5  LitStr 0
+          [14] 40  Return
+          [15] 17  Branch 26
+          [17]  5  LitStr 0
+          [19] 46  SelfMemberGet 0
+          [21] 39  CallMeth 1 1
+          [24]  7  Plus
+          [25] 40  Return
+          [26] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'PRINT '
+           0. (61) 12 InternPack_patch: int 13
+           1. (61) 12 InternPack_patch: int 18
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '__str__'
+           0. (61) 12 InternPack_patch: int 22
+           ;
+         ;
+       ;
+     2. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 57
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff.\x00G\x1b\x12\x12\x03\n8\x0c\x11\x18.\x00'\x00\x01\x0cB'\x01\x01%*"
+          [ 6] 46  SelfMemberGet 0
+          [ 8] 71  SpecialNone
+          [ 9] 27  EQ
+          [10] 18  BranchIfFalse 18
+          [12]  3  LitInt 10
+          [14] 56  Chr
+          [15] 12  SimplePrint
+          [16] 17  Branch 24
+          [18] 46  SelfMemberGet 0
+          [20] 39  CallMeth 0 1
+          [23] 12  SimplePrint
+          [24] 66  SpecialStdout
+          [25] 39  CallMeth 1 1
+          [28] 37  Drop
+          [29] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'eval'
+           0. (61) 12 InternPack_patch: int 21
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'flush'
+           0. (61) 12 InternPack_patch: int 26
+           ;
+         ;
+       ;
+     ;
+   4. (2b) 5 CodePack_classpacks: message:
+     0. (89) 17 ClassPack_name_i: int 32
+     0. (91) 18 ClassPack_field_i: int 50
+     1. (91) 18 ClassPack_field_i: int 51
+     2. (91) 18 ClassPack_field_i: int 52
+     3. (91) 18 ClassPack_field_i: int 53
+     4. (91) 18 ClassPack_field_i: int 54
+     0. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 33
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff!\x00'\x00\x01%*"
+          [ 6] 33  ArgGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 37  Drop
+          [12] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex_1'
+           0. (61) 12 InternPack_patch: int 9
+           ;
+         ;
+       ;
+     1. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 34
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x01\x00\xff\xff\xffE\x12T.\x00.\x04 \x12\x1e\x0f\x00G1\x02=\x020\x030\x04*\x11\x1e.\x02.\x005$\x00#\x00\x05\x01\x1b\x12>.\x040\x00\x0f\x00G1\x02=\x020\x030\x04*\x11>#\x00\x05\x02\x1f\x12P.\x00\x03\x01\x070\x00\x11\x06\x11P\x11T\x11\x06#\x00!\x00'\x03\x02%*"
+          [ 6] 69  SpecialTrue
+          [ 7] 18  BranchIfFalse 84
+          [ 9] 46  SelfMemberGet 0
+          [11] 46  SelfMemberGet 4
+          [13] 32  GE
+          [14] 18  BranchIfFalse 30
+          [16] 15  GlobalGet 0
+          [18] 71  SpecialNone
+          [19] 49  NewTuple 2
+          [21] 61  Explode 2
+          [23] 48  SelfMemberPut 3
+          [25] 48  SelfMemberPut 4
+          [27] 42  RetNone
+          [28] 17  Branch 30
+          [30] 46  SelfMemberGet 2
+          [32] 46  SelfMemberGet 0
+          [34] 53  GetItem
+          [35] 36  LocalPut 0
+          [37] 35  LocalGet 0
+          [39]  5  LitStr 1
+          [41] 27  EQ
+          [42] 18  BranchIfFalse 62
+          [44] 46  SelfMemberGet 4
+          [46] 48  SelfMemberPut 0
+          [48] 15  GlobalGet 0
+          [50] 71  SpecialNone
+          [51] 49  NewTuple 2
+          [53] 61  Explode 2
+          [55] 48  SelfMemberPut 3
+          [57] 48  SelfMemberPut 4
+          [59] 42  RetNone
+          [60] 17  Branch 62
+          [62] 35  LocalGet 0
+          [64]  5  LitStr 2
+          [66] 31  LE
+          [67] 18  BranchIfFalse 80
+          [69] 46  SelfMemberGet 0
+          [71]  3  LitInt 1
+          [73]  7  Plus
+          [74] 48  SelfMemberPut 0
+          [76] 17  Branch 6
+          [78] 17  Branch 80
+          [80] 17  Branch 84
+          [82] 17  Branch 6
+          [84] 35  LocalGet 0
+          [86] 33  ArgGet 0
+          [88] 39  CallMeth 3 2
+          [91] 37  Drop
+          [92] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_EOL'
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '#'
+           0. (61) 12 InternPack_patch: int 40
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str ' '
+           0. (61) 12 InternPack_patch: int 65
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex_2'
+           0. (61) 12 InternPack_patch: int 89
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 0
+           0. (71) 14 GlobalPack_patch: int 17
+           1. (71) 14 GlobalPack_patch: int 49
+           ;
+         ;
+       ;
+     2. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 35
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x02\x01\x00\xff\xff\xff\x03\x00\x05\x00!\x01\x1f\x12\x17!\x01\x05\x01\x1f\x12\x17\x14\x12i\x03\x00$\x00\x03\x00\x05\x00!\x01\x1f\x12.!\x01\x05\x01\x1f\x12.\x14\x12Z\x03\n#\x00\t!\x017\x07\x05\x007\x08$\x00.\x00\x03\x01\x070\x00.\x00.\x04 \x12Q\x11Z\x11Q.\x02.\x005"\x01\x11\x1d\x0f\x00#\x001\x02=\x020\x030\x04*\x11i!\x01!\x00\'\x03\x02%*'
+          [ 6]  3  LitInt 0
+          [ 8]  5  LitStr 0
+          [10] 33  ArgGet 1
+          [12] 31  LE
+          [13] 18  BranchIfFalse 23
+          [15] 33  ArgGet 1
+          [17]  5  LitStr 1
+          [19] 31  LE
+          [20] 18  BranchIfFalse 23
+          [22] 20  Not
+          [23] 18  BranchIfFalse 105
+          [25]  3  LitInt 0
+          [27] 36  LocalPut 0
+          [29]  3  LitInt 0
+          [31]  5  LitStr 0
+          [33] 33  ArgGet 1
+          [35] 31  LE
+          [36] 18  BranchIfFalse 46
+          [38] 33  ArgGet 1
+          [40]  5  LitStr 1
+          [42] 31  LE
+          [43] 18  BranchIfFalse 46
+          [45] 20  Not
+          [46] 18  BranchIfFalse 90
+          [48]  3  LitInt 10
+          [50] 35  LocalGet 0
+          [52]  9  Times
+          [53] 33  ArgGet 1
+          [55] 55  Ord
+          [56]  7  Plus
+          [57]  5  LitStr 0
+          [59] 55  Ord
+          [60]  8  Minus
+          [61] 36  LocalPut 0
+          [63] 46  SelfMemberGet 0
+          [65]  3  LitInt 1
+          [67]  7  Plus
+          [68] 48  SelfMemberPut 0
+          [70] 46  SelfMemberGet 0
+          [72] 46  SelfMemberGet 4
+          [74] 32  GE
+          [75] 18  BranchIfFalse 81
+          [77] 17  Branch 90
+          [79] 17  Branch 81
+          [81] 46  SelfMemberGet 2
+          [83] 46  SelfMemberGet 0
+          [85] 53  GetItem
+          [86] 34  ArgPut 1
+          [88] 17  Branch 29
+          [90] 15  GlobalGet 0
+          [92] 35  LocalGet 0
+          [94] 49  NewTuple 2
+          [96] 61  Explode 2
+          [98] 48  SelfMemberPut 3
+          [100] 48  SelfMemberPut 4
+          [102] 42  RetNone
+          [103] 17  Branch 105
+          [105] 33  ArgGet 1
+          [107] 33  ArgGet 0
+          [109] 39  CallMeth 3 2
+          [112] 37  Drop
+          [113] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '0'
+           0. (61) 12 InternPack_patch: int 9
+           1. (61) 12 InternPack_patch: int 32
+           2. (61) 12 InternPack_patch: int 58
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '9'
+           0. (61) 12 InternPack_patch: int 18
+           1. (61) 12 InternPack_patch: int 41
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_INT'
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex_3'
+           0. (61) 12 InternPack_patch: int 110
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 2
+           0. (71) 14 GlobalPack_patch: int 91
+           ;
+         ;
+       ;
+     3. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 36
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x02\x01\x00\xff\xff\xff\x03\x01\x03\x00\x05\x00!\x01\x1f\x12\x19!\x01\x05\x01\x1f\x12\x19\x14\x13/\x03\x00\x05\x02!\x01\x1f\x12,!\x01\x05\x03\x1f\x12,\x14\x13/\x14\x12\x94\x05\x04$\x00\x03\x01\x03\x00\x05\x00!\x01\x1f\x12H!\x01\x05\x01\x1f\x12H\x14\x13^\x03\x00\x05\x02!\x01\x1f\x12[!\x01\x05\x03\x1f\x12[\x14\x13^\x14\x12\x82#\x00!\x01\x07$\x00.\x00\x03\x01\x070\x00.\x00.\x04 \x12y\x11\x82\x11y.\x02.\x005"\x01\x115\x0f\x00#\x00\'\x06\x011\x02=\x020\x030\x04*\x11\x94\x0f\x01!\x011\x02=\x020\x030\x04.\x00\x03\x01\x070\x00**'
+          [ 6]  3  LitInt 1
+          [ 8]  3  LitInt 0
+          [10]  5  LitStr 0
+          [12] 33  ArgGet 1
+          [14] 31  LE
+          [15] 18  BranchIfFalse 25
+          [17] 33  ArgGet 1
+          [19]  5  LitStr 1
+          [21] 31  LE
+          [22] 18  BranchIfFalse 25
+          [24] 20  Not
+          [25] 19  BranchIfTrue 47
+          [27]  3  LitInt 0
+          [29]  5  LitStr 2
+          [31] 33  ArgGet 1
+          [33] 31  LE
+          [34] 18  BranchIfFalse 44
+          [36] 33  ArgGet 1
+          [38]  5  LitStr 3
+          [40] 31  LE
+          [41] 18  BranchIfFalse 44
+          [43] 20  Not
+          [44] 19  BranchIfTrue 47
+          [46] 20  Not
+          [47] 18  BranchIfFalse 148
+          [49]  5  LitStr 4
+          [51] 36  LocalPut 0
+          [53]  3  LitInt 1
+          [55]  3  LitInt 0
+          [57]  5  LitStr 0
+          [59] 33  ArgGet 1
+          [61] 31  LE
+          [62] 18  BranchIfFalse 72
+          [64] 33  ArgGet 1
+          [66]  5  LitStr 1
+          [68] 31  LE
+          [69] 18  BranchIfFalse 72
+          [71] 20  Not
+          [72] 19  BranchIfTrue 94
+          [74]  3  LitInt 0
+          [76]  5  LitStr 2
+          [78] 33  ArgGet 1
+          [80] 31  LE
+          [81] 18  BranchIfFalse 91
+          [83] 33  ArgGet 1
+          [85]  5  LitStr 3
+          [87] 31  LE
+          [88] 18  BranchIfFalse 91
+          [90] 20  Not
+          [91] 19  BranchIfTrue 94
+          [93] 20  Not
+          [94] 18  BranchIfFalse 130
+          [96] 35  LocalGet 0
+          [98] 33  ArgGet 1
+          [100]  7  Plus
+          [101] 36  LocalPut 0
+          [103] 46  SelfMemberGet 0
+          [105]  3  LitInt 1
+          [107]  7  Plus
+          [108] 48  SelfMemberPut 0
+          [110] 46  SelfMemberGet 0
+          [112] 46  SelfMemberGet 4
+          [114] 32  GE
+          [115] 18  BranchIfFalse 121
+          [117] 17  Branch 130
+          [119] 17  Branch 121
+          [121] 46  SelfMemberGet 2
+          [123] 46  SelfMemberGet 0
+          [125] 53  GetItem
+          [126] 34  ArgPut 1
+          [128] 17  Branch 53
+          [130] 15  GlobalGet 0
+          [132] 35  LocalGet 0
+          [134] 39  CallMeth 6 1
+          [137] 49  NewTuple 2
+          [139] 61  Explode 2
+          [141] 48  SelfMemberPut 3
+          [143] 48  SelfMemberPut 4
+          [145] 42  RetNone
+          [146] 17  Branch 148
+          [148] 15  GlobalGet 1
+          [150] 33  ArgGet 1
+          [152] 49  NewTuple 2
+          [154] 61  Explode 2
+          [156] 48  SelfMemberPut 3
+          [158] 48  SelfMemberPut 4
+          [160] 46  SelfMemberGet 0
+          [162]  3  LitInt 1
+          [164]  7  Plus
+          [165] 48  SelfMemberPut 0
+          [167] 42  RetNone
+          [168] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'A'
+           0. (61) 12 InternPack_patch: int 11
+           1. (61) 12 InternPack_patch: int 58
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Z'
+           0. (61) 12 InternPack_patch: int 20
+           1. (61) 12 InternPack_patch: int 67
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'a'
+           0. (61) 12 InternPack_patch: int 30
+           1. (61) 12 InternPack_patch: int 77
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'z'
+           0. (61) 12 InternPack_patch: int 39
+           1. (61) 12 InternPack_patch: int 86
+           ;
+         4. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str ''
+           0. (61) 12 InternPack_patch: int 50
+           ;
+         5. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_WORD'
+           ;
+         6. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'upper'
+           0. (61) 12 InternPack_patch: int 135
+           ;
+         7. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_ETC'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 5
+           0. (71) 14 GlobalPack_patch: int 131
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 7
+           0. (71) 14 GlobalPack_patch: int 149
+           ;
+         ;
+       ;
+     4. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 12
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x010\x01\x03\x000\x00!\x0140\x02G0\x03G0\x04)'
+          [ 6] 33  ArgGet 1
+          [ 8] 48  SelfMemberPut 1
+          [10]  3  LitInt 0
+          [12] 48  SelfMemberPut 0
+          [14] 33  ArgGet 1
+          [16] 52  Len
+          [17] 48  SelfMemberPut 2
+          [19] 71  SpecialNone
+          [20] 48  SelfMemberPut 3
+          [22] 71  SpecialNone
+          [23] 48  SelfMemberPut 4
+          [25] 41  RetSelf
+         ;
+       ;
+     5. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 42
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff!\x00'\x00\x01(*"
+          [ 6] 33  ArgGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 40  Return
+          [12] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseRel'
+           0. (61) 12 InternPack_patch: int 9
+           ;
+         ;
+       ;
+     6. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 46
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x01\x00\xff\xff\xff!\x00'\x00\x01%!\x00'\x01\x01$\x00#\x00\x0f\x00&\x01(*"
+          [ 6] 33  ArgGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 37  Drop
+          [12] 33  ArgGet 0
+          [14] 39  CallMeth 1 1
+          [17] 36  LocalPut 0
+          [19] 35  LocalGet 0
+          [21] 15  GlobalGet 0
+          [23] 38  Call 1
+          [25] 40  Return
+          [26] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex'
+           0. (61) 12 InternPack_patch: int 9
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseExpr'
+           0. (61) 12 InternPack_patch: int 15
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'GOTO'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 2
+           0. (71) 14 GlobalPack_patch: int 22
+           ;
+         ;
+       ;
+     7. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 47
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x02\x00\xff\xff\xff!\x00'\x00\x01%!\x00'\x01\x01$\x00.\x08\x05\x02\x1c\x12#\x05\x03\x0f\x00&\x01<\x11#!\x00'\x00\x01%!\x00'\x01\x01$\x01#\x01#\x00\x0f\x01&\x02(*"
+          [ 6] 33  ArgGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 37  Drop
+          [12] 33  ArgGet 0
+          [14] 39  CallMeth 1 1
+          [17] 36  LocalPut 0
+          [19] 46  SelfMemberGet 8
+          [21]  5  LitStr 2
+          [23] 28  NE
+          [24] 18  BranchIfFalse 35
+          [26]  5  LitStr 3
+          [28] 15  GlobalGet 0
+          [30] 38  Call 1
+          [32] 60  Raise
+          [33] 17  Branch 35
+          [35] 33  ArgGet 0
+          [37] 39  CallMeth 0 1
+          [40] 37  Drop
+          [41] 33  ArgGet 0
+          [43] 39  CallMeth 1 1
+          [46] 36  LocalPut 1
+          [48] 35  LocalGet 1
+          [50] 35  LocalGet 0
+          [52] 15  GlobalGet 1
+          [54] 38  Call 2
+          [56] 40  Return
+          [57] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex'
+           0. (61) 12 InternPack_patch: int 9
+           1. (61) 12 InternPack_patch: int 38
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseExpr'
+           0. (61) 12 InternPack_patch: int 15
+           1. (61) 12 InternPack_patch: int 44
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'THEN'
+           0. (61) 12 InternPack_patch: int 22
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'if_wants_then'
+           0. (61) 12 InternPack_patch: int 27
+           ;
+         4. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Exception'
+           ;
+         5. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'IF'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 4
+           0. (71) 14 GlobalPack_patch: int 29
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 5
+           0. (71) 14 GlobalPack_patch: int 53
+           ;
+         ;
+       ;
+     8. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 43
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x02\x00\xff\xff\xff!\x00'\x00\x01%.\x06\x0f\x00\x1c\x12\x1c\x05\x02\x0f\x01&\x01<\x11\x1c.\x08$\x01!\x00'\x00\x01%.\x08\x05\x04\x1c\x126\x05\x05\x0f\x01&\x01<\x116!\x00'\x00\x01%!\x00'\x06\x01$\x00#\x00#\x01\x0f\x02&\x02(*"
+          [ 6] 33  ArgGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 37  Drop
+          [12] 46  SelfMemberGet 6
+          [14] 15  GlobalGet 0
+          [16] 28  NE
+          [17] 18  BranchIfFalse 28
+          [19]  5  LitStr 2
+          [21] 15  GlobalGet 1
+          [23] 38  Call 1
+          [25] 60  Raise
+          [26] 17  Branch 28
+          [28] 46  SelfMemberGet 8
+          [30] 36  LocalPut 1
+          [32] 33  ArgGet 0
+          [34] 39  CallMeth 0 1
+          [37] 37  Drop
+          [38] 46  SelfMemberGet 8
+          [40]  5  LitStr 4
+          [42] 28  NE
+          [43] 18  BranchIfFalse 54
+          [45]  5  LitStr 5
+          [47] 15  GlobalGet 1
+          [49] 38  Call 1
+          [51] 60  Raise
+          [52] 17  Branch 54
+          [54] 33  ArgGet 0
+          [56] 39  CallMeth 0 1
+          [59] 37  Drop
+          [60] 33  ArgGet 0
+          [62] 39  CallMeth 6 1
+          [65] 36  LocalPut 0
+          [67] 35  LocalGet 0
+          [69] 35  LocalGet 1
+          [71] 15  GlobalGet 2
+          [73] 38  Call 2
+          [75] 40  Return
+          [76] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex'
+           0. (61) 12 InternPack_patch: int 9
+           1. (61) 12 InternPack_patch: int 35
+           2. (61) 12 InternPack_patch: int 57
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_WORD'
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'let_wants_var'
+           0. (61) 12 InternPack_patch: int 20
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Exception'
+           ;
+         4. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '='
+           0. (61) 12 InternPack_patch: int 41
+           ;
+         5. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'let_wants_eq'
+           0. (61) 12 InternPack_patch: int 46
+           ;
+         6. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseExpr'
+           0. (61) 12 InternPack_patch: int 63
+           ;
+         7. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'LET'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 15
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 3
+           0. (71) 14 GlobalPack_patch: int 22
+           1. (71) 14 GlobalPack_patch: int 48
+           ;
+         2. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 7
+           0. (71) 14 GlobalPack_patch: int 72
+           ;
+         ;
+       ;
+     9. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 49
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x02\x00\xff\xff\xff\x03\x00G1\x02=\x02$\x00$\x01.\x06\x0f\x00\x1b\x125.\x08I$\x00!\x00'\x01\x01%.\x06\x0f\x01\x1c\x123!\x00'\x03\x01$\x01\x113\x115#\x00#\x011\x02(*"
+          [ 6]  3  LitInt 0
+          [ 8] 71  SpecialNone
+          [ 9] 49  NewTuple 2
+          [11] 61  Explode 2
+          [13] 36  LocalPut 0
+          [15] 36  LocalPut 1
+          [17] 46  SelfMemberGet 6
+          [19] 15  GlobalGet 0
+          [21] 27  EQ
+          [22] 18  BranchIfFalse 53
+          [24] 46  SelfMemberGet 8
+          [26] 73  Int
+          [27] 36  LocalPut 0
+          [29] 33  ArgGet 0
+          [31] 39  CallMeth 1 1
+          [34] 37  Drop
+          [35] 46  SelfMemberGet 6
+          [37] 15  GlobalGet 1
+          [39] 28  NE
+          [40] 18  BranchIfFalse 51
+          [42] 33  ArgGet 0
+          [44] 39  CallMeth 3 1
+          [47] 36  LocalPut 1
+          [49] 17  Branch 51
+          [51] 17  Branch 53
+          [53] 35  LocalGet 0
+          [55] 35  LocalGet 1
+          [57] 49  NewTuple 2
+          [59] 40  Return
+          [60] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_INT'
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex'
+           0. (61) 12 InternPack_patch: int 32
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_EOL'
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseStatementOrNone'
+           0. (61) 12 InternPack_patch: int 45
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 0
+           0. (71) 14 GlobalPack_patch: int 20
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 2
+           0. (71) 14 GlobalPack_patch: int 38
+           ;
+         ;
+       ;
+     10. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 45
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x01\x00\xff\xff\xff!\x00'\x00\x01%G$\x00.\x06\x0f\x00\x1c\x12\x1f!\x00'\x02\x01$\x00\x11\x1fG#\x00\x0f\x01&\x02(*"
+          [ 6] 33  ArgGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 37  Drop
+          [12] 71  SpecialNone
+          [13] 36  LocalPut 0
+          [15] 46  SelfMemberGet 6
+          [17] 15  GlobalGet 0
+          [19] 28  NE
+          [20] 18  BranchIfFalse 31
+          [22] 33  ArgGet 0
+          [24] 39  CallMeth 2 1
+          [27] 36  LocalPut 0
+          [29] 17  Branch 31
+          [31] 71  SpecialNone
+          [32] 35  LocalGet 0
+          [34] 15  GlobalGet 1
+          [36] 38  Call 2
+          [38] 40  Return
+          [39] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex'
+           0. (61) 12 InternPack_patch: int 9
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'EOL'
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseExpr'
+           0. (61) 12 InternPack_patch: int 25
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'PRINT'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 18
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 3
+           0. (71) 14 GlobalPack_patch: int 35
+           ;
+         ;
+       ;
+     11. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 37
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x02\x00\xff\xff\xff.\x08$\x01.\x06\x0f\x00\x1b\x12!!\x00'\x01\x01%#\x01I\x0f\x01&\x01(\x11!.\x06\x0f\x02\x1b\x127!\x00'\x01\x01%#\x01\x0f\x03&\x01(\x117\x03\x00.\x06\x0f\x04\x1b\x12H#\x01\x05\x06\x1b\x12H\x14\x12\x81!\x00'\x01\x01%!\x00'\x07\x01$\x00\x03\x01.\x06\x0f\x04\x1c\x13h.\x08\x05\x08\x1c\x13h\x14\x12v\x05\t.\x08\x0b\x0f\x05&\x01<\x11v!\x00'\x01\x01%#\x00(\x11\x81*"
+          [ 6] 46  SelfMemberGet 8
+          [ 8] 36  LocalPut 1
+          [10] 46  SelfMemberGet 6
+          [12] 15  GlobalGet 0
+          [14] 27  EQ
+          [15] 18  BranchIfFalse 33
+          [17] 33  ArgGet 0
+          [19] 39  CallMeth 1 1
+          [22] 37  Drop
+          [23] 35  LocalGet 1
+          [25] 73  Int
+          [26] 15  GlobalGet 1
+          [28] 38  Call 1
+          [30] 40  Return
+          [31] 17  Branch 33
+          [33] 46  SelfMemberGet 6
+          [35] 15  GlobalGet 2
+          [37] 27  EQ
+          [38] 18  BranchIfFalse 55
+          [40] 33  ArgGet 0
+          [42] 39  CallMeth 1 1
+          [45] 37  Drop
+          [46] 35  LocalGet 1
+          [48] 15  GlobalGet 3
+          [50] 38  Call 1
+          [52] 40  Return
+          [53] 17  Branch 55
+          [55]  3  LitInt 0
+          [57] 46  SelfMemberGet 6
+          [59] 15  GlobalGet 4
+          [61] 27  EQ
+          [62] 18  BranchIfFalse 72
+          [64] 35  LocalGet 1
+          [66]  5  LitStr 6
+          [68] 27  EQ
+          [69] 18  BranchIfFalse 72
+          [71] 20  Not
+          [72] 18  BranchIfFalse 129
+          [74] 33  ArgGet 0
+          [76] 39  CallMeth 1 1
+          [79] 37  Drop
+          [80] 33  ArgGet 0
+          [82] 39  CallMeth 7 1
+          [85] 36  LocalPut 0
+          [87]  3  LitInt 1
+          [89] 46  SelfMemberGet 6
+          [91] 15  GlobalGet 4
+          [93] 28  NE
+          [94] 19  BranchIfTrue 104
+          [96] 46  SelfMemberGet 8
+          [98]  5  LitStr 8
+          [100] 28  NE
+          [101] 19  BranchIfTrue 104
+          [103] 20  Not
+          [104] 18  BranchIfFalse 118
+          [106]  5  LitStr 9
+          [108] 46  SelfMemberGet 8
+          [110] 11  Mod
+          [111] 15  GlobalGet 5
+          [113] 38  Call 1
+          [115] 60  Raise
+          [116] 17  Branch 118
+          [118] 33  ArgGet 0
+          [120] 39  CallMeth 1 1
+          [123] 37  Drop
+          [124] 35  LocalGet 0
+          [126] 40  Return
+          [127] 17  Branch 129
+          [129] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_INT'
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex'
+           0. (61) 12 InternPack_patch: int 20
+           1. (61) 12 InternPack_patch: int 43
+           2. (61) 12 InternPack_patch: int 77
+           3. (61) 12 InternPack_patch: int 121
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'XInt'
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_WORD'
+           ;
+         4. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'XVar'
+           ;
+         5. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_ETC'
+           ;
+         6. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '('
+           0. (61) 12 InternPack_patch: int 67
+           ;
+         7. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseExpr'
+           0. (61) 12 InternPack_patch: int 83
+           ;
+         8. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str ')'
+           0. (61) 12 InternPack_patch: int 99
+           ;
+         9. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'got %s want )'
+           0. (61) 12 InternPack_patch: int 107
+           ;
+         10. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Exception'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 0
+           0. (71) 14 GlobalPack_patch: int 13
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 2
+           0. (71) 14 GlobalPack_patch: int 27
+           ;
+         2. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 3
+           0. (71) 14 GlobalPack_patch: int 36
+           ;
+         3. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 4
+           0. (71) 14 GlobalPack_patch: int 49
+           ;
+         4. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 5
+           0. (71) 14 GlobalPack_patch: int 60
+           1. (71) 14 GlobalPack_patch: int 92
+           ;
+         5. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 10
+           0. (71) 14 GlobalPack_patch: int 112
+           ;
+         ;
+       ;
+     12. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 38
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x02\x00\xff\xff\xff!\x00'\x00\x01$\x00\x03\x00.\x06\x0f\x00\x1b\x12\x1e.\x08\x05\x02\x1b\x12\x1e\x14\x12q!\x00'\x03\x01%2\x00$\x01\x03\x01.\x06\x0f\x00\x1c\x13;.\x08\x05\x04\x1c\x13;\x14\x12e!\x00'\x05\x01#\x01'\x06\x02%\x03\x00.\x06\x0f\x00\x1b\x12Y.\x08\x05\x07\x1b\x12Y\x14\x12c!\x00'\x03\x01%\x11c\x11*#\x01#\x00\x0f\x01&\x02$\x00\x11\r#\x00(*"
+          [ 6] 33  ArgGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 36  LocalPut 0
+          [13]  3  LitInt 0
+          [15] 46  SelfMemberGet 6
+          [17] 15  GlobalGet 0
+          [19] 27  EQ
+          [20] 18  BranchIfFalse 30
+          [22] 46  SelfMemberGet 8
+          [24]  5  LitStr 2
+          [26] 27  EQ
+          [27] 18  BranchIfFalse 30
+          [29] 20  Not
+          [30] 18  BranchIfFalse 113
+          [32] 33  ArgGet 0
+          [34] 39  CallMeth 3 1
+          [37] 37  Drop
+          [38] 50  NewList 0
+          [40] 36  LocalPut 1
+          [42]  3  LitInt 1
+          [44] 46  SelfMemberGet 6
+          [46] 15  GlobalGet 0
+          [48] 28  NE
+          [49] 19  BranchIfTrue 59
+          [51] 46  SelfMemberGet 8
+          [53]  5  LitStr 4
+          [55] 28  NE
+          [56] 19  BranchIfTrue 59
+          [58] 20  Not
+          [59] 18  BranchIfFalse 101
+          [61] 33  ArgGet 0
+          [63] 39  CallMeth 5 1
+          [66] 35  LocalGet 1
+          [68] 39  CallMeth 6 2
+          [71] 37  Drop
+          [72]  3  LitInt 0
+          [74] 46  SelfMemberGet 6
+          [76] 15  GlobalGet 0
+          [78] 27  EQ
+          [79] 18  BranchIfFalse 89
+          [81] 46  SelfMemberGet 8
+          [83]  5  LitStr 7
+          [85] 27  EQ
+          [86] 18  BranchIfFalse 89
+          [88] 20  Not
+          [89] 18  BranchIfFalse 99
+          [91] 33  ArgGet 0
+          [93] 39  CallMeth 3 1
+          [96] 37  Drop
+          [97] 17  Branch 99
+          [99] 17  Branch 42
+          [101] 35  LocalGet 1
+          [103] 35  LocalGet 0
+          [105] 15  GlobalGet 1
+          [107] 38  Call 2
+          [109] 36  LocalPut 0
+          [111] 17  Branch 13
+          [113] 35  LocalGet 0
+          [115] 40  Return
+          [116] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parsePrim'
+           0. (61) 12 InternPack_patch: int 9
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_ETC'
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '('
+           0. (61) 12 InternPack_patch: int 25
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex'
+           0. (61) 12 InternPack_patch: int 35
+           1. (61) 12 InternPack_patch: int 94
+           ;
+         4. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str ')'
+           0. (61) 12 InternPack_patch: int 54
+           ;
+         5. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseExpr'
+           0. (61) 12 InternPack_patch: int 64
+           ;
+         6. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'append'
+           0. (61) 12 InternPack_patch: int 69
+           ;
+         7. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str ','
+           0. (61) 12 InternPack_patch: int 84
+           ;
+         8. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'XCall'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 18
+           1. (71) 14 GlobalPack_patch: int 47
+           2. (71) 14 GlobalPack_patch: int 77
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 8
+           0. (71) 14 GlobalPack_patch: int 106
+           ;
+         ;
+       ;
+     13. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 39
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x04\x00\xff\xff\xff!\x00'\x00\x01$\x00.\x06.\x081\x02=\x02$\x03$\x02\x03\x00#\x03\x0f\x00\x1b\x12=\x03\x01#\x02\x05\x02\x1b\x13:#\x02\x05\x03\x1b\x13:#\x02\x05\x04\x1b\x13:\x14\x12=\x14\x12f!\x00'\x05\x01%!\x00'\x00\x01$\x01#\x01#\x02#\x00\x0f\x01&\x03$\x00.\x06.\x081\x02=\x02$\x03$\x02\x11\x19#\x00(*"
+          [ 6] 33  ArgGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 36  LocalPut 0
+          [13] 46  SelfMemberGet 6
+          [15] 46  SelfMemberGet 8
+          [17] 49  NewTuple 2
+          [19] 61  Explode 2
+          [21] 36  LocalPut 3
+          [23] 36  LocalPut 2
+          [25]  3  LitInt 0
+          [27] 35  LocalGet 3
+          [29] 15  GlobalGet 0
+          [31] 27  EQ
+          [32] 18  BranchIfFalse 61
+          [34]  3  LitInt 1
+          [36] 35  LocalGet 2
+          [38]  5  LitStr 2
+          [40] 27  EQ
+          [41] 19  BranchIfTrue 58
+          [43] 35  LocalGet 2
+          [45]  5  LitStr 3
+          [47] 27  EQ
+          [48] 19  BranchIfTrue 58
+          [50] 35  LocalGet 2
+          [52]  5  LitStr 4
+          [54] 27  EQ
+          [55] 19  BranchIfTrue 58
+          [57] 20  Not
+          [58] 18  BranchIfFalse 61
+          [60] 20  Not
+          [61] 18  BranchIfFalse 102
+          [63] 33  ArgGet 0
+          [65] 39  CallMeth 5 1
+          [68] 37  Drop
+          [69] 33  ArgGet 0
+          [71] 39  CallMeth 0 1
+          [74] 36  LocalPut 1
+          [76] 35  LocalGet 1
+          [78] 35  LocalGet 2
+          [80] 35  LocalGet 0
+          [82] 15  GlobalGet 1
+          [84] 38  Call 3
+          [86] 36  LocalPut 0
+          [88] 46  SelfMemberGet 6
+          [90] 46  SelfMemberGet 8
+          [92] 49  NewTuple 2
+          [94] 61  Explode 2
+          [96] 36  LocalPut 3
+          [98] 36  LocalPut 2
+          [100] 17  Branch 25
+          [102] 35  LocalGet 0
+          [104] 40  Return
+          [105] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parsePrim'
+           0. (61) 12 InternPack_patch: int 9
+           1. (61) 12 InternPack_patch: int 72
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_ETC'
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '*'
+           0. (61) 12 InternPack_patch: int 39
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '%'
+           0. (61) 12 InternPack_patch: int 46
+           ;
+         4. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '/'
+           0. (61) 12 InternPack_patch: int 53
+           ;
+         5. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex'
+           0. (61) 12 InternPack_patch: int 66
+           ;
+         6. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'XBinary'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 30
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 6
+           0. (71) 14 GlobalPack_patch: int 83
+           ;
+         ;
+       ;
+     14. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 44
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x01\x01\x00\xff\xff\xff\x05\x00$\x00.\x00.\x04\x1d\x12$#\x00.\x02.\x005\x07$\x00.\x00\x03\x01\x070\x00\x11\n#\x00\x0f\x00&\x01(*'
+          [ 6]  5  LitStr 0
+          [ 8] 36  LocalPut 0
+          [10] 46  SelfMemberGet 0
+          [12] 46  SelfMemberGet 4
+          [14] 29  LT
+          [15] 18  BranchIfFalse 36
+          [17] 35  LocalGet 0
+          [19] 46  SelfMemberGet 2
+          [21] 46  SelfMemberGet 0
+          [23] 53  GetItem
+          [24]  7  Plus
+          [25] 36  LocalPut 0
+          [27] 46  SelfMemberGet 0
+          [29]  3  LitInt 1
+          [31]  7  Plus
+          [32] 48  SelfMemberPut 0
+          [34] 17  Branch 10
+          [36] 35  LocalGet 0
+          [38] 15  GlobalGet 0
+          [40] 38  Call 1
+          [42] 40  Return
+          [43] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str ''
+           0. (61) 12 InternPack_patch: int 7
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'REM'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 39
+           ;
+         ;
+       ;
+     15. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 41
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x04\x00\xff\xff\xff!\x00'\x00\x01$\x00.\x06.\x081\x02=\x02$\x03$\x02\x03\x00#\x03\x0f\x00\x1b\x12=\x03\x01#\x02\x05\x02\x1b\x13:#\x02\x05\x03\x1b\x13:#\x02\x05\x04\x1b\x13:\x14\x12=\x14\x12f!\x00'\x05\x01%!\x00'\x00\x01$\x01#\x01#\x02#\x00\x0f\x01&\x03$\x00.\x06.\x081\x02=\x02$\x03$\x02\x11\x19#\x00(*"
+          [ 6] 33  ArgGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 36  LocalPut 0
+          [13] 46  SelfMemberGet 6
+          [15] 46  SelfMemberGet 8
+          [17] 49  NewTuple 2
+          [19] 61  Explode 2
+          [21] 36  LocalPut 3
+          [23] 36  LocalPut 2
+          [25]  3  LitInt 0
+          [27] 35  LocalGet 3
+          [29] 15  GlobalGet 0
+          [31] 27  EQ
+          [32] 18  BranchIfFalse 61
+          [34]  3  LitInt 1
+          [36] 35  LocalGet 2
+          [38]  5  LitStr 2
+          [40] 27  EQ
+          [41] 19  BranchIfTrue 58
+          [43] 35  LocalGet 2
+          [45]  5  LitStr 3
+          [47] 27  EQ
+          [48] 19  BranchIfTrue 58
+          [50] 35  LocalGet 2
+          [52]  5  LitStr 4
+          [54] 27  EQ
+          [55] 19  BranchIfTrue 58
+          [57] 20  Not
+          [58] 18  BranchIfFalse 61
+          [60] 20  Not
+          [61] 18  BranchIfFalse 102
+          [63] 33  ArgGet 0
+          [65] 39  CallMeth 5 1
+          [68] 37  Drop
+          [69] 33  ArgGet 0
+          [71] 39  CallMeth 0 1
+          [74] 36  LocalPut 1
+          [76] 35  LocalGet 1
+          [78] 35  LocalGet 2
+          [80] 35  LocalGet 0
+          [82] 15  GlobalGet 1
+          [84] 38  Call 3
+          [86] 36  LocalPut 0
+          [88] 46  SelfMemberGet 6
+          [90] 46  SelfMemberGet 8
+          [92] 49  NewTuple 2
+          [94] 61  Explode 2
+          [96] 36  LocalPut 3
+          [98] 36  LocalPut 2
+          [100] 17  Branch 25
+          [102] 35  LocalGet 0
+          [104] 40  Return
+          [105] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseSum'
+           0. (61) 12 InternPack_patch: int 9
+           1. (61) 12 InternPack_patch: int 72
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_ETC'
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '<'
+           0. (61) 12 InternPack_patch: int 39
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '='
+           0. (61) 12 InternPack_patch: int 46
+           ;
+         4. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '>'
+           0. (61) 12 InternPack_patch: int 53
+           ;
+         5. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex'
+           0. (61) 12 InternPack_patch: int 66
+           ;
+         6. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'XBinary'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 30
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 6
+           0. (71) 14 GlobalPack_patch: int 83
+           ;
+         ;
+       ;
+     16. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 48
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff.\x06\x0f\x00\x1b\x12\x11G(\x11\x11.\x06\x0f\x01\x1c\x12!\x05\x02\x0f\x02&\x01<\x11!\x03\x01.\x08\x05\x04\x1b\x132.\x08\x05\x05\x1b\x132\x14\x12<!\x00'\x06\x01(\x11<.\x08\x05\x07\x1b\x12K!\x00'\x08\x01(\x11K\x03\x01.\x08\x05\t\x1b\x13\\.\x08\x05\n\x1b\x13\\\x14\x12f!\x00'\x0b\x01(\x11f.\x08\x05\x0c\x1b\x12u!\x00'\r\x01(\x11u.\x08\x05\x0e\x1b\x12\x84!\x00'\x0f\x01(\x11\x84\x05\x10.\x06.\x081\x03\x0f\x02&\x01<*"
+          [ 6] 46  SelfMemberGet 6
+          [ 8] 15  GlobalGet 0
+          [10] 27  EQ
+          [11] 18  BranchIfFalse 17
+          [13] 71  SpecialNone
+          [14] 40  Return
+          [15] 17  Branch 17
+          [17] 46  SelfMemberGet 6
+          [19] 15  GlobalGet 1
+          [21] 28  NE
+          [22] 18  BranchIfFalse 33
+          [24]  5  LitStr 2
+          [26] 15  GlobalGet 2
+          [28] 38  Call 1
+          [30] 60  Raise
+          [31] 17  Branch 33
+          [33]  3  LitInt 1
+          [35] 46  SelfMemberGet 8
+          [37]  5  LitStr 4
+          [39] 27  EQ
+          [40] 19  BranchIfTrue 50
+          [42] 46  SelfMemberGet 8
+          [44]  5  LitStr 5
+          [46] 27  EQ
+          [47] 19  BranchIfTrue 50
+          [49] 20  Not
+          [50] 18  BranchIfFalse 60
+          [52] 33  ArgGet 0
+          [54] 39  CallMeth 6 1
+          [57] 40  Return
+          [58] 17  Branch 60
+          [60] 46  SelfMemberGet 8
+          [62]  5  LitStr 7
+          [64] 27  EQ
+          [65] 18  BranchIfFalse 75
+          [67] 33  ArgGet 0
+          [69] 39  CallMeth 8 1
+          [72] 40  Return
+          [73] 17  Branch 75
+          [75]  3  LitInt 1
+          [77] 46  SelfMemberGet 8
+          [79]  5  LitStr 9
+          [81] 27  EQ
+          [82] 19  BranchIfTrue 92
+          [84] 46  SelfMemberGet 8
+          [86]  5  LitStr 10
+          [88] 27  EQ
+          [89] 19  BranchIfTrue 92
+          [91] 20  Not
+          [92] 18  BranchIfFalse 102
+          [94] 33  ArgGet 0
+          [96] 39  CallMeth 11 1
+          [99] 40  Return
+          [100] 17  Branch 102
+          [102] 46  SelfMemberGet 8
+          [104]  5  LitStr 12
+          [106] 27  EQ
+          [107] 18  BranchIfFalse 117
+          [109] 33  ArgGet 0
+          [111] 39  CallMeth 13 1
+          [114] 40  Return
+          [115] 17  Branch 117
+          [117] 46  SelfMemberGet 8
+          [119]  5  LitStr 14
+          [121] 27  EQ
+          [122] 18  BranchIfFalse 132
+          [124] 33  ArgGet 0
+          [126] 39  CallMeth 15 1
+          [129] 40  Return
+          [130] 17  Branch 132
+          [132]  5  LitStr 16
+          [134] 46  SelfMemberGet 6
+          [136] 46  SelfMemberGet 8
+          [138] 49  NewTuple 3
+          [140] 15  GlobalGet 2
+          [142] 38  Call 1
+          [144] 60  Raise
+          [145] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_EOL'
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_WORD'
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'syntax_err'
+           0. (61) 12 InternPack_patch: int 25
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Exception'
+           ;
+         4. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'PRINT'
+           0. (61) 12 InternPack_patch: int 38
+           ;
+         5. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'P'
+           0. (61) 12 InternPack_patch: int 45
+           ;
+         6. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parsePRINT'
+           0. (61) 12 InternPack_patch: int 55
+           ;
+         7. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'LET'
+           0. (61) 12 InternPack_patch: int 63
+           ;
+         8. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseLET'
+           0. (61) 12 InternPack_patch: int 70
+           ;
+         9. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'GOTO'
+           0. (61) 12 InternPack_patch: int 80
+           ;
+         10. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'G'
+           0. (61) 12 InternPack_patch: int 87
+           ;
+         11. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseGOTO'
+           0. (61) 12 InternPack_patch: int 97
+           ;
+         12. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'IF'
+           0. (61) 12 InternPack_patch: int 105
+           ;
+         13. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseIF'
+           0. (61) 12 InternPack_patch: int 112
+           ;
+         14. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'REM'
+           0. (61) 12 InternPack_patch: int 120
+           ;
+         15. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseREM'
+           0. (61) 12 InternPack_patch: int 127
+           ;
+         16. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'unknown_stmt'
+           0. (61) 12 InternPack_patch: int 133
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 0
+           0. (71) 14 GlobalPack_patch: int 9
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 20
+           ;
+         2. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 3
+           0. (71) 14 GlobalPack_patch: int 27
+           1. (71) 14 GlobalPack_patch: int 141
+           ;
+         ;
+       ;
+     17. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 40
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x04\x00\xff\xff\xff!\x00'\x00\x01$\x00.\x06.\x081\x02=\x02$\x03$\x02\x03\x00#\x03\x0f\x00\x1b\x126\x03\x01#\x02\x05\x02\x1b\x133#\x02\x05\x03\x1b\x133\x14\x126\x14\x12_!\x00'\x04\x01%!\x00'\x00\x01$\x01#\x01#\x02#\x00\x0f\x01&\x03$\x00.\x06.\x081\x02=\x02$\x03$\x02\x11\x19#\x00(*"
+          [ 6] 33  ArgGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 36  LocalPut 0
+          [13] 46  SelfMemberGet 6
+          [15] 46  SelfMemberGet 8
+          [17] 49  NewTuple 2
+          [19] 61  Explode 2
+          [21] 36  LocalPut 3
+          [23] 36  LocalPut 2
+          [25]  3  LitInt 0
+          [27] 35  LocalGet 3
+          [29] 15  GlobalGet 0
+          [31] 27  EQ
+          [32] 18  BranchIfFalse 54
+          [34]  3  LitInt 1
+          [36] 35  LocalGet 2
+          [38]  5  LitStr 2
+          [40] 27  EQ
+          [41] 19  BranchIfTrue 51
+          [43] 35  LocalGet 2
+          [45]  5  LitStr 3
+          [47] 27  EQ
+          [48] 19  BranchIfTrue 51
+          [50] 20  Not
+          [51] 18  BranchIfFalse 54
+          [53] 20  Not
+          [54] 18  BranchIfFalse 95
+          [56] 33  ArgGet 0
+          [58] 39  CallMeth 4 1
+          [61] 37  Drop
+          [62] 33  ArgGet 0
+          [64] 39  CallMeth 0 1
+          [67] 36  LocalPut 1
+          [69] 35  LocalGet 1
+          [71] 35  LocalGet 2
+          [73] 35  LocalGet 0
+          [75] 15  GlobalGet 1
+          [77] 38  Call 3
+          [79] 36  LocalPut 0
+          [81] 46  SelfMemberGet 6
+          [83] 46  SelfMemberGet 8
+          [85] 49  NewTuple 2
+          [87] 61  Explode 2
+          [89] 36  LocalPut 3
+          [91] 36  LocalPut 2
+          [93] 17  Branch 25
+          [95] 35  LocalGet 0
+          [97] 40  Return
+          [98] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'parseProduct'
+           0. (61) 12 InternPack_patch: int 9
+           1. (61) 12 InternPack_patch: int 65
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'T_ETC'
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '+'
+           0. (61) 12 InternPack_patch: int 39
+           ;
+         3. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '-'
+           0. (61) 12 InternPack_patch: int 46
+           ;
+         4. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Lex'
+           0. (61) 12 InternPack_patch: int 59
+           ;
+         5. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'XBinary'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 30
+           ;
+         1. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 5
+           0. (71) 14 GlobalPack_patch: int 76
+           ;
+         ;
+       ;
+     ;
+   5. (2b) 5 CodePack_classpacks: message:
+     0. (89) 17 ClassPack_name_i: int 56
+     0. (91) 18 ClassPack_field_i: int 58
+     0. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 12
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x010\x00)'
+          [ 6] 33  ArgGet 1
+          [ 8] 48  SelfMemberPut 0
+          [10] 41  RetSelf
+         ;
+       ;
+     1. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 13
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x01\x00\x00\xff\xff\xff\x05\x00.\x00\x07(*'
+          [ 6]  5  LitStr 0
+          [ 8] 46  SelfMemberGet 0
+          [10]  7  Plus
+          [11] 40  Return
+          [12] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'REM '
+           0. (61) 12 InternPack_patch: int 7
+           ;
+         ;
+       ;
+     2. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 57
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x01\x00\x00\xff\xff\xff*'
+          [ 6] 42  RetNone
+         ;
+       ;
+     ;
+   6. (2b) 5 CodePack_classpacks: message:
+     0. (89) 17 ClassPack_name_i: int 18
+     0. (91) 18 ClassPack_field_i: int 19
+     1. (91) 18 ClassPack_field_i: int 20
+     2. (91) 18 ClassPack_field_i: int 21
+     0. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 12
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x04\x00\x00\xff\xff\xff!\x010\x00!\x020\x02!\x030\x01)'
+          [ 6] 33  ArgGet 1
+          [ 8] 48  SelfMemberPut 0
+          [10] 33  ArgGet 2
+          [12] 48  SelfMemberPut 2
+          [14] 33  ArgGet 3
+          [16] 48  SelfMemberPut 1
+          [18] 41  RetSelf
+         ;
+       ;
+     1. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 13
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x00\x00\xff\xff\xff\x05\x00.\x00'\x01\x01\x07.\x04\x07.\x02'\x01\x01\x07\x05\x02\x07(*"
+          [ 6]  5  LitStr 0
+          [ 8] 46  SelfMemberGet 0
+          [10] 39  CallMeth 1 1
+          [13]  7  Plus
+          [14] 46  SelfMemberGet 4
+          [16]  7  Plus
+          [17] 46  SelfMemberGet 2
+          [19] 39  CallMeth 1 1
+          [22]  7  Plus
+          [23]  5  LitStr 2
+          [25]  7  Plus
+          [26] 40  Return
+          [27] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '('
+           0. (61) 12 InternPack_patch: int 7
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '__str__'
+           0. (61) 12 InternPack_patch: int 11
+           1. (61) 12 InternPack_patch: int 20
+           ;
+         2. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str ')'
+           0. (61) 12 InternPack_patch: int 24
+           ;
+         ;
+       ;
+     2. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 14
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str "\x01\x04\x00\xff\xff\xff.\x00'\x00\x01$\x00.\x02'\x00\x01$\x01\x0f\x00.\x045$\x02#\x01#\x00#\x02&\x02$\x03#\x03(*"
+          [ 6] 46  SelfMemberGet 0
+          [ 8] 39  CallMeth 0 1
+          [11] 36  LocalPut 0
+          [13] 46  SelfMemberGet 2
+          [15] 39  CallMeth 0 1
+          [18] 36  LocalPut 1
+          [20] 15  GlobalGet 0
+          [22] 46  SelfMemberGet 4
+          [24] 53  GetItem
+          [25] 36  LocalPut 2
+          [27] 35  LocalGet 1
+          [29] 35  LocalGet 0
+          [31] 35  LocalGet 2
+          [33] 38  Call 2
+          [35] 36  LocalPut 3
+          [37] 35  LocalGet 3
+          [39] 40  Return
+          [40] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'eval'
+           0. (61) 12 InternPack_patch: int 9
+           1. (61) 12 InternPack_patch: int 16
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'BinaryOps'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 21
+           ;
+         ;
+       ;
+     ;
+   7. (2b) 5 CodePack_classpacks: message:
+     0. (89) 17 ClassPack_name_i: int 22
+     0. (91) 18 ClassPack_field_i: int 23
+     1. (91) 18 ClassPack_field_i: int 24
+     0. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 12
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x03\x00\x00\xff\xff\xff!\x010\x01!\x020\x00)'
+          [ 6] 33  ArgGet 1
+          [ 8] 48  SelfMemberPut 1
+          [10] 33  ArgGet 2
+          [12] 48  SelfMemberPut 0
+          [14] 41  RetSelf
+         ;
+       ;
+     1. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 13
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x01\x00\x00\xff\xff\xff.\x02J\x05\x00\x07.\x00J\x07\x05\x01\x07(*'
+          [ 6] 46  SelfMemberGet 2
+          [ 8] 74  Str
+          [ 9]  5  LitStr 0
+          [11]  7  Plus
+          [12] 46  SelfMemberGet 0
+          [14] 74  Str
+          [15]  7  Plus
+          [16]  5  LitStr 1
+          [18]  7  Plus
+          [19] 40  Return
+          [20] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str '('
+           0. (61) 12 InternPack_patch: int 10
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str ')'
+           0. (61) 12 InternPack_patch: int 17
+           ;
+         ;
+       ;
+     2. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 14
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x01\x00\x00\xff\xff\xff\x05\x00\x0f\x00&\x01<*'
+          [ 6]  5  LitStr 0
+          [ 8] 15  GlobalGet 0
+          [10] 38  Call 1
+          [12] 60  Raise
+          [13] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'TODO'
+           0. (61) 12 InternPack_patch: int 7
+           ;
+         1. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Exception'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 1
+           0. (71) 14 GlobalPack_patch: int 9
+           ;
+         ;
+       ;
+     ;
+   8. (2b) 5 CodePack_classpacks: message:
+     0. (89) 17 ClassPack_name_i: int 11
+     0. (91) 18 ClassPack_field_i: int 15
+     0. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 12
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x010\x00)'
+          [ 6] 33  ArgGet 1
+          [ 8] 48  SelfMemberPut 0
+          [10] 41  RetSelf
+         ;
+       ;
+     1. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 13
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x01\x00\x00\xff\xff\xff.\x00J(*'
+          [ 6] 46  SelfMemberGet 0
+          [ 8] 74  Str
+          [ 9] 40  Return
+          [10] 42  RetNone
+         ;
+       ;
+     2. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 14
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x01\x00\x00\xff\xff\xff.\x00(*'
+          [ 6] 46  SelfMemberGet 0
+          [ 8] 40  Return
+          [ 9] 42  RetNone
+         ;
+       ;
+     ;
+   9. (2b) 5 CodePack_classpacks: message:
+     0. (89) 17 ClassPack_name_i: int 16
+     0. (91) 18 ClassPack_field_i: int 17
+     0. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 12
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x02\x00\x00\xff\xff\xff!\x010\x00)'
+          [ 6] 33  ArgGet 1
+          [ 8] 48  SelfMemberPut 0
+          [10] 41  RetSelf
+         ;
+       ;
+     1. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 13
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x01\x00\x00\xff\xff\xff.\x00(*'
+          [ 6] 46  SelfMemberGet 0
+          [ 8] 40  Return
+          [ 9] 42  RetNone
+         ;
+       ;
+     2. (9b) 19 ClassPack_meth: message:
+       0. (51) 10 FuncPack_name_i: int 14
+       0. (7b) 15 FuncPack_pack: message:
+         0. (0a) 1 CodePack_bytecode: str '\x01\x01\x00\xff\xff\xff9\x10\x0f\x00.\x005(:\x15;%\x03\x00(*'
+          [ 6] 57  Try 16
+          [ 8] 15  GlobalGet 0
+          [10] 46  SelfMemberGet 0
+          [12] 53  GetItem
+          [13] 40  Return
+          [14] 58  EndTry 21
+          [16] 59  Catch
+          [17] 37  Drop
+          [18]  3  LitInt 0
+          [20] 40  Return
+          [21] 42  RetNone
+         0. (13) 2 CodePack_interns: message:
+           0. (5a) 11 InternPack_s: str 'Vars'
+           ;
+         0. (1b) 3 CodePack_globals: message:
+           0. (69) 13 GlobalPack_name_i: int 0
+           0. (71) 14 GlobalPack_patch: int 9
+           ;
+         ;
+       ;
+     ;
+   ;

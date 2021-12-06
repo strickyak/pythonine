@@ -1,3 +1,5 @@
+# HINT: python2 print_pb.py _generated_prim.h bc.proto < premade/bc > premade/bc.listing
+
 import re, sys
 
 import compile_proto
