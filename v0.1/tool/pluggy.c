@@ -17,13 +17,14 @@ int main() {
     assert(addr1);
 
     byte fd;
-    err = FOpen("plugin", false, &fd);
+    err = FOpen("plug1.raw", false, &fd);
     assert(!err);
 
     word bytes_read;
-    err = FRead(fd, addr1, 0x2000, &bytes_read);
+    err = FRead(fd, (char*)addr1, 0x2000, &bytes_read);
     assert(!err);
 
+    printf("bytes_read=%d\n", bytes_read);
     return 0;
 }
 
