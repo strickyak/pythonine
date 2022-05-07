@@ -142,7 +142,7 @@ SDCARD=sdb
 
 emu: __always__
 	rm -f runpy
-	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
+	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -153,7 +153,7 @@ emu: __always__
 	: : : os9 copy -l -r /etc/fstab /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,etc/fstab
 	(echo 'runpy #128 </term'; echo 'dir /d1') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
-	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
+	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; gorun -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
 	ls -l runpy
 
 
@@ -162,12 +162,12 @@ kmem: __always__
 	os9 copy -r tool/kmem /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/kmem
 	os9 attr -per /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/kmem
 	(echo 'echo Nando Kmem') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
-	(set -x ; cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>/dev/null)
+	(set -x ; cd ~/go/src/github.com/strickyak/doing_os9/gomar ; gorun -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>/dev/null)
 
 
 lemu: __always__
 	rm -f runpy
-	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
+	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -178,13 +178,13 @@ lemu: __always__
 	: : : os9 copy -l -r /etc/fstab /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,etc/fstab
 	(echo 'runpy #128 </term'; echo 'dir /d1') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
-	(set -x ; cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>/dev/null)
+	(set -x ; cd ~/go/src/github.com/strickyak/doing_os9/gomar ; gorun -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>/dev/null)
 	ls -l runpy
 
 
 temu: __always__
 	rm -f runpy
-	go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
+	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -195,7 +195,7 @@ temu: __always__
 	: : : os9 copy -l -r /etc/fstab /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,etc/fstab
 	(echo 'runpy #128 </term'; echo 'dir /d1') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
-	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; go run -x -tags=coco3,level2,trace gomar.go -t=12000000 -vv=a --trigger_os9='(?i:fork.*runpy)' -borges=/home/strick/go/src/github.com/strickyak/doing_os9/borges/ -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
+	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; gorun -x -tags=coco3,level2,trace gomar.go -t=12000000 -vv=a --trigger_os9='(?i:fork.*runpy)' -borges=/home/strick/go/src/github.com/strickyak/doing_os9/borges/ -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
 	ls -l runpy
 
 

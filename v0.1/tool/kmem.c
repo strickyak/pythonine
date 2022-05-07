@@ -9,6 +9,7 @@ byte BlockNum[NUM_BLOCKS];
 byte Buffer[1024];
 
 void PrintBlockMap() {
+#if 0
   word bpb = 0;
   word num_blks = 0;
   int err = GetBlockMap(Buffer, &bpb, &num_blks);
@@ -22,6 +23,7 @@ void PrintBlockMap() {
     }
     printf("\n");
   }
+#endif
 }
 
 int main() {
@@ -33,7 +35,7 @@ int main() {
     printf("allocate ram[%d] ... ", i);
     byte err = AllocateBlock(1, &start_blk);
     if (err) { printf("ERROR %d\n", err); return err; }
-    BlockNum[i] = start_blk;
+    BlockNum[i] = (byte)start_blk;
     printf("=> blk %d; ", start_blk);
     err = MapBlock(start_blk, 1, &addr);
     printf(" MAP addr => %x; error %d\n", addr, err);
