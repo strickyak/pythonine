@@ -19,8 +19,8 @@
                         abort(); } } while (0)
 #else
 
-#define CAREFUL 1
-#define GUARD 1
+#define CAREFUL 0
+#define GUARD 0
 
 #define assert(cond) do { if (!(cond)) { \
                         printf("@@@ ASSERT FAILED %s:%u: %s\n", __FILE__, __LINE__, #cond); \
