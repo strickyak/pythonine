@@ -11,8 +11,8 @@ pluggy: pluggy.c
 	:
 	grep '// export' pluggy.c | sed 's|{ *// *export|; // export|' > plugback.h
 	:
-	# lwlink --6809 --list=pluggy.list -o pluggy pluggy.o
-	# : : : : go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc pluggy.c
+# lwlink --6809 --list=pluggy.list -o pluggy pluggy.o
+# : : : : go run ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc pluggy.c
 
 plug1.srec : plug1.c pluggy
 	awk -f plugback.awk pluggy.map pluggy.c > plugback.s
@@ -21,6 +21,7 @@ plug1.srec : plug1.c pluggy
 	lwasm --obj --6809 --list=plug1.list -o plug1.o plug1.s
 	(echo " SECTION code"; echo " EXPORT program_start"; echo "program_start EQU 0") > pluginit.s
 	cmoc --srec -i plug1.o plugback.s pluginit.s
+	go run un-srec.go < plug1.srec > plug1.raw
 
 kmem: kmem.c mmap.h mmap.c
 	/opt/yak/cmoc/bin/cmoc --os9 kmem.c mmap.c
