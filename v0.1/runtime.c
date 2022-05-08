@@ -315,6 +315,9 @@ void EvalCodes(word fn) {
   printf("\n[[[ Finished RunLoop ]]]\n");
   fp = function = None;
   sp = ip = 0;
+#if 0
+  FatalCoreDump();
+#endif
 }
 
 #if !unix
@@ -331,7 +334,7 @@ void SetIntercept() {
 #if !unix
   asm {
     pshs y,u
-    ldx _Intercept
+    ldx #_Intercept
     SWI2
     FCB 9
     puls y,u
@@ -340,8 +343,10 @@ void SetIntercept() {
 }
 
 ojmp_buf run_loop_jmp_buf;
+ojmp_buf user_jmp_buf;
+
 void RunLoop() {
-  byte message = osetjmp(run_loop_jmp_buf);
+  byte message = (byte)osetjmp(run_loop_jmp_buf);
   if (message == FINISH) return;
 
 RUN_LOOP:

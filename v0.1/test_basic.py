@@ -83,10 +83,14 @@ def List():
         if stmt:
             print num, stmt.__str__(), chr(13)
 
-def Run():
+def Run(n):
+    steps = 0
     prog = sorted(Program.items())
     LineNum[0] = 1
     while LineNum[0]:
+        steps = steps + 1
+        if n and steps >= n:
+            break
         target = LineNum[0]
         LineNum[0] = 0
         for (num, stmt) in prog:
@@ -94,7 +98,7 @@ def Run():
                 stmt.execute()
             if LineNum[0]:
                 break
-    print 'STOP'
+    print 'STOP (', n, 'steps )'
 
 # Lexical Token types.
 T_EOL = 0
@@ -378,7 +382,6 @@ def Command(line):
 
 def Loop():
     while True:
-        # ogc()
         print "  -->",
         line = sys.stdin.readline()
         if not line: break
@@ -386,7 +389,9 @@ def Loop():
         line = line.rstrip().upper()
         if line == "Q" or line == "B" or line == "BYE": break
         elif line == "L" or line == "LIST": List()
-        elif line == "R" or line == "RUN": Run()
+        elif line == "R" or line == "RUN": Run(0)
+        elif line == "H" or line == "HECTO": Run(100)
+        elif line == "K" or line == "KILO": Run(1000)
         elif line == "SHELL": shell()
         else: Command(line)
 

@@ -644,6 +644,18 @@ code ShedTryBlocks
   ShedTryBlocks(n);
 ]
 
+code UserSetJmp
+  out val
+[
+  word z = (word) osetjmp(user_jmp_buf);
+  val = z;
+]
+code UserLongJmp
+  in val
+[
+  olongjmp(user_jmp_buf, val);
+]
+
 # # # # # #
 
 prim Str __str__

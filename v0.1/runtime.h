@@ -49,6 +49,7 @@ extern word fp;
 extern word sp;  // Stores in Frame as sp - fp.
 extern bool signalled;
 extern ojmp_buf run_loop_jmp_buf;
+extern ojmp_buf user_jmp_buf;
 
 // Header on bytecodes object:
 #define BC_NUM_ARGS 0
