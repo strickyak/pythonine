@@ -382,19 +382,23 @@ def Command(line):
 
 def Loop():
     while True:
-        print "  -->",
-        line = sys.stdin.readline()
-        if not line: break
+        try:
+            print "  -->",
+            line = sys.stdin.readline()
+            if not line: break
 
-        line = line.rstrip().upper()
-        if line == "B" or line == "BYE": break
-        elif line == "L" or line == "LIST": List()
-        elif line == "R" or line == "RUN": Run(0)
-        elif line == "D" or line == "DEKA": Run(10)
-        elif line == "H" or line == "HECTO": Run(100)
-        elif line == "K" or line == "KILO": Run(1000)
-        elif line == "SHELL": shell()
-        else: Command(line)
+            line = line.rstrip().upper()
+            if line == "B" or line == "BYE": break
+            elif line == "L" or line == "LIST": List()
+            elif line == "R" or line == "RUN": Run(0)
+            elif line == "D" or line == "DEKA": Run(10)
+            elif line == "H" or line == "HECTO": Run(100)
+            elif line == "K" or line == "KILO": Run(1000)
+            elif line == "SHELL": shell()
+            else: Command(line)
+        except Exception as ex:
+            print " *** Exception:", ex
+
 
 def Init():
     Command("10 REM Prove the Collatz Conjecture")

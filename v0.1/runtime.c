@@ -25,6 +25,11 @@ word DunderIterIsn;
 word NextIsn;
 word StopIterationStr;
 
+#define SIGNALS 0
+#if SIGNALS
+word SignalStr;
+#endif
+
 byte* codes;     // ????
 word codes_obj;  // ????
 
@@ -33,7 +38,6 @@ word ip;  // Stores in Frame as ip - function.
 word fp;
 word sp;  // Stores in Frame as sp - fp.
 byte signalled;
-word signal_handler;
 
 #if unix
 #define VERB \
@@ -321,6 +325,7 @@ void EvalCodes(word fn) {
 #endif
 }
 
+#if SIGNALS
 #if !unix
 asm void Intercept() {
   asm {
@@ -341,66 +346,55 @@ void SetIntercept() {
   }
 #endif
 }
+#endif
 
 ojmp_buf run_loop_jmp_buf;
-ojmp_buf user_jmp_buf;
 
 void RunLoop() {
+#if SIGNALS
+  SetIntercept();
+#endif
   byte message = (byte)osetjmp(run_loop_jmp_buf);
   if (message == FINISH) return;
 
 RUN_LOOP:
-
-  // Redundant with CAREFUL.
-#if 0
-  assert(sp >= fp + Frame_Size - 2);
-  assert(sp <= fp + ocap(fp));
-  assert(ip >= function + BC_HEADER_SIZE);
-  assert(ip < function + INF);
-#endif
-
+#if SIGNALS
   if (signalled) {
     printf(" <SIG%d> ", signalled);
     signalled = 0;
-    if (signal_handler) {
-      Call(0, signal_handler);
+    if (fp) {
+      Raise(SignalStr);
       goto RUN_LOOP;
     } else {
       return;
     }
   }
+#endif
 
-#if CAREFUL
+#if CAREFUL || unix
   VERB("\n");
+  assert(fp);
+  assert(function);
   assert(sp >= fp + Frame_Size - 2);
   assert(sp <= fp + ocap(fp));
   SayStack();  // ===========
   assert(ip >= function + BC_HEADER_SIZE);
-  assert(ip < function + INF);
+  assert(ip < function + ocap(function));
 #endif
   byte opcode = ogetb(ip);
   // PrintK();
   VERB("%d:", opcode);
-#if CAREFUL
+#if CAREFUL || unix
   assert(opcode < CodeNames_SIZE);
 #endif
   VERB("%s> ", CodeNames[opcode]);
-#if CAREFUL
+#if CAREFUL || unix
   assert(opcode < CodeNames_SIZE);
 #endif
 #if unix
   printf("::::: f=%d ip~%d opcode=%d ((( %s ))) args=%d,%d fp=%d sp~%d\n",
        function, ip - function, opcode, CodeNames[opcode], ogetb(ip + 1),
        ogetb(ip + 2), fp, (sp - fp) >> 1);
-
-#endif
-#if 0
-  assert(fp);
-  assert(function);
-  assert(sp > fp);
-  assert(ip > function);
-  assert(sp <= fp + ocap(fp));
-  assert(ip < function + ocap(function));
 #endif
 
   ip++;
@@ -740,6 +734,9 @@ void RuntimeInit() {
   DunderIterIsn = InternString(StrFromC("__iter__"));
   NextIsn = InternString(StrFromC("next"));
   StopIterationStr = TrainGetNth(InternList, InternString(StrFromC("StopIteration")));
+#if SIGNALS
+  SignalStr = TrainGetNth(InternList, InternString(StrFromC("SIGNAL")));
+#endif
 
   // Reserve builtin class slots, with None.
   TrainAppend(ClassList, None);  // unused 0.
