@@ -644,17 +644,21 @@ code ShedTryBlocks
   ShedTryBlocks(n);
 ]
 
-code UserSetJmp
-  out val
-[
-  word z = (word) osetjmp(user_jmp_buf);
-  val = z;
-]
-code UserLongJmp
-  in val
-[
-  olongjmp(user_jmp_buf, val);
-]
+#code UserSetJmp
+#  out val
+#[
+#  val = (word) osetjmp(user_jmp_buf);
+#]
+#code UserLongJmp
+#  in val
+#[
+#  olongjmp(user_jmp_buf, val);
+#]
+#code SetSignalHandler
+#  in fn
+#[
+#  signal_handler = fn;
+#]
 
 # # # # # #
 

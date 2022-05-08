@@ -7,7 +7,7 @@
 
 int main(int argc, char* argv[]) {
 #if !unix
-  printf("(main) $%x=%d. ", main, main);
+  // printf("(main) $%x=%d. ", main, main);
 #endif
 
   defs_init(MarkRoots);
@@ -22,8 +22,6 @@ int main(int argc, char* argv[]) {
   Directory();
 
   EvalCodes(main_bytecodes);
-  printf("\n[[[ FINISHED ]]]\n");
-  //odumpsummary();
   ogc();
   odumpsummary();
   return 0;

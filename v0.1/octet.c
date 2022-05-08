@@ -269,7 +269,12 @@ word oalloc(byte len, byte cls) {
 #if CAREFUL
   ocheckguards(p);
 #endif
+
+#if 1
   ozero(p, ocap(p));  // Clear payload.
+#else
+  memset(p, 0, ocap(p));
+#endif
 
   // Grace period against GC for 2 recent objs.
   OGrace2 = OGrace1;
@@ -287,7 +292,9 @@ void ofree(word addr) {
   byte cap = ocap(addr);
   byte buck = osize2bucket(cap);
   oputb(addr - DCLS, 0);  // Clear the class.
+#if 0
   ozero(addr, cap);       // Clear the data, cap bytes starting at addr.
+#endif
 
   // Link the freed cell into the bucket chain.
   oputw(addr, OBucket[buck]);  // In first 2 bytes of cell.
@@ -302,7 +309,7 @@ struct prev {
   struct prev* next;
 };
 
-word omark_(word addr, word depth, struct prev* prev) {
+word omark_recursive(word addr, word depth, struct prev* prev) {
   word max_depth;
 TAILCALL:
   max_depth = depth;
@@ -344,7 +351,7 @@ TAILCALL:
                   addr = q;
                   goto TAILCALL;
                 }
-                word d = omark_(q, depth+1, &item);
+                word d = omark_recursive(q, depth+1, &item);
                 max_depth = (d > max_depth) ? d : max_depth; // max
             }
           }
@@ -356,19 +363,18 @@ TAILCALL:
 void omark(word addr) {
   word max_depth = 0;
   if (ovalidaddr(addr)) {
-    word d = omark_(addr, 0, NULL);
+    word d = omark_recursive(addr, 0, NULL);
     max_depth = (d > max_depth) ? d : max_depth; // max
   }
-  // printf("^%d^", max_depth);
 }
 
 void ogc() {
-  printf(" {GC");
+  printf("{G");
   // Mark all our roots.
   omark(OGrace1);
   omark(OGrace2);
   OMarkerFn();
-  printf(":");
+  printf("C");
 
   // Reset all the buckets.
   for (byte i = 0; i < O_NUM_BUCKETS; i++) OBucket[i] = 0;
@@ -394,7 +400,7 @@ void ogc() {
     }
     p += (word)cap + (word)DHDR;
   }
-  printf("} ");
+  printf("}");
 }
 
 void osayhexlabel(word p, word len, char* label) {
@@ -456,7 +462,7 @@ void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
   word bytes_used = 0;
   word count_skip = 0;
   word bytes_skip = 0;
-  V_DUMP("\n{{{{{ ODUMP %04x:\n", ORamBegin);
+  // V_DUMP("\n{{{{{ ODUMP %04x:\n", ORamBegin);
   word p = ORamBegin + DHDR;
   // V_DUMP("1p=%04x\n", p);
   while (p < ORamUsed) {
@@ -501,7 +507,7 @@ void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
          100.0 * (bytes_used + bytes_skip) / (ORamEnd - ORamBegin));
 #endif
 
-  V_DUMP("}}}}} ODUMP %04x\n\n", ORamUsed);
+  // V_DUMP("}}}}} ODUMP %04x\n\n", ORamUsed);
   if (count_used_ptr) {
     *count_used_ptr = count_used;
   }

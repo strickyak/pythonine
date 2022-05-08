@@ -1148,11 +1148,13 @@ class Compiler(object):
             self.visitFunCallMoreMore(t)
 
     def visitFunCallMoreMore(self, t):
-        if type(t.fn) == TIdent and t.fn.x == 'setjmp' and len(t.xlist) == 0:
-            self.ops.append('UserSetJmp')
-        elif type(t.fn) == TIdent and t.fn.x == 'longjmp' and len(t.xlist) == 1:
-            self.ops.append('UserLongJmp')
-        elif type(t.fn) == TIdent and t.fn.x == 'open' and len(t.xlist) == 2:
+        ## if type(t.fn) == TIdent and t.fn.x == 'setjmp' and len(t.xlist) == 0:
+        ##     self.ops.append('UserSetJmp')
+        ## elif type(t.fn) == TIdent and t.fn.x == 'longjmp' and len(t.xlist) == 1:
+        ##     self.ops.append('UserLongJmp')
+        ## elif type(t.fn) == TIdent and t.fn.x == 'setsignalhandler' and len(t.xlist) == 1:
+        ##     self.ops.append('SetSignalHandler')
+        if type(t.fn) == TIdent and t.fn.x == 'open' and len(t.xlist) == 2:
             self.ops.append('Open')
         else:
             t.fn.visit(self)

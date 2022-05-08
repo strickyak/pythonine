@@ -33,6 +33,7 @@ word ip;  // Stores in Frame as ip - function.
 word fp;
 word sp;  // Stores in Frame as sp - fp.
 byte signalled;
+word signal_handler;
 
 #if unix
 #define VERB \
@@ -312,7 +313,7 @@ void EvalCodes(word fn) {
   ip = function + BC_HEADER_SIZE;
 
   RunLoop();
-  printf("\n[[[ Finished RunLoop ]]]\n");
+  printf(" [unloop] ");
   fp = function = None;
   sp = ip = 0;
 #if 0
@@ -323,8 +324,7 @@ void EvalCodes(word fn) {
 #if !unix
 asm void Intercept() {
   asm {
-    lda #1
-    sta signalled
+    stb signalled
     rti
   }
 }
@@ -352,10 +352,23 @@ void RunLoop() {
 RUN_LOOP:
 
   // Redundant with CAREFUL.
+#if 0
   assert(sp >= fp + Frame_Size - 2);
   assert(sp <= fp + ocap(fp));
   assert(ip >= function + BC_HEADER_SIZE);
   assert(ip < function + INF);
+#endif
+
+  if (signalled) {
+    printf(" <SIG%d> ", signalled);
+    signalled = 0;
+    if (signal_handler) {
+      Call(0, signal_handler);
+      goto RUN_LOOP;
+    } else {
+      return;
+    }
+  }
 
 #if CAREFUL
   VERB("\n");
@@ -368,7 +381,9 @@ RUN_LOOP:
   byte opcode = ogetb(ip);
   // PrintK();
   VERB("%d:", opcode);
+#if CAREFUL
   assert(opcode < CodeNames_SIZE);
+#endif
   VERB("%s> ", CodeNames[opcode]);
 #if CAREFUL
   assert(opcode < CodeNames_SIZE);
@@ -379,12 +394,14 @@ RUN_LOOP:
        ogetb(ip + 2), fp, (sp - fp) >> 1);
 
 #endif
+#if 0
   assert(fp);
   assert(function);
   assert(sp > fp);
   assert(ip > function);
   assert(sp <= fp + ocap(fp));
   assert(ip < function + ocap(function));
+#endif
 
   ip++;
   switch (opcode) {
@@ -392,7 +409,7 @@ RUN_LOOP:
 #include "_generated_prim.h"
 #undef PRIM_PART
   }  // end switch
-  printf("opcode=%d function=%d ip=%d fp=%d sp=%d\n", opcode, function, ip, fp,
+  printf("BAD opcode=%d function=%d ip=%d fp=%d sp=%d\n", opcode, function, ip, fp,
          sp);
   opanic(240);
 }
@@ -973,7 +990,7 @@ void Return(word retval) {
   word old_fp = Frame_prev_frame(fp);
   if (!old_fp) {
     // Stop when no previous frame.
-    printf("\n[[[ Returning from urframe ]]]\n");
+    printf(" [unframe] ");
     if (retval) {
       printf("RESULT: ");
       SimplePrint(retval);
@@ -1067,14 +1084,6 @@ void RaiseC(const char* msg) {
 }
 void Raise(word ex) {
   assert(fp);  // Should be in a RunLoop
-  #if 0
-  if (!fp) {
-    printf("\nException Outside RunLoop: ");
-    SayObj(ex, 3);
-    osay(ex);
-    exit(13);
-  }
-  #endif
   Break("RAISE");
   for (word p = fp; p; p = Frame_prev_frame(p)) {
     word try = Frame_tries(p);
