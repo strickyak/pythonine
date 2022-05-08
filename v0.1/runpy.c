@@ -9,7 +9,6 @@ int main(int argc, char* argv[]) {
 #if !unix
   printf("(main) $%x=%d. ", main, main);
 #endif
-  printf("(nl) %d (cr) %d\n", "\n"[0], "\r"[0]);
 
   defs_init(MarkRoots);
   InitData();
@@ -24,8 +23,8 @@ int main(int argc, char* argv[]) {
 
   EvalCodes(main_bytecodes);
   printf("\n[[[ FINISHED ]]]\n");
-  odumpsummary();
-  ogc();
-  odumpsummary();
+  //odumpsummary();
+  //ogc();
+  //odumpsummary();
   return 0;
 }

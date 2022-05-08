@@ -128,6 +128,7 @@ format:
 	yapf -i *.py
 
 clean:
+	rm -rf __pycache__
 	rm -f bc runpy a.out *.bin *.pyc *.bc *.s *.s-orig *.o *.o.list *.map *.link *.dump _* ,*
 
 ci:
@@ -139,6 +140,12 @@ FLOPPY=drive/boot2coco3
 HARD=drive/disk2
 SDC=drive/my-68SDC.VHD
 SDCARD=sdb
+
+launch: __always__
+	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
+	cp -fv "test$T.bc" "bc"
+	# TTL=300s sh -x ../../doing_os9/gomar/launch.sh runpy /dev/null bc
+	TTL=900s sh -x ../../doing_os9/gomar/launch.sh runpy list-and-run.txt bc
 
 emu: __always__
 	rm -f runpy
@@ -217,5 +224,12 @@ mooh:
 	sync; sync; sync
 	ls -l runpy
 
+sdc:
+	cp -f ~/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2.orig /tmp/disk2
+	for junk in basic09 runb cobbler asm disasm os9gen format picol p9 xyz mpi megaread ; do os9 del "/tmp/disk2,CMDS/$$junk" ; done
+	os9 copy -r runpy /tmp/disk2,cmds/runpy
+	os9 attr -per /tmp/disk2,cmds/runpy
+	os9 copy -r bc /tmp/disk2,bc
+	sudo cp -f /tmp/disk2 /mnt/PY.DSK
 
 __always__:

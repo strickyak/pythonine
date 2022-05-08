@@ -86,15 +86,15 @@ if __name__ == '__main__':
     for name, m in sorted(messages.items()):
         for f in m.fields:
             if lang == 'c':
-                print '#define %30s %3d  // %s %s = %d' % ('%s_%s' % (name,
+                print( '#define %30s %3d  // %s %s = %d' % ('%s_%s' % (name,
                                                                       f.name),
                                                            f.tag, 'repeated'
                                                            if f.rep else '',
-                                                           f.type, f.num)
+                                                           f.type, f.num))
             elif lang == 'py':
-                print '%-30s = %3d  # %s %s = %d' % ('%s_%s' % (name, f.name),
+                print( '%-30s = %3d  # %s %s = %d' % ('%s_%s' % (name, f.name),
                                                      f.tag, 'repeated'
                                                      if f.rep else '', f.type,
-                                                     f.num)
+                                                     f.num))
             elif lang == 'const':
-                print 'T.%s_%s=%d' % (name, f.name, f.tag)
+                print( 'T.%s_%s=%d' % (name, f.name, f.tag))

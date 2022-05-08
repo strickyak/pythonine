@@ -6,27 +6,27 @@ Funcs = []
 
 
 def DefineEnum(name, members):
-    print 'enum %sNumbers {' % name
+    print( 'enum %sNumbers {' % name)
     i = 0
     for m in members:
-        print '  %s = %d,' % (m, i)
+        print( '  %s = %d,' % (m, i))
         i += 1
-    print '};'
+    print( '};')
 
-    print 'extern const char* const %sNames[];' % name
-    print 'extern word %sNames_SIZE;' % name
+    print( 'extern const char* const %sNames[];' % name)
+    print( 'extern word %sNames_SIZE;' % name)
 
 
 def DefineEnumNames(name, members):
-    print 'const char* const %sNames[] = {' % name
+    print( 'const char* const %sNames[] = {' % name)
     i = 0
     for m in members:
         f = m.find('_')
         assert f>0
-        print '  "%s", // %d' % (m[f+1:], i)
+        print( '  "%s", // %d' % (m[f+1:], i))
         i += 1
-    print '};'
-    print 'word %sNames_SIZE = %d;' % (name, len(members))
+    print( '};')
+    print( 'word %sNames_SIZE = %d;' % (name, len(members)))
 
 
 class ClassDef(object):
@@ -149,147 +149,147 @@ def CompileCore(core_contents):
 
         Macros.append('%s_Size %d' % (c.name, at))
 
-    print '// THIS FILE IS GENERATED'
-    print
-    print '#ifndef _CORE_DECLARATIONS_'
-    print '#define _CORE_DECLARATIONS_'
-    print
-    print '#include "octet.h"'
-    print '#include "defs.h"'
-    print
+    print( '// THIS FILE IS GENERATED')
+    print()
+    print( '#ifndef _CORE_DECLARATIONS_')
+    print( '#define _CORE_DECLARATIONS_')
+    print()
+    print( '#include "octet.h"')
+    print( '#include "defs.h"')
+    print()
 
     DefineEnum('Class', class_enums)
-    print
+    print()
     DefineEnum('Code', code_enums)
-    print
+    print()
     DefineEnum('Message', message_enums)
-    print
+    print()
     DefineEnum('Prim', prim_enums)
-    print
+    print()
 
     for m in Macros:
-        print '#define %s' % m
-    print
+        print( '#define %s' % m)
+    print()
     for head, _ in Funcs:
-        print 'extern %s;' % head
+        print( 'extern %s;' % head)
 
-    print 'extern const byte Prims[];'
-    print
-    print '#endif // _CORE_DECLARATIONS_'
-    print
-    print '#ifdef PRIM_PART'
-    print
-    print '#if PRIM_PART == 2'
+    print( 'extern const byte Prims[];')
+    print()
+    print( '#endif // _CORE_DECLARATIONS_')
+    print()
+    print( '#ifdef PRIM_PART')
+    print()
+    print( '#if PRIM_PART == 2')
     DefineEnumNames('Class', class_enums)
     DefineEnumNames('Code', code_enums)
     DefineEnumNames('Message', message_enums)
 
-    print
-    print 'const byte Prims[] = {'
+    print()
+    print( 'const byte Prims[] = {')
     prims_items = []
     for topic_cls, d1 in class_message_to_meth.items():
         for topic_message, mess_num in d1.items():
             prims_items.append((mess_num, topic_cls, topic_message))
 
     for mess_num, topic_cls, topic_message in sorted(prims_items):
-            print '  C_%s, M_%s, // METH_%s_%s == %d' % (topic_cls,
+            print( '  C_%s, M_%s, // METH_%s_%s == %d' % (topic_cls,
                                                        topic_message,
                                                        topic_cls,
-                                                       topic_message, mess_num)
-    print '  0, 0};'
-    print
+                                                       topic_message, mess_num))
+    print( '  0, 0};')
+    print()
 
     for head, body in Funcs:
-        print '%s %s' % (head, body)
-    print '#endif // if PRIM_PART == 2'
-    print
-    print '////////////////////////////////'
-    print
-    print '#if PRIM_PART == 3'
-    print
+        print( '%s %s' % (head, body))
+    print( '#endif // if PRIM_PART == 2')
+    print()
+    print( '////////////////////////////////')
+    print()
+    print( '#if PRIM_PART == 3')
+    print()
     for c in code_enums:
-        print '// CASE:', c, repr(code_arg[c]), repr(code_in[c]), repr(
-            code_out[c])
-        print 'case %s: {' % c
+        print( '// CASE:', c, repr(code_arg[c]), repr(code_in[c]), repr(
+            code_out[c]))
+        print( 'case %s: {' % c)
         i = len(code_in[c])
         for e in code_in[c]:
             i -= 1
-            print '  word %s = ogetw(sp + %d);  /*in*/' % (e, i + i)
+            print( '  word %s = ogetw(sp + %d);  /*in*/' % (e, i + i))
         i = 0
         for e in code_out[c]:
             i += 1
-            print '    word %s = 0; // out' % e
-        print '{'
+            print( '    word %s = 0; // out' % e)
+        print( '{')
         for e in code_arg[c]:
-            print '  byte %s = ogetb(ip++);' % e
-        print code_body[c]
-        print '}'
+            print( '  byte %s = ogetb(ip++);' % e)
+        print( code_body[c])
+        print( '}')
         pops = len(code_in[c]) - len(code_out[c])
         if pops > 0:
             for i in range(pops):
-                print 'oputw(sp, 0xDEAD);'
-                print 'sp += 2;'
+                print( 'oputw(sp, 0xDEAD);')
+                print( 'sp += 2;')
         if pops < 0:
-            print 'sp -= %d;' % (-2 * pops)
+            print( 'sp -= %d;' % (-2 * pops))
 
         for e in code_in[c]:
             pass
         i = len(code_out[c])
         for e in code_out[c]:
             i -= 1
-            print 'oputw(sp + %d, %s); // out' % (2 * i, e)
-        print '} goto RUN_LOOP;'
-        print ''
-        print ''
-    print '#endif // if PRIM_PART == 3'
-    print
-    print '////////////////////////////////'
-    print
-    print '#if PRIM_PART == 4'
-    print
+            print( 'oputw(sp + %d, %s); // out' % (2 * i, e))
+        print( '} goto RUN_LOOP;')
+        print( '')
+        print( '')
+    print( '#endif // if PRIM_PART == 3')
+    print()
+    print( '////////////////////////////////')
+    print()
+    print( '#if PRIM_PART == 4')
+    print()
     for c in prim_enums:
-        print '// CASE:', c, repr(code_in[c]), repr(code_out[c])
-        print 'case %s: {' % c
+        print( '// CASE:', c, repr(code_in[c]), repr(code_out[c]))
+        print( 'case %s: {' % c)
         i = len(code_in[c])
         for e in code_in[c]:
             i -= 1
-            print '  word %s = ogetw(sp + %d);  /*in*/' % (e, i + i)
+            print( '  word %s = ogetw(sp + %d);  /*in*/' % (e, i + i))
         i = 0
         for e in code_out[c]:
             i += 1
-            print '    word %s = 0; // out' % e
-        print '{'
-        print code_body[c]
-        print '}'
+            print( '    word %s = 0; // out' % e)
+        print( '{')
+        print( code_body[c])
+        print( '}')
         pops = len(code_in[c]) - len(code_out[c])
         if pops > 0:
             for i in range(pops):
-                print 'oputw(sp, 0xDEAD);'
-                print 'sp += 2;'
+                print( 'oputw(sp, 0xDEAD);')
+                print( 'sp += 2;')
         if pops < 0:
-            print 'sp -= %d;' % (-2 * pops)
+            print( 'sp -= %d;' % (-2 * pops))
 
         for e in code_in[c]:
             pass
         i = len(code_out[c])
         for e in code_out[c]:
             i -= 1
-            print 'oputw(sp + %d, %s); // out' % (2 * i, e)
-        print '} break;'
-        print ''
-        print ''
-    print '#endif // if PRIM_PART == 4'
-    print
-    print '#endif // ifdef PRIM_PART'
-    print
+            print( 'oputw(sp + %d, %s); // out' % (2 * i, e))
+        print( '} break;')
+        print( '')
+        print( '')
+    print( '#endif // if PRIM_PART == 4')
+    print()
+    print( '#endif // ifdef PRIM_PART')
+    print()
     i = 0
     for c in code_enums:
-        print '// :ByteCode: %s %d %s' % (c, i, code_arg[c])
+        print( '// :ByteCode: %s %d %s' % (c, i, code_arg[c]))
         i += 1
-    print
-    print '//', repr(class_message_to_meth)
-    print
-    print '// THIS FILE IS GENERATED'
+    print()
+    print( '//', repr(class_message_to_meth))
+    print()
+    print( '// THIS FILE IS GENERATED')
 
     return code_enums
 
@@ -298,5 +298,5 @@ Bytecode_enums = CompileCore(sys.stdin.read())
 with open('_bytecode_enums.const', 'w') as w:
     i = 0
     for e in Bytecode_enums:
-        print >>w, "'%s'=%s" % (e[3:], i)
+        print( "'%s'=%s" % (e[3:], i), file=w)
         i += 1

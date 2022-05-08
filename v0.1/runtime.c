@@ -42,6 +42,46 @@ byte signalled;
   if (false) printf
 #endif
 
+
+#if unix
+void FatalCoreDump() {
+  printf("*** FatalCoreDump\n");
+  fprintf(stderr, "*** FatalCoreDump\n");
+  assert(0);
+}
+void PrintK() {
+  printf("*** PrintK\n");
+  fprintf(stderr, "*** PrintK\n");
+}
+void PrintK5(word a, word b, word c, word d, word e) {
+  printf("*** PrintK %x %x %x %x %x\n", a, b, c, d, e);
+  fprintf(stderr, "*** PrintK %x %x %x %x %x\n", a, b, c, d, e);
+}
+#else
+void FatalCoreDump() {
+  asm {
+    swi
+    fcb 100  ; FatalCoreDump HyperOp
+  }
+  return;
+}
+
+void PrintK() {
+  asm {
+    swi
+    fcb 101  ; PrintK HyperOp
+  }
+  return;
+}
+void PrintK5(word a, word b, word c, word d, word e) {
+  asm {
+    swi
+    fcb 101  ; PrintK HyperOp
+  }
+  return;
+}
+#endif
+
 byte Hex(byte b) {
   b = b & 15;
   return (b < 10) ? '0' + b : 'a' + b - 10;
@@ -61,6 +101,8 @@ void SayTrain(word train) {
 void SimplePrint(word p) {
   if (p & 1) {
     printf("%d ", TO_INT(p));
+  } else if (p == 0) {
+    printf("None ");
   } else if (ocls(p) == C_Str) {
     byte n = StrLen(p);
     for (byte i = 0; i < n; i++) {
@@ -199,6 +241,11 @@ word StrFromC(const char* s) {
 }
 
 bool Truth(word a) {
+    if (a == 0) return false;       // None
+    if (a == 0x0001) return false;  // Small int 0.
+
+    // TODO: 0 was crashing inside ocls(a) but passed ovaliaddr(a)????
+
   if (ovalidaddr(a)) {
     switch (ocls(a)) {
       case C_Train:
@@ -314,7 +361,8 @@ RUN_LOOP:
   assert(ip < function + INF);
 #endif
   byte opcode = ogetb(ip);
-  VERB(" <%d:", opcode);
+  // PrintK();
+  VERB("%d:", opcode);
   assert(opcode < CodeNames_SIZE);
   VERB("%s> ", CodeNames[opcode]);
 #if CAREFUL
@@ -673,7 +721,7 @@ void RuntimeInit() {
 
   // Reserve builtin class slots, with None.
   TrainAppend(ClassList, None);  // unused 0.
-  odumpsummary();
+  // odumpsummary();
   for (byte i = 1; i < ClassNames_SIZE; i++) {
     word cls = oalloc(Class_Size, C_Class);
     Class_classNum_Put(cls, i);
@@ -707,9 +755,9 @@ void RuntimeInit() {
     }
   }
 
-  odumpsummary();
+  // odumpsummary();
   ogc();
-  odumpsummary();
+  // odumpsummary();
 
 #if 0
   {
@@ -858,6 +906,12 @@ void Construct(byte cls_num, byte nargs /*less self */) {
 }
 
 void Call(byte nargs, word fn) {
+#if 0
+  if (fn == 0) {
+    PrintK5(10, 20, 30, 40, 50);
+  }
+  // printf(" Call:#%x(%x)\n", fn, nargs);
+#endif
   if (fn & 1) {  // If odd, is an integer.
     byte i = (byte)TO_INT(fn);
     Break("PRIM");
@@ -897,6 +951,7 @@ void PleaseCallMeth0(byte meth_isn, word self) {
 
 void CallMeth(byte meth_isn, byte nargs /* with self */) {
   word self = ogetw(sp);
+  // printf(" CM:%x #%x(%x)\n", self, meth_isn, nargs);
   word fn = FindMethForObjOrNull(self, meth_isn);
   if (!fn) {
     Show(TrainGetNth(InternList, meth_isn));

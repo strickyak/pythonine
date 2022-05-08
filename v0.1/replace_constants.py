@@ -3,9 +3,9 @@ E = sys.stderr
 
 D = {}
 
-print >>E, sys.argv
+print( sys.argv, file=E)
 for const_file in sys.argv[1:]:
-    print >>E, const_file
+    print( const_file, file=E)
     with open(const_file) as r:
         for line in r:
             line = line.rstrip()
@@ -16,4 +16,4 @@ for line in sys.stdin:
     line = line.rstrip()
     for k, v in D.items():
         line = line.replace(k, v)
-    print line
+    print( line)

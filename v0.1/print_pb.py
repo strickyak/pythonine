@@ -38,7 +38,7 @@ class MessagePrinter:
             ttag = self.v[self.i]
             self.i += 1
             if not ttag:
-                print '%s ;' % self.pre
+                print( '%s ;' % self.pre)
                 return self.i
 
             if ttag == prev_ttag:
@@ -54,20 +54,20 @@ class MessagePrinter:
 
             if kind == 1:
                 x = self.VarInt()
-                print '%s %d. (%02x) %d %s: int %d' % (self.pre, count, ttag, tag,
-                                                   fullname, x)
+                print( '%s %d. (%02x) %d %s: int %d' % (self.pre, count, ttag, tag,
+                                                   fullname, x))
             elif kind == 2:
                 n = self.VarInt()
                 x = self.v[self.i:self.i + n]
                 self.i += n
                 s = ''.join([chr(e) for e in x])
-                print '%s %d. (%02x) %d %s: str %s' % (self.pre, count, ttag, tag,
-                                                   fullname, repr(s))
+                print( '%s %d. (%02x) %d %s: str %s' % (self.pre, count, ttag, tag,
+                                                   fullname, repr(s)))
                 if bcp and fullname.endswith('bytecode'):
                     bcp.Render([ord(e) for e in s], self.pre)
             elif kind == 3:
-                print '%s %d. (%02x) %d %s: message:' % (self.pre, count, ttag, tag,
-                                                     fullname)
+                print( '%s %d. (%02x) %d %s: message:' % (self.pre, count, ttag, tag,
+                                                     fullname))
                 old = self.pre
                 self.pre += '  '
                 self.Mess()
@@ -98,12 +98,12 @@ class BytecodePrinter(object):
                     for label in arg.split(','):
                         a, i = codes.pop(0), i + 1
                         args.append(a)
-                    print '%s  [%2d] %2d  %s %s' % (pre, offset, c, op, ' '.join(
-                        str(e) for e in args))
+                    print( '%s  [%2d] %2d  %s %s' % (pre, offset, c, op, ' '.join(
+                        str(e) for e in args)))
                 else:
-                    print '%s  [%2d] %2d  %s' % (pre, offset, c, op)
+                    print( '%s  [%2d] %2d  %s' % (pre, offset, c, op))
         except IndexError as ex:
-            print '%s  EXCEPTION while rendering bytecodes: %s' % (pre, ex)
+            print( '%s  EXCEPTION while rendering bytecodes: %s' % (pre, ex))
 
 
 if __name__ == '__main__':
@@ -119,7 +119,7 @@ if __name__ == '__main__':
         else:
             raise Exception('bad command line arg: %s' % repr(arg))
 
-    vec = [ord(ch) for ch in sys.stdin.read()]
+    vec = [ch for ch in sys.stdin.buffer.read()]
     i = MessagePrinter(vec, numbers).Mess()
     if i < len(vec):
-        print 'Unused:', vec[i:]
+        print( 'Unused:', vec[i:])

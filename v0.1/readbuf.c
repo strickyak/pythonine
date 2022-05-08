@@ -2,6 +2,8 @@
 
 #include "pb2.h"
 
+#define debugf if(0)printf
+
 void ReadBufChunk(struct ReadBuf* bp) {
   bp->i = 0;
 #if unix
@@ -31,7 +33,7 @@ read_err:
 read_end:
   }
   if (err == OS9_EOF_ERROR) {
-    // printf(" [read got OS9_EOF]\n");
+    debugf(" [read got OS9_EOF]\n");
     bp->end = 0;
   }
   else {
@@ -39,13 +41,16 @@ read_end:
     bp->end = (byte)bytes_read;
   }
 #endif
-  // printf("ReadBufChunk: bytes_read=%d cap=%d\n", (word)bp->end,
-  // ocap(bp->buf)); for (byte i = 0; i < bp->end; i++) { printf(" %02x",
-  // ogetb(bp->buf + i));
-  // }
+  debugf("ReadBufChunk: bytes_read=%d cap=%d\n", (word)bp->end, ocap(bp->buf));
+  /*
+  for (byte i = 0; i < bp->end; i++) {
+    debugf(" %02x", ogetb(bp->buf + i));
+  }
+  */
 }
 
 void ReadBufOpen(struct ReadBuf* bp, const char* filename) {
+  debugf("ReadBufOpen: filename=%s\n", filename);
   assert(bp);
   int fn_size = strlen(filename) + 1;
   assert(fn_size < INF);
@@ -83,9 +88,14 @@ open_end:
 }
 
 byte ReadBufCurrent(struct ReadBuf* bp) {
-  if (!bp->end) return 0;  // EOF.
-  return ogetb(bp->buf + bp->i);
-  // printf(" (%02x) ", z);
+  byte z;
+  if (!bp->end) {
+    z = 0;  // EOF.
+  } else { 
+    z = ogetb(bp->buf + bp->i);
+  }
+  // debugf(" (%02x) ", z);
+  return z;
 }
 byte ReadBufNext(struct ReadBuf* bp) {
   if (!bp->end) goto on_eof;

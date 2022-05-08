@@ -1,7 +1,7 @@
 # Core definitions of builtin classes and opcodes.
 
-class Free # 0: unused chunks.
-  oop next
+class None # 0: class of fake nullptr object.
+  # no contents
 class SmallInt # 1: Inside OOP with the low bit set.
   # no contents
 class Bytes # 2: arbitrary bytes (of varying length).

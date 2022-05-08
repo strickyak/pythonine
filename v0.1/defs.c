@@ -63,5 +63,5 @@ void defs_init(void (*marker_fn)()) {
   printf("oinit: size=%d. start=$%04x end=$%04x\n", (data_end - data), data, data_end);
 #endif
   oinit(data, data_end, marker_fn);
-  odump(0, 0, 0, 0);
+  // odump(0, 0, 0, 0);
 }

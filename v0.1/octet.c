@@ -56,9 +56,15 @@ bool ovalidaddr(word p) {
   return z;
 }
 
+void assert_ovalidaddr(word a) {
+  if (ovalidaddr(a)) return;
+  printf("*** INVALID HANDLE: %x\n", a);
+  assert(0);
+}
+
 byte ocap(word a) {
 #if CAREFUL
-  assert(ovalidaddr(a));
+  assert_ovalidaddr(a);
   ocheckguards(a);
 #endif
   byte cap = (0x7F & ogetb(a - DCAP)) << 1;
@@ -66,8 +72,11 @@ byte ocap(word a) {
   return cap;
 }
 byte ocls(word a) {
+  // Fake class 0 for fake pointer 0.
+  if (!a) return 0;
 #if CAREFUL
-  assert(ovalidaddr(a));
+  assert_ovalidaddr(a);
+  assert_ovalidaddr(a);
   ocheckguards(a);
 #endif
   return ogetb(a - DCLS);

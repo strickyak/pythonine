@@ -364,6 +364,7 @@ def Command(line):
         p.Lex()
         if p.t == T_INT:
             n, st = p.parseNumberedStatement()
+            print '[', n, ']',
             Insert(n, st)
         else:
             st = p.parseStatementOrNone()
