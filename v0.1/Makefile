@@ -143,8 +143,10 @@ SDCARD=sdb
 
 launch: __always__
 	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
+	:
 	cp -fv "test$T.bc" "bc"
-	# TTL=300s sh -x ../../doing_os9/gomar/launch.sh runpy /dev/null bc
+	:
+	: # TTL=300s sh -x ../../doing_os9/gomar/launch.sh runpy /dev/null bc
 	TTL=900s sh -x ../../doing_os9/gomar/launch.sh runpy list-and-run.txt bc
 
 emu: __always__
