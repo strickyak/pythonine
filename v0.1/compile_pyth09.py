@@ -14,9 +14,6 @@ import py_pb as P  # Protocol buffers.
 
 #endif
 
-E = Stderr
-def PrintE(*args): print(*args, file=E)
-
 #if COCO
 def is_in(a, b):
     for e in b:
@@ -35,17 +32,6 @@ def reversed(vec):
 #include "py_pb.py"
 
 #endif
-
-def Inside(x):
-    if type(x) == list or type(x) == set:
-        s = '[*  '
-        for e in x:
-            s = s + Inside(e) + ' , '
-        return s + '*]'
-    try:
-        return str(vars(x))
-    except:
-        return str(x)
 
 BC_NUM_ARGS = 0
 BC_NUM_LOCALS = 1
@@ -242,8 +228,6 @@ class Parser(object):
 
     def Advance(self):
         self.Advance_()
-        ## PrintE( 'Advance', '::', self.t, '::', repr(self.x), '::', repr(self.lex.program[:self.lex.i]))
-        PrintE( 'Advance', '::', self.t, '::', repr(self.x))
 
     def Advance_(self):
         ## Lexer::Next only returns L_BOL (with the indent column) and L_BOL
@@ -659,14 +643,11 @@ class Parser(object):
         return TBlock(vec)
 
     def ParseAssert(self):
-        PrintE( 'ASSERT:')
         pred = self.ParseSingle()
-        PrintE( 'ASSERT: pred:', pred)
         msg = None
         if self.x == ',':
             self.Advance()
             msg = self.ParseSingle()
-            PrintE( 'ASSERT: msg:', msg)
         return TAssert(pred, msg)
 
     def ParsePrint(self):
@@ -1018,7 +999,6 @@ class Compiler(object):
         ## localVars = set() if localVars is None else localVars
         self.argVars = argVars
         self.localVars = sorted(localVars - set(argVars) - set(globalOverrides))
-        PrintE( 'Compiler init:', 'parent', parentCompiler, 'argVars', self.argVars, 'localVars', self.localVars, 'globalOverrides', globalOverrides, 'tclass', tclass, 'isDunderInit', isDunderInit)
 
         self.ops = [0, 0, 0, 255, 255, 255]
         self.interns = {}
@@ -1275,8 +1255,6 @@ class Compiler(object):
             else:
                 raise Exception('bad_sys')
         elif type(t.x) is TIdent and t.x.x == 'self' and self.tclass:
-            PrintE( 'C FF', self.tclass.fields)
-            PrintE( 'M', t.member)
             self.ops.append('SelfMemberGet')
             self.ops.append(sorted(self.tclass.fields).index(t.member)*2)
         else:
@@ -1372,18 +1350,16 @@ class Compiler(object):
             else:
                 raise Exception('bad item: %s %s' % (type(x), x))
         if len(z) > 250:
-            PrintE( 'WARNING: Bytecodes too long: %d' % len(z))
+            raise Exception( 'Bytecodes too long: %d' % len(z))
         return z
 
     def OutputCodePack(self, w):
-        PrintE( '((((((((((')
         P.put_str(w, T.CodePack_bytecode, self.OpList2Bytecodes(self.ops))
         i_strs = self.OutputInterns(w)
         self.OutputGlobals(w)
         self.OutputFuncPacks(w, i_strs)
         self.OutputClassPacks(w, i_strs)
         P.put_finish_message(w)
-        PrintE( '))))))))))')
 
     def OutputInterns(self, w):
         ## sort by interns by number i, and write to protobuf in that order.
@@ -1417,7 +1393,6 @@ class Compiler(object):
     def OutputFuncPacks(self, w, i_strs):
         ## funcpacks
         for name, fc in sorted(self.funcs.items()):
-            PrintE( 'Func Pack: ((((( name=', name)
             P.put_start_message(w, T.CodePack_funcpacks)
             P.put_int(w, T.FuncPack_name_i, i_strs.index(name))
 
@@ -1425,12 +1400,10 @@ class Compiler(object):
             fc.OutputCodePack(w)
 
             P.put_finish_message(w)  # finish CodePack_funcpacks
-            PrintE( 'Func Pack: ))))) name=', name)
 
     def OutputClassPacks(self, w, i_strs):
         ## classpacks
         for name, tclass in sorted(self.classes.items()):
-            PrintE( 'Class Pack: ((((((( name=', name)
             P.put_start_message(w, T.CodePack_classpacks)
             P.put_int(w, T.ClassPack_name_i, i_strs.index(name))
 
@@ -1440,36 +1413,28 @@ class Compiler(object):
 
             for methName, fc in sorted(tclass.funcs.items()):
                 self.OutputMethod(w, i_strs, methName, fc)
-                ## PrintE( 'Method: ((( name=', methName)
                 ## P.put_start_message(w, T.ClassPack_meth)
 
                 ## P.put_int(w, T.FuncPack_name_i, i_strs.index(methName))
                 ## P.put_start_message(w, T.FuncPack_pack)
                 ## fc.OutputCodePack(w)
                 ## P.put_finish_message(w)  # finish ClassPack_meth
-                ## PrintE( 'Method: ))) name=', methName)
 
             P.put_finish_message(w)  # finish CodePack_classpacks
-            PrintE( 'Class Pack: ))))))) name=', name)
 
     def OutputMethod(self, w, i_strs, methName, fc):
-                PrintE( 'Method: ((( name=', methName)
                 P.put_start_message(w, T.ClassPack_meth)
 
                 P.put_int(w, T.FuncPack_name_i, i_strs.index(methName))
                 P.put_start_message(w, T.FuncPack_pack)
                 fc.OutputCodePack(w)
                 P.put_finish_message(w)  # finish ClassPack_meth
-                PrintE( 'Method: ))) name=', methName)
 
 #if BIG
 
     def visitBlock(self, t):
-        PrintE( '//block{{{')
         for e in t.vec:
             e.visit(self)
-            PrintE()
-        PrintE( '//block}}}')
 
     def visitPrint(self, t):
         for e in t.vec:
@@ -1516,10 +1481,7 @@ class Compiler(object):
         ## -- name, varlist==arglist, block.
         lg = AssignmentVisitor()
         lg.localVars.update(t.arglist)  # args are localVars.
-        PrintE( 'visitDef: t.arglist:', t.arglist)
-        PrintE( 'visitDef: lg.localVars:', lg.localVars)
         lg.visitBlock(t.block)
-        PrintE( 'visitDef: ++ lg.localVars:', lg.localVars)
 
         ##// def __init__(self, parentCompiler, argVars, localVars, globalOverrides, tclass, isDunderInit):
         fc = Compiler(self, t.arglist, lg.localVars, lg.globalOverrides, tclass, t.name == '__init__')
@@ -1678,7 +1640,6 @@ class AssignmentVisitor(object):
 
     def visitGlobal(self, t):
         self.globalOverrides.add(t.var)
-        PrintE( 'visitGlobal: self.globalVars:', Inside(self.globalOverrides))
 
     def visitBlock(self, t):
         for e in t.vec:
@@ -1699,20 +1660,14 @@ class AssignmentVisitor(object):
         pass
 
     def visitFor(self, t):
-        PrintE( 'visitFor: * self.localVars:', Inside(self.localVars))
         self.assignTo(t.dest)
-        PrintE( 'visitFor: ** self.localVars:', Inside(self.localVars))
         self.localVars.add(t.iterTemp)
-        PrintE( 'visitFor: *** self.localVars:', Inside(self.localVars))
         t.block.visit(self)
 
     def visitAssign(self, t):
-        PrintE( 'visitAssign: @ self.localVars:', Inside(self.localVars))
         self.assignTo(t.x)
-        PrintE( 'visitAssign: @@ self.localVars:', Inside(self.localVars))
 
     def assignTo(self, t):
-        PrintE( 'assignTo: =======', t)
         if type(t) is TIdent:
             self.localVars.add(t.x)
         elif type(t) is TMember and type(t.x) is TIdent and t.x.x == 'self':
