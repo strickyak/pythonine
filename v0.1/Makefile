@@ -147,7 +147,7 @@ launch: __always__
 	cp -fv "test$T.bc" "bc"
 	:
 	: # TTL=300s sh -x ../../doing_os9/gomar/launch.sh runpy /dev/null bc
-	TTL=900s sh -x ../../doing_os9/gomar/launch.sh '' runpy list-and-run.txt bc
+	TTL=900s sh -x ../../doing_os9/gomar/launch.sh "--map $$PWD/runpy.map --map_offset=0x8000" runpy list-and-run.txt "test$T.bc"
 
 emu: __always__
 	rm -f runpy

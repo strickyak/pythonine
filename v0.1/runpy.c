@@ -10,9 +10,12 @@
 #include "os9.h"
 #endif
 
+// Temporary hack for loading one bytecode file at startup.
+char bytecode_filename[32];
+
 void main2() {
 #if !unix
-  // printf("(main) $%x=%d. ", main, main);
+  printf("main $%x", main);
 #endif
 
   defs_init(MarkRoots);
@@ -20,7 +23,7 @@ void main2() {
   RuntimeInit();
 
   struct ReadBuf read_buf;
-  ReadBufOpen(&read_buf, "bc");
+  ReadBufOpen(&read_buf, bytecode_filename);
 
   word main_bytecodes;
   SlurpModule(&read_buf, &main_bytecodes);
@@ -33,12 +36,20 @@ void main2() {
 }
 
 int main(int argc, char* argv[]) {
+  assert(argc>1);
+  assert(argv);
+  assert(argv[1]);
+  assert(strlen(argv[1]) < sizeof(bytecode_filename));
+  strcpy(bytecode_filename, argv[1]);
 #if !unix
   word old_size = 0;
-  word wanted_size = 0x8000;
+  word wanted_size = 0x4000;
+  word got_size = 0x4000;
   word new_size = 0;
   byte err = 0;
   word stack_pointer = 0;
+
+  for (int i =0; i<5; i++) {
 
   asm {
     sts stack_pointer
@@ -73,17 +84,21 @@ ReSizeError
 ReSizeOk
   }
   printf("err %d. old %x new %x\n", (int)err, old_size, new_size);
-  if (err) exit(err);
+
+  if (err==0) got_size = new_size;
+
+  wanted_size += 0x2000;
+  }
+  printf("got %x\n", got_size);
 
   asm {
     tfr y,d     ; zero in D, X, and Y
-    tfr y,x
-    lds #$8000  ; Start new high stack
-    pshs d,x,y
-    pshs d,x,y
+    lds got_size
+    pshs d,y
+    pshs d,y
     tfr s,u     ; Start new high frame pointer
-    pshs d,x,y
-    pshs d,x,y
+    pshs d,y
+    pshs d,y
   }
 #endif
   main2();
