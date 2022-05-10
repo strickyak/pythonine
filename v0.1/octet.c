@@ -48,8 +48,8 @@ bool ovalidaddr(word p) {
 #if CAREFUL
 #if GUARD
   if (z) {
-    assert(ogetb(p - 4) == GUARD_ONE);
-    assert(ogetb(p - 1) == GUARD_TWO);
+    assert1(ogetb(p - 4) == GUARD_ONE, " p=%x", p);
+    assert1(ogetb(p - 1) == GUARD_TWO, " p=%x", p);
   }
 #endif
 #endif
@@ -57,9 +57,7 @@ bool ovalidaddr(word p) {
 }
 
 void assert_ovalidaddr(word a) {
-  if (ovalidaddr(a)) return;
-  printf("*** INVALID HANDLE: %x\n", a);
-  assert(0);
+  assert1(ovalidaddr(a), " p=%x", a);
 }
 
 byte ocap(word a) {
@@ -68,7 +66,7 @@ byte ocap(word a) {
   ocheckguards(a);
 #endif
   byte cap = (0x7F & ogetb(a - DCAP)) << 1;
-  assert(cap);
+  assert1(cap, " p=%x", a);
   return cap;
 }
 byte ocls(word a) {
@@ -204,18 +202,14 @@ void ocheckguards(word p) {
 #if GUARD
   if (p < ORamBegin) printf("ocheckg: p=%d\n", p);
   if (p > ORamUsed) printf("ocheckg: p=%d\n", p);
-  assert (p > ORamBegin);
-  assert (p < ORamUsed);
-  if (ogetb(p - 4) != GUARD_ONE) printf("ocheckg: p=%d\n", p);
-  if (ogetb(p - 1) != GUARD_TWO) printf("ocheckg: p=%d\n", p);
-  assert(ogetb(p - 4) == GUARD_ONE);
-  assert(ogetb(p - 1) == GUARD_TWO);
+  assert1(p > ORamBegin, "cg=%x", p);
+  assert1(p < ORamUsed, "cg=%x", p);
+  assert1(ogetb(p - 4) == GUARD_ONE, "cg=%x", p);
+  assert1(ogetb(p - 1) == GUARD_TWO, "cg=%x", p);
   byte cap = (0x7F & ogetb(p - DCAP)) << 1;  // don't call ocap()
-  if (!cap) printf("ocheckg: p=%d\n", p);
-  assert(cap);
+  assert1(cap, "cg=%x", p);
   word final = p + cap;
-  if (ogetb(final) != GUARD_ONE) printf("ocheckg: p=%d\n", p);
-  assert(ogetb(final) == GUARD_ONE);
+  assert1(ogetb(final) == GUARD_ONE, "cg=%x", p);
 #endif
 #endif
 }
@@ -452,7 +446,7 @@ void ocheckall() {
             if (ovalidaddr(x)) {
               ocheckguards(x);
             } else {
-              assert(x & 1);
+              assert1(x & 1, " x=%x", x);
             }
           }
         }
@@ -551,28 +545,11 @@ int omemcmp(word pchar1, byte len1, word pchar2, byte len2) {
   return 0;
 }
 
-#if 0
-void ofatal(const char* f, word x, word y) {
-#if unix
-  fflush(stdout);
-  fprintf(stderr, "\n***** ofailure: ");
-  fprintf(stderr, f, x, y);
-  fprintf(stderr, "\n");
-#else
-  printf("\n\n*** ofailure *** ");
-  printf(f, x, y);
-  printf("\n");
-  fatal_coredump();
-#endif
-  exit(13);
-}
-#endif
-
 #if !unix
 asm fatal_coredump() {
   asm {
     SWI
-    FCB $FF
+    FCB 100
   }
 }
 #endif
