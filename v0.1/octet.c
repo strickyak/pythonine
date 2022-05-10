@@ -434,11 +434,16 @@ void osay(word p) {
 }
 
 void ocheckall() {
+  // printf(" (%x .. %x) [[[ ", ORamBegin, ORamUsed);
+  // printf("[");
   word p = ORamBegin + DHDR;
   while (p < ORamUsed) {
+    // printf("%x ", p);
+    // printf("^");
     ocheckguards(p);
     byte cap = (byte)(qgetb(p - DCAP) << 1);
     byte cls = (byte)(qgetb(p - DCLS));
+    // printf("(%d# %d) ", cap, cls);
     if (cls) {
       if (cls > O_LAST_NONPTR_CLASS) {
         for (byte i = 0; i < cap; i += 2) {
@@ -453,8 +458,11 @@ void ocheckall() {
         }
       }
     }
-    p += cap + DHDR;
+    // printf(" +%d +%d ", (word)cap, (word)DHDR);
+    p += (word)cap + (word)DHDR;
   }
+  // printf(" ]]] ");
+  // printf("]");
 }
 void odump(word* count_used_ptr, word* bytes_used_ptr, word* count_skip_ptr,
            word* bytes_skip_ptr) {
