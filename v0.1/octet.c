@@ -1,4 +1,5 @@
 #include "octet.h"
+#include "os9.h"
 
 #define V_OCTET \
   if (false) printf
@@ -550,6 +551,14 @@ asm fatal_coredump() {
   asm {
     SWI
     FCB 100
+
+    comb
+    ldb #13   ; undefined 13 error.
+    SWI
+    FCB F_EXIT
+
+fatal_loop
+    bra fatal_loop
   }
 }
 #endif

@@ -118,6 +118,11 @@ void SimplePrint(word p);
 void DumpStats();
 bool Equal(word a, word b);
 void PleaseCallMeth0(byte meth_isn, word self);
+void SaveClusterToFile(word top, word filename);
+
+#if !unix
+#define FatalCoreDump fatal_coredump /* in octet.c */
+#endif
 
 #define FOR_EACH(I, ITEM, X)                           \
   {                                                    \

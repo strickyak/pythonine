@@ -54,6 +54,7 @@ void FatalCoreDump() {
   fprintf(stderr, "*** FatalCoreDump\n");
   assert(0);
 }
+#if 0
 void PrintK() {
   printf("*** PrintK\n");
   fprintf(stderr, "*** PrintK\n");
@@ -62,15 +63,9 @@ void PrintK5(word a, word b, word c, word d, word e) {
   printf("*** PrintK %x %x %x %x %x\n", a, b, c, d, e);
   fprintf(stderr, "*** PrintK %x %x %x %x %x\n", a, b, c, d, e);
 }
+#endif
 #else
-void FatalCoreDump() {
-  asm {
-    swi
-    fcb 100  ; FatalCoreDump HyperOp
-  }
-  return;
-}
-
+#if 0
 void PrintK() {
   asm {
     swi
@@ -85,6 +80,7 @@ void PrintK5(word a, word b, word c, word d, word e) {
   }
   return;
 }
+#endif
 #endif
 
 byte Hex(byte b) {
@@ -224,14 +220,6 @@ void SayPyStack() {
 }
 #endif
 
-#if 0  // unused for now
-word NewBuf() {
-  word buf = Buf_NEW();
-  word guts = oalloc(254, C_Bytes);  // XXX this is huge
-  Buf_bytes_Put(buf, guts);
-  return buf;
-}
-#endif
 word StrFromC(const char* s) {
   int s_len = strlen(s);
   assert(s_len <= 253);
@@ -322,9 +310,6 @@ void EvalCodes(word fn) {
   printf(" [unloop] ");
   fp = function = None;
   sp = ip = 0;
-#if 0
-  FatalCoreDump();
-#endif
 }
 
 #if SIGNALS
@@ -1208,4 +1193,7 @@ word PopSp() {
 void PushSp(word a) {
   sp -= 2;
   oputw(sp, a);
+}
+void SaveClusterToFile(word top, word filename) {
+  Raise(StrFromC("SaveCluster"));
 }

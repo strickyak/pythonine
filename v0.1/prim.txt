@@ -62,6 +62,8 @@ class StrIter
   small len
 class File
   small fd
+  small i
+  oop buffer
 class FileIter
   small fd
 
@@ -642,6 +644,17 @@ code ShedTryBlocks
   arg n
 [
   ShedTryBlocks(n);
+]
+
+code SaveCluster
+  in filename top
+[
+  SaveClusterToFile(top, filename);
+]
+
+code FatalCoreDump
+[
+  FatalCoreDump();
 ]
 
 #code UserSetJmp
