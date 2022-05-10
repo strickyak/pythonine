@@ -316,7 +316,9 @@ void EvalCodes(word fn) {
   function = fn;
   ip = function + BC_HEADER_SIZE;
 
+  ocheckall();
   RunLoop();
+  ocheckall();
   printf(" [unloop] ");
   fp = function = None;
   sp = ip = 0;
@@ -723,6 +725,7 @@ void Directory() {
 #endif
 }
 void RuntimeInit() {
+  ocheckall();
   Builtins = NewList();
   GlobalDict = NewDict();  // todo: Modules.
   InternList = NewList();
@@ -775,7 +778,9 @@ void RuntimeInit() {
   }
 
   // odumpsummary();
+  ocheckall();
   ogc();
+  ocheckall();
   // odumpsummary();
 
 #if 0
@@ -961,6 +966,7 @@ void Call(byte nargs, word fn) {
   Frame_function_Put(fp, function);
   sp = fp + ocap(fp);
   ip = function + BC_HEADER_SIZE;
+  ocheckall();
 }
 
 void PleaseCallMeth0(byte meth_isn, word self) {
