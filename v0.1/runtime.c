@@ -209,8 +209,8 @@ void SayObj(word p, byte level) {
 #endif
 }
 
-void SayStack() {
 #if unix
+void SayPyStack() {
   byte cap = ocap(fp);
   int i = 0;
   for (word p = sp; p < fp + cap; p += 2) {
@@ -221,8 +221,8 @@ void SayStack() {
     ++i;
   }
   fflush(stdout);
-#endif
 }
+#endif
 
 #if 0  // unused for now
 word NewBuf() {
@@ -379,7 +379,9 @@ RUN_LOOP:
   assert(function);
   assert(sp >= fp + Frame_Size - 2);
   assert(sp <= fp + ocap(fp));
-  SayStack();  // ===========
+#if unix
+  SayPyStack();  // ===========
+#endif
   assert(ip >= function + BC_HEADER_SIZE);
   assert(ip < function + ocap(function));
 #endif

@@ -26,6 +26,7 @@ void RuntimeInit();
 void MarkRoots();
 void SlurpModule(struct ReadBuf*, word* bc_out);
 void Break(const char* why);
+void SayPyStack();
 
 // GC Roots:
 extern word ForeverRoot;
