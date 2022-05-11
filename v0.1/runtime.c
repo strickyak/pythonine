@@ -9,6 +9,8 @@
 #include "osetjmp.h"
 #include "pb2.h"
 #include "readbuf.h"
+#include "rawio.h"
+#include "saver.h"
 
 // GC Roots:
 word RootForMain;  // For main() to use.
@@ -1000,7 +1002,7 @@ void Return(word retval) {
   // actually function was there to, but leave one slot on stack for retval.
   sp = old_sp + (nargs << 1) - 2;  // -2 for retval.
   for (word p = old_sp; p < sp; p += 2) {
-    oputw(p, 0xDEAD);
+    oputw(p, 0xDEED);
   }
   oputw(sp, retval);
 }
@@ -1193,7 +1195,4 @@ word PopSp() {
 void PushSp(word a) {
   sp -= 2;
   oputw(sp, a);
-}
-void SaveClusterToFile(word top, word filename) {
-  Raise(StrFromC("SaveCluster"));
 }

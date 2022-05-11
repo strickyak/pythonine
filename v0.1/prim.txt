@@ -648,13 +648,17 @@ code ShedTryBlocks
 
 code SaveCluster
   in filename top
+  out z
 [
   SaveClusterToFile(top, filename);
+  z = None;  // python funcs must return value.
 ]
 
 code FatalCoreDump
+  out z
 [
   FatalCoreDump();
+  z = None;  // python funcs must return value.
 ]
 
 #code UserSetJmp
