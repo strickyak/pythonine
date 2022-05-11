@@ -142,7 +142,7 @@ SDC=drive/my-68SDC.VHD
 SDCARD=sdb
 
 launch: __always__
-	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
+	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c rawio.c
 	:
 	cp -fv "test$T.bc" "bc"
 	:
