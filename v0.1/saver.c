@@ -35,11 +35,11 @@ void SaveRecursive(word top, byte fd) {
 
   byte cap = ocap(top);
   byte cls = ocls(top);
-  assert(cap);       // cap > 0.
-  assert(cap < INF); // cap < INF.
-  assert(cls);       // cannot be free.
+  // assert(cap);       // cap > 0.
+  // assert(cap < INF); // cap < INF.
+  // assert(cls);       // cannot be free.
 
-  osaylabel(top, "SaveRecur", 0);
+  // osaylabel(top, "SaveRecur", 0);
 
   pb((byte)(top>>8));
   pb((byte)top);
@@ -77,20 +77,20 @@ void SaveClusterToFile(word top, word filename_str) {
   // Prepare name with high bit on final char
   name[name_len-1] |= 0x80;
 
-  ocheckall(); printf("@");
+  //ocheckall(); printf("@");
   byte fd = 0;
   checkerr(RawCreate((const char*)name, &fd));
 
   // Unprepare name with high bit on final char
   name[name_len-1] &= 0x7f;
 
-  ocheckall(); printf("@");
+  //ocheckall(); printf("@");
   SaveRecursive(top, fd);
   pb(0);  // hi nullptr to terminate
   pb(0);  // lo nullptr
-  ocheckall(); printf("@");
+  //ocheckall(); printf("@");
   checkerr(RawClose(fd));
-  ocheckall(); printf("@");
+  //ocheckall(); printf("@");
 }
 
 #endif

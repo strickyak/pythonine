@@ -955,7 +955,9 @@ void Call(byte nargs, word fn) {
   Frame_function_Put(fp, function);
   sp = fp + ocap(fp);
   ip = function + BC_HEADER_SIZE;
+#if CAREFUL > 1
   ocheckall();
+#endif
 }
 
 void PleaseCallMeth0(byte meth_isn, word self) {
