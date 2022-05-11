@@ -85,6 +85,7 @@ byte RawOpen(const char* name, byte* fd_out) {
 RawOpenOK
     sta fd
   }
+  printf(" ROpen->%d,%d. ", fd, err);
   *fd_out = fd;
   return err;
 }
@@ -119,7 +120,7 @@ byte RawRead(byte fd, byte* ptr, word n, word* out_read) {
     ldy n
 
     swi2
-    fcb I_WRITE
+    fcb I_READ
     tfr y,x     # number bytes read
     puls y,u
 

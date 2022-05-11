@@ -1137,6 +1137,8 @@ class Compiler(object):
 
         if type(t.fn) == TIdent and t.fn.x == 'savecluster' and len(t.xlist) == 2:
             self.ops.append('SaveCluster')
+        elif type(t.fn) == TIdent and t.fn.x == 'loadcluster' and len(t.xlist) == 1:
+            self.ops.append('LoadCluster')
         elif type(t.fn) == TIdent and t.fn.x == 'coredump' and len(t.xlist) == 0:
             self.ops.append('FatalCoreDump')
         elif type(t.fn) == TIdent and t.fn.x == 'open' and len(t.xlist) == 2:

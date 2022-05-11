@@ -654,6 +654,13 @@ code SaveCluster
   z = None;  // python funcs must return value.
 ]
 
+code LoadCluster
+  in filename
+  out z
+[
+  z = LoadClusterFromFile(filename);
+]
+
 code FatalCoreDump
   out z
 [

@@ -4,8 +4,8 @@
 #include "octet.h"
 #include "standard.h"
 
-void SaveRecursive(word top, byte fd);
 void SaveClusterToFile(word top, word filename_str);
+word LoadClusterFromFile(word filename_str);
 
 #ifndef INF
 #define INF 255
