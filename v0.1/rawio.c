@@ -85,7 +85,7 @@ byte RawOpen(const char* name, byte* fd_out) {
 RawOpenOK
     sta fd
   }
-  printf(" ROpen->%d,%d. ", fd, err);
+  // printf(" ROpen->%d,%d. ", fd, err);
   *fd_out = fd;
   return err;
 }
