@@ -26,6 +26,7 @@ void RuntimeInit();
 void MarkRoots();
 void SlurpModule(struct ReadBuf*, word* bc_out);
 void Break(const char* why);
+void SayPyStack();
 
 // GC Roots:
 extern word ForeverRoot;
@@ -117,6 +118,11 @@ void SimplePrint(word p);
 void DumpStats();
 bool Equal(word a, word b);
 void PleaseCallMeth0(byte meth_isn, word self);
+void SaveClusterToFile(word top, word filename);
+
+#if !unix
+#define FatalCoreDump fatal_coredump /* in octet.c */
+#endif
 
 #define FOR_EACH(I, ITEM, X)                           \
   {                                                    \

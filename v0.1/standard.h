@@ -13,31 +13,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define checkerr(E) do { byte _e_ = (E); if (_e_) { \
+                        fprintf(stderr, "@@@ checkerr %x=%d. FAILED %s:%u\n", _e_, _e_, __FILE__, __LINE__); \
+                        abort(); } } while (0)
+
 #define asserteq(A,B) do { word _a_ = (word)(A); word _b_ = (word)(B); \
                          if (_a_ != _b_) { \
                         fprintf(stderr, "@@@ ASSERT FAILED %s:%u: (%s) == (%s): but %d != %d\n", __FILE__, __LINE__, #A, #B, _a_, _b_); \
                         abort(); } } while (0)
-#else
-
-#define CAREFUL 0
-#define GUARD 0
-
-#define assert(cond) do { if (!(cond)) { \
-                        printf("@@@ ASSERT FAILED %s:%u: %s\n", __FILE__, __LINE__, #cond); \
-                        fatal_coredump(); \
-                        for (;;); } } while (0)
-
-#define asserteq(A,B) do { word _a_ = (word)(A); word _b_ = (word)(B); \
-                         if (_a_ != _b_) { \
-                        printf("@@@ ASSERT FAILED %s:%u: (%s) == (%s): but %d != %d\n", __FILE__, __LINE__, #A, #B, _a_, _b_); \
-                        fatal_coredump(); \
-                        for (;;); } } while (0)
-
-#include <cmoc.h>
-
-#define fflush(F) /*nothing*/
-
-#endif
 
 #define assert0(C, F) \
   if (!(C)) {printf(F); fflush(stdout); assert(0);}
@@ -46,5 +29,53 @@
 #define assert2(C, F, X, Y) \
   if (!(C)) {printf((F), (X), (Y)); fflush(stdout); assert(0);}
 #define opanic(X) assert1(0, "\n*** opanic(%d)\n", (X))
+
+#else
+
+#define CAREFUL 0
+#define GUARD 0
+#define ASSERTS 1
+
+#if ASSERTS
+#define checkerr(E) do { byte _e_ = (E); if (_e_) { \
+                        printf("@@@ checkerr %x=%d. FAILED %s:%u\n", _e_, _e_, __FILE__, __LINE__); \
+                        fatal_coredump(); \
+                        exit(13); } } while (0)
+
+#define assert(cond) do { if (!(cond)) { \
+                        printf("@@@ ASSERT FAILED %s:%u\n", __FILE__, __LINE__); \
+                        fatal_coredump(); \
+                        exit(13); } } while (0)
+
+#define asserteq(A,B) do { word _a_ = (word)(A); word _b_ = (word)(B); \
+                         if (_a_ != _b_) { \
+                        printf("@@@ ASSERT FAILED %s:%u: (%s) == (%s): but %d != %d\n", __FILE__, __LINE__, #A, #B, _a_, _b_); \
+                        fatal_coredump(); \
+                        exit(13); } } while (0)
+#define assert0(C, F) \
+  if (!(C)) {printf(F); fflush(stdout); assert(0);}
+#define assert1(C, F, X) \
+  if (!(C)) {printf((F), (X)); fflush(stdout); assert(0);}
+#define assert2(C, F, X, Y) \
+  if (!(C)) {printf((F), (X), (Y)); fflush(stdout); assert(0);}
+#define opanic(X) assert1(0, "\n*** opanic(%d)\n", (X))
+
+#else
+
+#define checkerr(E) (E)
+#define assert(cond) 1
+#define asserteq(A,B) 1
+#define assert0(C, F) 1
+#define assert1(C, F, X) 1
+#define assert2(C, F, X, Y) 1
+#define opanic(X) fatal_coredump()
+
+#endif
+
+#include <cmoc.h>
+
+#define fflush(F) /*nothing*/
+
+#endif
 
 #endif

@@ -9,6 +9,8 @@
 #include "osetjmp.h"
 #include "pb2.h"
 #include "readbuf.h"
+#include "rawio.h"
+#include "saver.h"
 
 // GC Roots:
 word RootForMain;  // For main() to use.
@@ -54,6 +56,7 @@ void FatalCoreDump() {
   fprintf(stderr, "*** FatalCoreDump\n");
   assert(0);
 }
+#if 0
 void PrintK() {
   printf("*** PrintK\n");
   fprintf(stderr, "*** PrintK\n");
@@ -62,15 +65,9 @@ void PrintK5(word a, word b, word c, word d, word e) {
   printf("*** PrintK %x %x %x %x %x\n", a, b, c, d, e);
   fprintf(stderr, "*** PrintK %x %x %x %x %x\n", a, b, c, d, e);
 }
+#endif
 #else
-void FatalCoreDump() {
-  asm {
-    swi
-    fcb 100  ; FatalCoreDump HyperOp
-  }
-  return;
-}
-
+#if 0
 void PrintK() {
   asm {
     swi
@@ -85,6 +82,7 @@ void PrintK5(word a, word b, word c, word d, word e) {
   }
   return;
 }
+#endif
 #endif
 
 byte Hex(byte b) {
@@ -209,8 +207,8 @@ void SayObj(word p, byte level) {
 #endif
 }
 
-void SayStack() {
 #if unix
+void SayPyStack() {
   byte cap = ocap(fp);
   int i = 0;
   for (word p = sp; p < fp + cap; p += 2) {
@@ -221,17 +219,9 @@ void SayStack() {
     ++i;
   }
   fflush(stdout);
-#endif
 }
+#endif
 
-#if 0  // unused for now
-word NewBuf() {
-  word buf = Buf_NEW();
-  word guts = oalloc(254, C_Bytes);  // XXX this is huge
-  Buf_bytes_Put(buf, guts);
-  return buf;
-}
-#endif
 word StrFromC(const char* s) {
   int s_len = strlen(s);
   assert(s_len <= 253);
@@ -316,13 +306,12 @@ void EvalCodes(word fn) {
   function = fn;
   ip = function + BC_HEADER_SIZE;
 
+  ocheckall();
   RunLoop();
+  ocheckall();
   printf(" [unloop] ");
   fp = function = None;
   sp = ip = 0;
-#if 0
-  FatalCoreDump();
-#endif
 }
 
 #if SIGNALS
@@ -377,7 +366,9 @@ RUN_LOOP:
   assert(function);
   assert(sp >= fp + Frame_Size - 2);
   assert(sp <= fp + ocap(fp));
-  SayStack();  // ===========
+#if unix
+  SayPyStack();  // ===========
+#endif
   assert(ip >= function + BC_HEADER_SIZE);
   assert(ip < function + ocap(function));
 #endif
@@ -723,6 +714,7 @@ void Directory() {
 #endif
 }
 void RuntimeInit() {
+  ocheckall();
   Builtins = NewList();
   GlobalDict = NewDict();  // todo: Modules.
   InternList = NewList();
@@ -775,7 +767,9 @@ void RuntimeInit() {
   }
 
   // odumpsummary();
+  ocheckall();
   ogc();
+  ocheckall();
   // odumpsummary();
 
 #if 0
@@ -961,6 +955,9 @@ void Call(byte nargs, word fn) {
   Frame_function_Put(fp, function);
   sp = fp + ocap(fp);
   ip = function + BC_HEADER_SIZE;
+#if CAREFUL > 1
+  ocheckall();
+#endif
 }
 
 void PleaseCallMeth0(byte meth_isn, word self) {
@@ -1007,7 +1004,7 @@ void Return(word retval) {
   // actually function was there to, but leave one slot on stack for retval.
   sp = old_sp + (nargs << 1) - 2;  // -2 for retval.
   for (word p = old_sp; p < sp; p += 2) {
-    oputw(p, 0xDEAD);
+    oputw(p, 0xDEED);
   }
   oputw(sp, retval);
 }

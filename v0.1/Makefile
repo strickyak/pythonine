@@ -1,5 +1,6 @@
 T=1
 C=42
+CFILES= runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c rawio.c saver.c
 
 # all except emu
 all: _build _runpy
@@ -60,7 +61,7 @@ _build:
 	python2 _big_unix.py < test$T.py > test$T.bc
 	cp test$T.bc bc
 	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test$T.dump | tee ,dump
-	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c train.c osetjmp.c defs.c pb2.c octet.c
+	cc -g -o runpy.bin $(CFILES)
 
 small_unix:
 	python2 compile_proto.py < bc.proto -c > _generated_proto.h
@@ -74,7 +75,7 @@ small_unix:
 	python2 _small_unix.py < test1.py > test1.bc
 	cp test1.bc bc
 	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test1.dump | tee ,dump
-	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c train.c osetjmp.c defs.c pb2.c octet.c
+	cc -g -o runpy.bin $(CFILES)
 	./runpy.bin
 
 small_coco:
@@ -92,7 +93,7 @@ small_coco:
 	python2 _big_unix.py < _small_coco.py > _small_coco.bc
 	cp _small_coco.bc bc
 	python2 print_pb.py bc.proto _generated_prim.h < bc | tee _small_coco.dump | tee ,dump
-	cc -g -o runpy.bin runpy.c readbuf.c arith.c runtime.c data.c train.c osetjmp.c defs.c pb2.c octet.c
+	cc -g -o runpy.bin $(CFILES)
 	:
 	./runpy.bin < test1.py > test1.by_small_coco.bc
 
@@ -142,16 +143,16 @@ SDC=drive/my-68SDC.VHD
 SDCARD=sdb
 
 launch: __always__
-	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
+	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
 	:
 	cp -fv "test$T.bc" "bc"
 	:
 	: # TTL=300s sh -x ../../doing_os9/gomar/launch.sh runpy /dev/null bc
-	TTL=900s sh -x ../../doing_os9/gomar/launch.sh runpy list-and-run.txt bc
+	TTL=900s sh -x ../../doing_os9/gomar/launch.sh "--map $$PWD/runpy.map" runpy list-and-run.txt "test$T.bc"
 
 emu: __always__
 	rm -f runpy
-	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
+	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -176,7 +177,7 @@ kmem: __always__
 
 lemu: __always__
 	rm -f runpy
-	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
+	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -193,7 +194,7 @@ lemu: __always__
 
 temu: __always__
 	rm -f runpy
-	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy runpy.c readbuf.c runtime.c data.c train.c pb2.c arith.c osetjmp.c defs.c octet.c
+	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
