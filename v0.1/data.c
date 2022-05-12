@@ -296,7 +296,7 @@ word FileReadLineToNewBuf(word file) {
   word ptr = buf + 1;
   byte err = 0;
   word len = 0;
-  //printf("FRL fd=%d buf=%d\n", fd, buf);
+  // printf(" (FRL fd=%d buf=%d) ", fd, buf);
 #if unix
   char* zz = fgets((char*)olea(ptr), 252, FileHandles[fd]);
   if (!zz)
@@ -319,19 +319,13 @@ Good.2
       puls y,u
   }
 #endif
-  //printf("FRL len=%d err=%d\n", len, (int)err);
+  // printf(" (FRL len=%d err=%d) ", len, (int)err);
   assert(len >= 0);
   assert(len <= 252);
   if (err || !len) {
     ofree(buf);
     return None;
   }
-  /*
-  for (word i=0; i<len; i++) {
-    printf("%d~", ogetb(ptr+i));
-  }
-  printf("\n");
-  */
   byte last = ogetb(buf + len /*+1-1*/);
   if (0 < last && last < 32) {
     oputb(buf + len /*+1-1*/, 0);  // replace CR/LF with NUL.

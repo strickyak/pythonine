@@ -14,10 +14,6 @@
 char bytecode_filename[32];
 
 void main2() {
-#if !unix
-  printf("main $%x", main);
-#endif
-
   defs_init(MarkRoots);
   InitData();
   RuntimeInit();
@@ -83,13 +79,13 @@ ReSizeError
     stb err
 ReSizeOk
   }
-  printf("err %d. old %x new %x\n", (int)err, old_size, new_size);
+  // printf("err %d. old %x new %x\n", (int)err, old_size, new_size);
 
   if (err==0) got_size = new_size;
 
   wanted_size += 0x2000;
   }
-  printf("got %x\n", got_size);
+  // printf("(data $%x) ", got_size);
 
   asm {
     tfr y,d     ; zero in D, X, and Y
