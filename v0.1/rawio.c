@@ -1,10 +1,12 @@
 #include "rawio.h"
+#ifdef ADD_SAVER
 
 #include "os9.h"
 #include "os9errno.h"
 #include "octet.h"
 #include "standard.h"
 #include "_generated_prim.h"
+
 
 #if unix
        #include <sys/types.h>
@@ -190,3 +192,4 @@ byte RawWrite1(byte fd, byte b) {
   if (cc!=1) return 255;
   return 0;
 }
+#endif // ADD_SAVER

@@ -36,6 +36,7 @@ word LoadClusterFromFile(word filename_str) {
 
 #define gb() getByte(fd)
 
+#ifdef ADD_SAVER
 byte getByte(byte fd) {
   byte b;
   checkerr(RawRead1(fd, &b));
@@ -124,8 +125,10 @@ void SaveRecursive(word top, byte fd) {
     ptr += 2;  // step by words, not bytes.
   }
 }
+#endif
 
 void SaveClusterToFile(word top, word filename_str) {
+#ifdef ADD_SAVER
   byte name_len = *(byte*)filename_str;
   byte* name = 1 + (byte*)filename_str;
   assert(name_len > 0);
@@ -149,9 +152,12 @@ void SaveClusterToFile(word top, word filename_str) {
   //ocheckall(); printf("@");
   checkerr(RawClose(fd));
   //ocheckall(); printf("@");
+#endif
 }
 
 word LoadClusterFromFile(word filename_str) {
+  word w = 0;
+#ifdef ADD_SAVER
   byte name_len = *(byte*)filename_str;
   byte* name = 1 + (byte*)filename_str;
   assert(name_len > 0);
@@ -168,11 +174,12 @@ word LoadClusterFromFile(word filename_str) {
 
   assert(gb() == 0x03);  // hi magic number
   assert(gb() == 0x12);  // lo magic number
-  word w = LoadRecursive(fd);
+  w = LoadRecursive(fd);
   assert(gb() == 0);  // hi termination
   assert(gb() == 0);  // lo termination
 
   checkerr(RawClose(fd));
+#endif
   return w;
 }
 
