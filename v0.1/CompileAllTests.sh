@@ -9,8 +9,12 @@ mkdir /tmp/pythonine-tests
 
 for t
 do
+  t2=$(basename $t | tr _ -)
   make clean
-  make T=$t _build && cp -v test$t.py test$t.bc test$t.dump /tmp/pythonine-tests/
+  make T=$t _build
+  cp -v test$t.py /tmp/pythonine-tests/test$t2.py
+  cp -v test$t.bc /tmp/pythonine-tests/test$t2.bc
+  # cp -v test$t.dump /tmp/pythonine-tests/test$t2.dump
 done
 
 # HINT
