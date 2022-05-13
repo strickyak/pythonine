@@ -54,64 +54,64 @@ fib:
 
 
 _build:
-	python2 compile_proto.py < bc.proto -c > _generated_proto.h
-	python2 compile_proto.py < bc.proto -p > _generated_proto.py
-	python2 generate_prim.py < prim.txt > _generated_prim.h
-	cpp -DBIG -DUNIX compile_pyth09.py | python2 replace_constants.py *.const | grep -v '^#' > _big_unix.py
-	python2 _big_unix.py < test$T.py > test$T.bc
+	python3 compile_proto.py < bc.proto -c > _generated_proto.h
+	python3 compile_proto.py < bc.proto -p > _generated_proto.py
+	python3 generate_prim.py < prim.txt > _generated_prim.h
+	cpp -DBIG -DUNIX compile_pyth09.py | python3 replace_constants.py *.const | grep -v '^#' > _big_unix.py
+	python3 _big_unix.py < test$T.py > test$T.bc
 	cp test$T.bc bc
-	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test$T.dump | tee ,dump
+	#broken# python3 print_pb.py bc.proto _generated_prim.h < bc | tee test$T.dump | tee ,dump
 	cc -g -o runpy.bin $(CFILES)
 
 small_unix:
-	python2 compile_proto.py < bc.proto -c > _generated_proto.h
-	python2 compile_proto.py < bc.proto -p > _generated_proto.py
-	python2 compile_proto.py < bc.proto -k > _generated_proto.const
-	python2 generate_prim.py < prim.txt > _generated_prim.h
+	python3 compile_proto.py < bc.proto -c > _generated_proto.h
+	python3 compile_proto.py < bc.proto -p > _generated_proto.py
+	python3 compile_proto.py < bc.proto -k > _generated_proto.const
+	python3 generate_prim.py < prim.txt > _generated_prim.h
 	rm -f _small_unix.py
-	# cpp -DSMALL -DUNIX compile_pyth09.py | sed 's/\<P\>[.]//g' | python2 replace_constants.py *.const > _big.py
-	cpp -DSMALL -DUNIX compile_pyth09.py | grep -v '^#' | python2 replace_constants.py *.const > _small_unix.py
+	# cpp -DSMALL -DUNIX compile_pyth09.py | sed 's/\<P\>[.]//g' | python3 replace_constants.py *.const > _big.py
+	cpp -DSMALL -DUNIX compile_pyth09.py | grep -v '^#' | python3 replace_constants.py *.const > _small_unix.py
 	chmod -w _small_unix.py
-	python2 _small_unix.py < test1.py > test1.bc
+	python3 _small_unix.py < test1.py > test1.bc
 	cp test1.bc bc
-	python2 print_pb.py bc.proto _generated_prim.h < bc | tee test1.dump | tee ,dump
+	#broken# python3 print_pb.py bc.proto _generated_prim.h < bc | tee test1.dump | tee ,dump
 	cc -g -o runpy.bin $(CFILES)
 	./runpy.bin
 
 small_coco:
-	python2 compile_proto.py < bc.proto -c > _generated_proto.h
-	python2 compile_proto.py < bc.proto -p > _generated_proto.py
-	python2 compile_proto.py < bc.proto -k > _generated_proto.const
-	python2 generate_prim.py < prim.txt > _generated_prim.h
+	python3 compile_proto.py < bc.proto -c > _generated_proto.h
+	python3 compile_proto.py < bc.proto -p > _generated_proto.py
+	python3 compile_proto.py < bc.proto -k > _generated_proto.const
+	python3 generate_prim.py < prim.txt > _generated_prim.h
 	rm -f _small_coco.py
-	# cpp -DSMALL -DNORMAL compile_pyth09.py | sed 's/\<P\>[.]//g' | python2 replace_constants.py *.const > _small_coco.py
-	cpp -DSMALL -DCOCO compile_pyth09.py | grep -v '^#' | python2 replace_constants.py *.const > _small_coco.py
+	# cpp -DSMALL -DNORMAL compile_pyth09.py | sed 's/\<P\>[.]//g' | python3 replace_constants.py *.const > _small_coco.py
+	cpp -DSMALL -DCOCO compile_pyth09.py | grep -v '^#' | python3 replace_constants.py *.const > _small_coco.py
 	chmod -w _small_coco.py
 	#
 	#
 	#
-	python2 _big_unix.py < _small_coco.py > _small_coco.bc
+	python3 _big_unix.py < _small_coco.py > _small_coco.bc
 	cp _small_coco.bc bc
-	python2 print_pb.py bc.proto _generated_prim.h < bc | tee _small_coco.dump | tee ,dump
+	#broken# python3 print_pb.py bc.proto _generated_prim.h < bc | tee _small_coco.dump | tee ,dump
 	cc -g -o runpy.bin $(CFILES)
 	:
 	./runpy.bin < test1.py > test1.by_small_coco.bc
 
 _runpy:
-	./runpy.bin
+	./runpy.bin bc
 
 _test_train:
-	python2 generate_prim.py < prim.txt > _generated_prim.h
+	python3 generate_prim.py < prim.txt > _generated_prim.h
 	cc -I. -DDONT_SAY -g -o train_test.bin testc/test_train.c osetjmp.c defs.c data.c train.c octet.c runtime.c readbuf.c pb2.c
 	./train_test.bin
 
 _test_dict:
-	python2 generate_prim.py < prim.txt > _generated_prim.h
+	python3 generate_prim.py < prim.txt > _generated_prim.h
 	cc -I. -DDONT_SAY -g -o dict_test.bin testc/test_dict.c osetjmp.c defs.c data.c train.c octet.c runtime.c readbuf.c pb2.c
 	./dict_test.bin
 
 _test_int:
-	python2 generate_prim.py < prim.txt > _generated_prim.h
+	python3 generate_prim.py < prim.txt > _generated_prim.h
 	cc -I. -DDONT_SAY -g -o int_test.bin testc/test_int.c osetjmp.c defs.c data.c train.c octet.c runtime.c readbuf.c pb2.c
 	./int_test.bin
 
@@ -143,7 +143,7 @@ SDC=drive/my-68SDC.VHD
 SDCARD=sdb
 
 launch: __always__
-	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
+	sh ./gorun.sh ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
 	:
 	cp -fv "test$T.bc" "bc"
 	:
@@ -152,7 +152,7 @@ launch: __always__
 
 emu: __always__
 	rm -f runpy
-	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
+	sh ./gorun.sh ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -163,7 +163,7 @@ emu: __always__
 	: : : os9 copy -l -r /etc/fstab /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,etc/fstab
 	(echo 'runpy #128 </term'; echo 'dir /d1') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
-	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; gorun -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
+	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; sh ./gorun.sh -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
 	ls -l runpy
 
 
@@ -172,12 +172,12 @@ kmem: __always__
 	os9 copy -r tool/kmem /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/kmem
 	os9 attr -per /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,CMDS/kmem
 	(echo 'echo Nando Kmem') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
-	(set -x ; cd ~/go/src/github.com/strickyak/doing_os9/gomar ; gorun -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>/dev/null)
+	(set -x ; cd ~/go/src/github.com/strickyak/doing_os9/gomar ; sh ./gorun.sh -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>/dev/null)
 
 
 lemu: __always__
 	rm -f runpy
-	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
+	sh ./gorun.sh ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -188,13 +188,13 @@ lemu: __always__
 	: : : os9 copy -l -r /etc/fstab /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,etc/fstab
 	(echo 'runpy #128 </term'; echo 'dir /d1') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
-	(set -x ; cd ~/go/src/github.com/strickyak/doing_os9/gomar ; gorun -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>/dev/null)
+	(set -x ; cd ~/go/src/github.com/strickyak/doing_os9/gomar ; sh ./gorun.sh -x -tags=coco3,level2 gomar.go -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  --swi_fatal_coredump=1 2>/dev/null)
 	ls -l runpy
 
 
 temu: __always__
 	rm -f runpy
-	gorun ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
+	sh ./gorun.sh ~/go/src/github.com/strickyak/doing_os9/gomar/cmocly/cmocly.go -cmoc /opt/yak/cmoc/bin/cmoc  -o runpy $(CFILES)
 	:
 	os9 copy -r test$T.bc /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,bc
 	:
@@ -205,7 +205,7 @@ temu: __always__
 	: : : os9 copy -l -r /etc/fstab /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,etc/fstab
 	(echo 'runpy #128 </term'; echo 'dir /d1') | os9 copy -l -r /dev/stdin  /home/strick/go/src/github.com/strickyak/doing_os9/gomar/drive/disk2,STARTUP
 	: T=$T
-	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; gorun -x -tags=coco3,level2,trace gomar.go -t=12000000 -vv=a --trigger_os9='(?i:fork.*runpy)' -borges=/home/strick/go/src/github.com/strickyak/doing_os9/borges/ -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
+	set -eux; (sleep 300 ; killall gomar 2>/dev/null) & B=$$! ; (cd ~/go/src/github.com/strickyak/doing_os9/gomar ; sh ./gorun.sh -x -tags=coco3,level2,trace gomar.go -t=12000000 -vv=a --trigger_os9='(?i:fork.*runpy)' -borges=/home/strick/go/src/github.com/strickyak/doing_os9/borges/ -boot ${FLOPPY} -disk ${HARD} -h0 ${SDC}  2>_ | tee /dev/stderr | grep FINISHED) && kill $$B || echo "*** CRASHED ($$?) ***" >&2
 	ls -l runpy
 
 
